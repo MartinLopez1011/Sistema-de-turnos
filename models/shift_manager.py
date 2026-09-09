@@ -21,6 +21,21 @@ class ShiftManager:
             saved_exceptions = data.get('excepciones', {})
             self.excepciones = saved_exceptions if isinstance(saved_exceptions, dict) else {}
 
+            # ITER 2 bug fix: normalizar keys de snapshots al formato YYYY-MM (con cero)
+            raw_snapshots = self.snapshots
+            normalized = {}
+            for k, v in raw_snapshots.items():
+                parts = k.split('-')
+                if len(parts) == 2:
+                    try:
+                        norm_k = f"{int(parts[0])}-{int(parts[1]):02d}"
+                        normalized[norm_k] = v
+                    except ValueError:
+                        normalized[k] = v
+                else:
+                    normalized[k] = v
+            self.snapshots = normalized
+
     def save_config(self):
         directory = os.path.dirname(os.path.abspath(self.config_path))
         temporary_path = self.config_path + '.tmp'
@@ -155,6 +170,11 @@ class ShiftManager:
                              if person['nombre'] == historical_person),
                             current_person_index
                         )
+                        historical_id = personal_ids[historical_index]
+                        # BUG FIX: agregar la persona histórica a pendientes para que
+                        # recupere su turno en la próxima semana disponible.
+                        if historical_id not in current_pendientes:
+                            current_pendientes.append(historical_id)
                         current_person_index = (historical_index + 1) % len(personal_ids)
                         recalculate_history = True
                 

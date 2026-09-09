@@ -167,9 +167,6 @@ class TurnosApp(ctk.CTk):
         self.geometry("1240x760")
         self.minsize(1040, 620)
         self.configure(fg_color=P["bg_app"])
-        self.bind("<Control-r>", lambda _: self.render_turnos_view())
-        self.bind("<Alt-Left>", lambda _: self._prev_month())
-        self.bind("<Alt-Right>", lambda _: self._next_month())
 
         self.exceptions           = []
         self.exceptions_by_period = {}
@@ -177,6 +174,7 @@ class TurnosApp(ctk.CTk):
         self.is_exporting         = False
         self.plan_period_dirty    = False
         self.calendar_period_override = None
+        self._status_fade_job     = None   # ITER 1: auto-fade de mensajes de estado
 
         def _ico(path, s):
             return ctk.CTkImage(light_image=Image.open(path), size=s) if os.path.exists(path) else None
@@ -185,6 +183,7 @@ class TurnosApp(ctk.CTk):
 
         self._setup_ui()
         self.load_personal()
+        self.protocol("WM_DELETE_WINDOW", self._on_close)  # ITER 3: confirmación al cerrar
 
     # ──────────────────────────────────────────────────────────────────────────
     def _setup_ui(self):
@@ -275,7 +274,8 @@ class TurnosApp(ctk.CTk):
         self.person_dropdown = ctk.CTkOptionMenu(
             sidebar, variable=self.person_var, values=["Cargando..."],
             fg_color=P["bg_input"], button_color=P["accent_d"],
-            button_hover_color=P["accent"], dropdown_fg_color=P["bg_card"])
+            button_hover_color=P["accent"], dropdown_fg_color=P["bg_card"],
+            command=lambda _: self.days_entry.focus_set() if hasattr(self, 'days_entry') else None)  # ITER 1: auto-focus
         self.person_dropdown.grid(row=4, column=0, padx=16, pady=(0, 4), sticky="ew")
 
         _section_header(sidebar, "Excepción", row=5, pady_top=10)
@@ -308,7 +308,18 @@ class TurnosApp(ctk.CTk):
                       font=ctk.CTkFont(family="Inter", size=14, weight="bold")
                       ).grid(row=9, column=0, padx=16, pady=(6, 4), sticky="ew")
 
-
+        # ITER 1: Widget "Próximo Turno" en sidebar
+        _section_header(sidebar, "Próximo Turno", row=10, pady_top=10)
+        self.next_turno_frame = ctk.CTkFrame(
+            sidebar, fg_color=P["bg_input"], corner_radius=8)
+        self.next_turno_frame.grid(row=11, column=0, padx=16, pady=(0, 4), sticky="ew")
+        self.next_turno_frame.grid_columnconfigure(0, weight=1)
+        self.next_turno_lbl = ctk.CTkLabel(
+            self.next_turno_frame,
+            text="Calculando...",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], wraplength=220, justify="left", anchor="w")
+        self.next_turno_lbl.grid(row=0, column=0, padx=10, pady=8, sticky="ew")
 
         # ── Main content ──────────────────────────────────────────────────────
         main = ctk.CTkFrame(parent, fg_color="transparent")
@@ -414,50 +425,27 @@ class TurnosApp(ctk.CTk):
         """Indica en el título que hay cambios sin guardar."""
         if not self.title().startswith("●"):
             self.title("●  Sistema de Turnos")
+        # ITER 1: badge visual en botón de exportar
+        if hasattr(self, 'save_export_btn'):
+            self.save_export_btn.configure(text="📤  Exportar y guardar  ●")
 
     def _mark_clean(self):
         """Elimina el indicador de cambios sin guardar del título."""
         self.title("Sistema de Turnos")
+        # ITER 1: limpiar badge visual del botón
+        if hasattr(self, 'save_export_btn'):
+            self.save_export_btn.configure(text="📤  Exportar y guardar")
 
-    def _show_shortcuts(self):
-        """Panel flotante con los atajos de teclado disponibles."""
-        if hasattr(self, '_shortcuts_win') and self._shortcuts_win.winfo_exists():
-            self._shortcuts_win.focus()
-            return
-        win = ctk.CTkToplevel(self)
-        win.title("Atajos de teclado")
-        win.geometry("380x250")
-        win.configure(fg_color=P["bg_card"])
-        win.resizable(False, False)
-        win.grab_set()
-        self._shortcuts_win = win
-
-        ctk.CTkLabel(win, text="⌨  Atajos de teclado",
-                     font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
-                     text_color=P["text"]).pack(padx=20, pady=(16, 10))
-
-        shortcuts = [
-            ("Ctrl + R",  "Actualizar vista de turnos"),
-            ("Alt + ←",   "Mes anterior"),
-            ("Alt + →",   "Mes siguiente"),
-            ("Enter",     "Añadir excepción (campo de días)"),
-        ]
-        for key, desc in shortcuts:
-            f = ctk.CTkFrame(win, fg_color=P["bg_card2"], corner_radius=6)
-            f.pack(fill="x", padx=16, pady=3)
-            f.grid_columnconfigure(1, weight=1)
-            ctk.CTkLabel(f, text=key,
-                         font=ctk.CTkFont(family="Courier", size=12, weight="bold"),
-                         text_color=P["accent"], width=120, anchor="center"
-                         ).grid(row=0, column=0, padx=10, pady=7)
-            ctk.CTkLabel(f, text=desc,
-                         font=ctk.CTkFont(family="Inter", size=11),
-                         text_color=P["text_s"], anchor="w"
-                         ).grid(row=0, column=1, padx=(0, 10), pady=7, sticky="w")
-
-        ctk.CTkButton(win, text="Cerrar", width=100,
-                      fg_color=P["accent_d"], hover_color=P["accent"],
-                      command=win.destroy).pack(pady=(8, 16))
+    def _on_close(self):
+        """ITER 3: Confirmación al cerrar si hay cambios sin guardar."""
+        if self.title().startswith("●"):
+            if not messagebox.askyesno(
+                    "Cambios sin guardar",
+                    "Hay cambios sin guardar en el periodo actual.\n"
+                    "¿Deseas cerrar la aplicación de todas formas?",
+                    parent=self):
+                return
+        self.destroy()
 
     def _reset_historial(self):
         """Resetea el historial con confirmación explícita del usuario."""
@@ -655,11 +643,13 @@ class TurnosApp(ctk.CTk):
                   command=self._next_month
                       ).grid(row=0, column=5, padx=(4, 8), pady=12)
 
-        ctk.CTkButton(nav, text="Hoy", width=54, height=36, corner_radius=8,
-                      fg_color=P["accent_d"], hover_color=P["accent"],
-                      font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-                      command=self._go_to_today
-                      ).grid(row=0, column=4, padx=(4, 4), pady=12)
+        # ITER 2: guardar referencia para poder desactivar cuando ya estemos en el mes actual
+        self.btn_hoy = ctk.CTkButton(
+            nav, text="Hoy", width=54, height=36, corner_radius=8,
+            fg_color=P["accent_d"], hover_color=P["accent"],
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            command=self._go_to_today)
+        self.btn_hoy.grid(row=0, column=4, padx=(4, 4), pady=12)
 
         legend = ctk.CTkFrame(nav, fg_color=P["bg_card"], corner_radius=8)
         legend.grid(row=0, column=3, padx=12, sticky="e", pady=10)
@@ -676,13 +666,7 @@ class TurnosApp(ctk.CTk):
                       fg_color=P["accent_d"], hover_color=P["accent"],
                   font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
                   command=self.render_turnos_view
-                  ).grid(row=0, column=6, padx=(0, 6), pady=12)
-
-        ctk.CTkButton(nav, text="⌨ Atajos", width=76, height=36, corner_radius=8,
-                      fg_color=P["bg_card"], hover_color=P["border_h"],
-                      font=ctk.CTkFont(family="Inter", size=11),
-                      command=self._show_shortcuts
-                      ).grid(row=0, column=7, padx=(0, 14), pady=12)
+                  ).grid(row=0, column=6, padx=(0, 14), pady=12)
 
         self.vista_scroll = ctk.CTkScrollableFrame(
             parent, fg_color=P["bg_app"], corner_radius=0,
@@ -734,6 +718,20 @@ class TurnosApp(ctk.CTk):
         is_cur_mo    = (today.year == year and today.month == month)
         is_past_mo   = date(year, month, 1) < date(today.year, today.month, 1)
         is_future_mo = date(year, month, 1) > date(today.year, today.month, 1)
+
+        # ITER 2: mes cerrado = tiene entradas en historial para ese mes
+        month_prefix = f"{year}-{month:02d}-"
+        is_closed    = any(k.startswith(month_prefix)
+                           for k in self.controller.shift_manager.historial)
+
+        # ITER 2: habilitar/deshabilitar botón "Hoy" según mes visualizado
+        if hasattr(self, 'btn_hoy'):
+            if is_cur_mo:
+                self.btn_hoy.configure(
+                    state="disabled", fg_color=P["border"], hover_color=P["border"])
+            else:
+                self.btn_hoy.configure(
+                    state="normal", fg_color=P["accent_d"], hover_color=P["accent"])
 
         # Obtener excepciones del período visto
         # TEST ITER 1: sincronizar correctamente con active_period_key
@@ -818,6 +816,16 @@ class TurnosApp(ctk.CTk):
                      font=ctk.CTkFont(family="Inter", size=11),
                      text_color=P["text_s"]).grid(row=1, column=0, sticky="w")
 
+        # ITER 2: Banner "MES CERRADO" para meses con historial guardado
+        if is_closed and is_past_mo:
+            banner_f = ctk.CTkFrame(hl, fg_color="#1A1505", corner_radius=8,
+                                    border_width=1, border_color="#403010")
+            banner_f.grid(row=2, column=0, sticky="ew", pady=(6, 0))
+            ctk.CTkLabel(banner_f,
+                         text="🗄  Mes cerrado — Datos correspondientes al historial guardado",
+                         font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+                         text_color=P["text_w"]).pack(padx=12, pady=5, side="left")
+
         # ── TEST ITER 2: Estado vacío ─────────────────────────────────────────
         if not shifts:
             empty_f = ctk.CTkFrame(self.vista_scroll, fg_color=P["bg_card"],
@@ -840,7 +848,7 @@ class TurnosApp(ctk.CTk):
         CELL_W = 30
         CELL_H = 46
         HDR_H  = 58
-        NAME_W = 186
+        NAME_W = 240   # Ampliado para mostrar nombres completos
 
         # TEST ITER 3: tinte más oscuro para meses pasados
         card_bg = P["past_tint"] if is_past_mo else P["bg_card"]
@@ -853,33 +861,15 @@ class TurnosApp(ctk.CTk):
         cal_outer.grid_columnconfigure(0, weight=1)
         cal_outer.grid_rowconfigure(0, weight=1)
 
-        h_sb = tk.Scrollbar(cal_outer, orient="horizontal",
-                            bg=card_bg, troughcolor=P["bg_hdr"],
-                            activebackground=P["border_h"])
-        h_sb.grid(row=1, column=0, sticky="ew")
-
-        canvas = tk.Canvas(cal_outer, bg=card_bg,
-                           highlightthickness=0, bd=0,
-                           xscrollcommand=h_sb.set)
-        canvas.grid(row=0, column=0, sticky="nsew")
-        h_sb.config(command=canvas.xview)
-
-        cal_table = tk.Frame(canvas, bg=card_bg)
-        win_id = canvas.create_window((0, 0), window=cal_table, anchor="nw")
-
-        def _tbl_cfg(e):
-            canvas.configure(scrollregion=canvas.bbox("all"))
-            canvas.configure(height=cal_table.winfo_reqheight())
-        cal_table.bind("<Configure>", _tbl_cfg)
-
-        def _cvs_cfg(e):
-            if cal_table.winfo_reqwidth() < e.width:
-                canvas.itemconfig(win_id, width=e.width)
-        canvas.bind("<Configure>", _cvs_cfg)
+        # Sin scrollbar: Frame directo dentro del contenedor
+        cal_table = tk.Frame(cal_outer, bg=card_bg)
+        cal_table.grid(row=0, column=0, sticky="nsew")
 
         cal_table.grid_columnconfigure(0, minsize=NAME_W)
         for c in range(1, days_in + 1):
-            cal_table.grid_columnconfigure(c, minsize=CELL_W)
+            cal_table.grid_columnconfigure(c, minsize=CELL_W, weight=0)
+        # Columna relleno al final: absorbe el espacio sobrante sin crear columna vacía visual
+        cal_table.grid_columnconfigure(days_in + 1, weight=1)
 
         # ── Header ────────────────────────────────────────────────────────────
         hdr_bg = P["bg_hdr"] if not is_past_mo else "#0A0C14"
@@ -954,10 +944,10 @@ class TurnosApp(ctk.CTk):
                              fill="#FFF", font=("Inter", 8, "bold"))
             row_widgets.append((av_c, name_bg))
 
-            lbl_n = tk.Label(name_f, text=_short_name(persona, 2),
+            lbl_n = tk.Label(name_f, text=_short_name(persona, 4),
                              bg=name_bg, fg=P["text"] if not is_past_mo else P["text_s"],
-                             font=("Inter", 11, "bold"), anchor="w")
-            lbl_n.place(x=AV + 14, rely=0.5, anchor="w", width=NAME_W - AV - 20)
+                             font=("Inter", 10, "bold"), anchor="w")
+            lbl_n.place(x=AV + 14, rely=0.5, anchor="w", width=NAME_W - AV - 18)
             row_widgets.append((lbl_n, name_bg))
 
             border_line = tk.Frame(name_f, bg=P["border"], width=1)
@@ -1058,8 +1048,10 @@ class TurnosApp(ctk.CTk):
                              text_color=P["text_w"]).pack(padx=2, pady=3)
                 crow += 1
 
+            # ITER 3: Añadir numeración "Semana X de Y"
+            week_counter = f"Sem. {idx + 1}/{len(shifts)}"
             ctk.CTkLabel(card,
-                         text=f"{s_date.strftime('%d %b')} — {e_date.strftime('%d %b')}".upper(),
+                         text=f"{s_date.strftime('%d %b')} — {e_date.strftime('%d %b')}  ·  {week_counter}".upper(),
                          font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
                          text_color=P["text_a"] if not is_past_mo else P["text_s"]
                          ).grid(row=crow, column=0, padx=14,
@@ -1126,6 +1118,8 @@ class TurnosApp(ctk.CTk):
             self.person_dropdown.configure(values=["Sin personal disponible"])
             self.person_var.set("Sin personal disponible")
             self.set_status("No hay personal disponible.", "error")
+        # Mostrar en la UI las excepciones cargadas (necesario al iniciar o recargar)
+        self.refresh_exception_list()
         self.update_preview()
 
     def get_selected_period(self):
@@ -1147,6 +1141,12 @@ class TurnosApp(ctk.CTk):
         self.update_preview()
 
     def set_status(self, text, level="info"):
+        # ITER 1: cancelar fade anterior pendiente
+        if self._status_fade_job is not None:
+            try: self.after_cancel(self._status_fade_job)
+            except Exception: pass
+            self._status_fade_job = None
+
         cfg = {
             "info":  (P["text_s"],  P["bg_card"]),
             "ok":    (P["text_ok"], "#063616"),
@@ -1156,6 +1156,13 @@ class TurnosApp(ctk.CTk):
         tc, bg = cfg.get(level, cfg["info"])
         self._status_frame.configure(fg_color=bg)
         self.status_label.configure(text=text, text_color=tc)
+
+        # ITER 1: auto-fade de mensajes de éxito a los 5 segundos
+        if level == "ok":
+            self._status_fade_job = self.after(
+                5000,
+                lambda: self.set_status(
+                    "Listo para revisar, exportar y guardar el periodo.", "info"))
 
     def refresh_exception_list(self):
         for w in self.exception_list2.winfo_children():
