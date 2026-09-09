@@ -1,0 +1,99 @@
+import os
+from datetime import date
+from models.shift_manager import ShiftManager
+from utils.excel_handler import ExcelHandler
+
+class MainController:
+    def __init__(self, root_path):
+        self.root_path = root_path
+        self.config_path = os.path.join(root_path, 'config.json')
+        self.template_path = os.path.join(root_path, 'ejemplo.xlsx')
+        self.output_path = os.path.join(root_path, 'turnos_generados.xlsx')
+        
+        self.shift_manager = ShiftManager(self.config_path)
+
+    def get_personal_list(self):
+        return [p['nombre'] for p in self.shift_manager.personal]
+
+    def get_starting_person(self):
+        return self.shift_manager.get_person_by_id(self.shift_manager.siguiente_id)
+
+    def get_saved_exceptions(self):
+        return {
+            period_key: self.shift_manager.get_exceptions(period_key)
+            for period_key in self.shift_manager.excepciones
+        }
+
+    def set_starting_person(self, person_name):
+        return self.shift_manager.set_starting_person(person_name)
+
+    def preview_shifts(self, year, month, exceptions):
+        target_key = f"{year}-{month:02d}"
+        today = date.today()
+        target_is_future = (year, month) > (today.year, today.month)
+
+        # A future month without snapshot must continue after the current month,
+        # otherwise each preview starts again from the global pointer.
+        if not target_is_future or target_key in self.shift_manager.snapshots:
+            shifts, _, _ = self.shift_manager.generate_shifts(year, month, exceptions)
+            return shifts
+
+        state = {
+            "siguiente_id": self.shift_manager.siguiente_id,
+            "pendientes": self.shift_manager.pendientes.copy()
+        }
+        preview_year, preview_month = today.year, today.month
+
+        while (preview_year, preview_month) <= (year, month):
+            preview_key = f"{preview_year}-{preview_month:02d}"
+            period_exceptions = exceptions if preview_key == target_key else []
+            shifts, final_id, final_pending = self.shift_manager.generate_shifts(
+                preview_year, preview_month, period_exceptions, state=state)
+            if preview_key == target_key:
+                return shifts
+
+            state = {
+                "siguiente_id": final_id,
+                "pendientes": final_pending
+            }
+            if preview_month == 12:
+                preview_year += 1
+                preview_month = 1
+            else:
+                preview_month += 1
+
+        return []
+
+    def process_generation(self, year, month, exceptions):
+        try:
+            # 1. Generar los turnos basados en el mes y excepciones (forma pura)
+            shifts, _, _ = self.shift_manager.generate_shifts(year, month, exceptions)
+            
+            # 2. Inicializar manejador de Excel
+            meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
+            nombre_mes = meses[month - 1]
+            dynamic_output = os.path.join(self.root_path, f"turnos_{nombre_mes}_{year}.xlsx")
+            
+            excel_handler = ExcelHandler(self.template_path, dynamic_output)
+            excel_handler.load_template()
+            
+            # 3. Escribir los datos
+            excel_handler.write_shifts(shifts, exceptions, year, month)
+            
+            # 4. Guardar archivo
+            excel_handler.save_report()
+            
+            # Nota: Ya NO actualizamos el config.json automáticamente aquí
+            # para evitar que la cola salte cada vez que el usuario exporta.
+            
+            return True, f"Turnos exportados a Excel exitosamente"
+            
+        except Exception as e:
+            return False, f"Error: {str(e)}"
+
+    def advance_queue(self, year, month, exceptions):
+        try:
+            self.shift_manager.advance_month(year, month, exceptions)
+            return True, "Cola avanzada exitosamente. Empezamos nuevo mes."
+        except Exception as e:
+            return False, f"Error: {str(e)}"
