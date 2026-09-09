@@ -72,21 +72,9 @@
     "2026-08-24_2026-08-30": "PRO MARCHANT VENEGAS KARINA",
     "2026-08-31_2026-09-06": "PRO ROSAS FERNANDEZ RODRIGO"
   },
-  "historial": {
-    "2026-09-07_2026-09-13": "PRO CONTRERAS ZAMORANO CAMILA",
-    "2026-09-14_2026-09-20": "PRO ALVIÑA NEIRA PRISCILA",
-    "2026-09-21_2026-09-27": "PRO MARTINEZ DOUZET BRYANN",
-    "2026-09-28_2026-10-04": "PRO FLORES ROJAS NATALIA"
-  },
-  "siguiente_id": 1,
+  "historial": {},
+  "siguiente_id": 13,
   "pendientes": [],
-  "snapshots": {
-    "2026-10": {
-      "siguiente_id": 1,
-      "pendientes": []
-    }
-  },
-  "excepciones": {
-    "2026-09": []
-  }
+  "snapshots": {},
+  "excepciones": {}
 }
