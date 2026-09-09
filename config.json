@@ -1,0 +1,92 @@
+{
+  "personal": [
+    {
+      "id": 1,
+      "nombre": "COM MARFULL VILLANUEVA SCARLETT"
+    },
+    {
+      "id": 2,
+      "nombre": "COM FREZ FLORES JANETTE"
+    },
+    {
+      "id": 3,
+      "nombre": "COM (F) CORTÉS MUÑOZ PATRICIO"
+    },
+    {
+      "id": 4,
+      "nombre": "COM (A) MIRANDA CRISTI CLAUDIA"
+    },
+    {
+      "id": 5,
+      "nombre": "COM (A) ATIENZO LOPEZ CECILIA"
+    },
+    {
+      "id": 6,
+      "nombre": "SBC (A) QUEZADA CARTES CATHERINE"
+    },
+    {
+      "id": 7,
+      "nombre": "PRO PINO ALARCON JOSE MIGUEL"
+    },
+    {
+      "id": 8,
+      "nombre": "PRO BALVOA ECHEVERRIA SUSANA"
+    },
+    {
+      "id": 9,
+      "nombre": "PRO MATURANA PIZARRO PAMELA"
+    },
+    {
+      "id": 10,
+      "nombre": "PRO BRAVO ROGEL PATRICIO"
+    },
+    {
+      "id": 11,
+      "nombre": "PRO MARCHANT VENEGAS KARINA"
+    },
+    {
+      "id": 12,
+      "nombre": "PRO ROSAS FERNANDEZ RODRIGO"
+    },
+    {
+      "id": 13,
+      "nombre": "PRO CONTRERAS ZAMORANO CAMILA"
+    },
+    {
+      "id": 14,
+      "nombre": "PRO ALVIÑA NEIRA PRISCILA"
+    },
+    {
+      "id": 15,
+      "nombre": "PRO MARTINEZ DOUZET BRYANN"
+    },
+    {
+      "id": 16,
+      "nombre": "PRO FLORES ROJAS NATALIA"
+    }
+  ],
+  "inicio": {
+    "2026-08-03_2026-08-09": "PRO MATURANA PIZARRO PAMELA",
+    "2026-08-10_2026-08-16": "PRO BALVOA ECHEVERRIA SUSANA",
+    "2026-08-17_2026-08-23": "PRO BRAVO ROGEL PATRICIO",
+    "2026-08-24_2026-08-30": "PRO MARCHANT VENEGAS KARINA",
+    "2026-08-31_2026-09-06": "PRO ROSAS FERNANDEZ RODRIGO"
+  },
+  "historial": {
+    "2026-09-07_2026-09-13": "PRO CONTRERAS ZAMORANO CAMILA",
+    "2026-09-14_2026-09-20": "PRO ALVIÑA NEIRA PRISCILA",
+    "2026-09-21_2026-09-27": "PRO MARTINEZ DOUZET BRYANN",
+    "2026-09-28_2026-10-04": "PRO FLORES ROJAS NATALIA"
+  },
+  "siguiente_id": 1,
+  "pendientes": [],
+  "snapshots": {
+    "2026-10": {
+      "siguiente_id": 1,
+      "pendientes": []
+    }
+  },
+  "excepciones": {
+    "2026-09": []
+  }
+}
