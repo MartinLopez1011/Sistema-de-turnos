@@ -53,7 +53,7 @@ P = {
     "today":     "#16877D",
     "today_bg":  "#124A46",
     "sep":       "#293137",
-    "past_tint": "#0A0C1A",   # TEST ITER 3 — tinte para meses pasados
+    "past_tint": "#0A0C1A",   
 }
 
 AVATAR_PAL = [
