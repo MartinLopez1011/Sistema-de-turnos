@@ -7,7 +7,6 @@ class MainController:
     def __init__(self, root_path):
         self.root_path = root_path
         self.config_path = os.path.join(root_path, 'config.json')
-        self.template_path = os.path.join(root_path, 'ejemplo.xlsx')
         self.output_path = os.path.join(root_path, 'turnos_generados.xlsx')
         
         self.shift_manager = ShiftManager(self.config_path)
@@ -92,7 +91,7 @@ class MainController:
             nombre_mes = meses[month - 1]
             dynamic_output = os.path.join(self.root_path, f"turnos_{nombre_mes}_{year}.xlsx")
             
-            excel_handler = ExcelHandler(self.template_path, dynamic_output)
+            excel_handler = ExcelHandler(dynamic_output, self.shift_manager.personal)
             excel_handler.load_template()
             
             # 3. Escribir los datos

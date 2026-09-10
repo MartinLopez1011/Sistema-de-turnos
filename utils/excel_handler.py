@@ -3,15 +3,56 @@ from openpyxl.styles import PatternFill, Alignment, Border, Side, Font
 from datetime import timedelta
 
 class ExcelHandler:
-    def __init__(self, template_path, output_path):
-        self.template_path = template_path
+    def __init__(self, output_path, personal):
         self.output_path = output_path
+        self.personal = personal
         self.wb = None
         self.sheet = None
 
     def load_template(self):
-        self.wb = openpyxl.load_workbook(self.template_path)
+        self.wb = openpyxl.Workbook()
         self.sheet = self.wb.active
+        self.sheet.title = "Turnos"
+
+        title_cell = self.sheet["A1"]
+        title_cell.value = "PLANIFICACION DE TURNOS"
+        title_cell.font = Font(bold=True, size=14)
+        title_cell.alignment = Alignment(horizontal="center", vertical="center")
+
+        header_fill = PatternFill(start_color="D9E2F3", end_color="D9E2F3", fill_type="solid")
+        border = Border(
+            left=Side(style="thin", color="808080"),
+            right=Side(style="thin", color="808080"),
+            top=Side(style="thin", color="808080"),
+            bottom=Side(style="thin", color="808080"),
+        )
+        self.sheet["A2"] = "DIA"
+        self.sheet["A3"] = "FUNCIONARIO"
+        for row in (2, 3):
+            self.sheet.cell(row=row, column=1).font = Font(bold=True)
+            self.sheet.cell(row=row, column=1).fill = header_fill
+            self.sheet.cell(row=row, column=1).alignment = Alignment(horizontal="center", vertical="center")
+            self.sheet.cell(row=row, column=1).border = border
+
+        for day in range(1, 32):
+            cell = self.sheet.cell(row=2, column=day + 1, value=day)
+            cell.font = Font(bold=True)
+            cell.fill = header_fill
+            cell.alignment = Alignment(horizontal="center", vertical="center")
+            cell.border = border
+
+        for row_idx, person in enumerate(self.personal, 4):
+            name = person.get("nombre", "") if isinstance(person, dict) else str(person)
+            cell = self.sheet.cell(row=row_idx, column=1, value=name)
+            cell.border = border
+            for column_idx in range(2, 33):
+                self.sheet.cell(row=row_idx, column=column_idx).border = border
+
+        self.sheet.column_dimensions["A"].width = 38
+        for column_idx in range(2, 33):
+            self.sheet.column_dimensions[openpyxl.utils.get_column_letter(column_idx)].width = 5
+        self.sheet.freeze_panes = "B4"
+        self.sheet.row_dimensions[1].height = 24
         
 
     def save_report(self):
