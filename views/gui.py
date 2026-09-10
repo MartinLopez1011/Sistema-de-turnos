@@ -575,10 +575,35 @@ class TurnosApp(ctk.CTk):
             text_color=P["text_s"], justify="left", anchor="w").grid(
                 row=3, column=0, pady=(14, 0), sticky="w")
 
+        # ── Gestión de Personal ──────────────────────────────────────────────────
+        person_card = ctk.CTkFrame(wrapper, fg_color=P["bg_card"], corner_radius=12,
+                                   border_width=1, border_color=P["border"])
+        person_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
+        person_card.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(person_card, text="Gestión de Personal",
+                     font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+                     text_color=P["text"], anchor="w").grid(
+                         row=0, column=0, padx=20, pady=(20, 4), sticky="w")
+        
+        btn_add = ctk.CTkButton(person_card, text="＋  Añadir Persona",
+                      command=self._on_add_person,
+                      height=32, corner_radius=8,
+                      font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+                      fg_color=P["green_d"], hover_color=P["green"])
+        btn_add.grid(row=0, column=1, padx=20, pady=(20, 4), sticky="e")
+
+        self.person_list_frame = ctk.CTkScrollableFrame(
+            person_card, fg_color="transparent", height=150,
+            scrollbar_button_color=P["border_h"])
+        self.person_list_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=(10, 20), sticky="nsew")
+        
+        self._refresh_person_management_ui()
+
         # ── Zona de peligro — Reset historial ────────────────────────────────────
         danger_card = ctk.CTkFrame(wrapper, fg_color=P["bg_card"], corner_radius=12,
                                    border_width=1, border_color=P["red_d"])
-        danger_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
+        danger_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
         danger_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(danger_card, text="⚠  Zona de peligro",
@@ -604,6 +629,66 @@ class TurnosApp(ctk.CTk):
             self.set_status(f"Punto de inicio guardado: {_short_name(person, 3)}", "ok")
         else:
             self.set_status("No se pudo guardar la persona inicial.", "error")
+
+    def _refresh_person_management_ui(self):
+        for w in self.person_list_frame.winfo_children():
+            w.destroy()
+        
+        persons = self.controller.get_all_persons()
+        for i, p in enumerate(persons):
+            row_f = ctk.CTkFrame(self.person_list_frame, fg_color=P["bg_row_e"] if i%2==0 else P["bg_row_o"])
+            row_f.pack(fill="x", pady=2)
+            
+            ctk.CTkLabel(row_f, text=f"ID {p['id']}: {p['nombre']}", text_color=P["text"],
+                         font=ctk.CTkFont(family="Inter", size=13)).pack(side="left", padx=10, pady=8)
+            
+            btn_del = ctk.CTkButton(row_f, text="Eliminar", width=60, height=24,
+                                    fg_color=P["red_d"], hover_color=P["red"],
+                                    command=lambda pid=p['id'], pname=p['nombre']: self._on_delete_person(pid, pname))
+            btn_del.pack(side="right", padx=10, pady=8)
+            
+            btn_edit = ctk.CTkButton(row_f, text="Editar", width=60, height=24,
+                                     fg_color=P["accent_d"], hover_color=P["accent"],
+                                     command=lambda pid=p['id'], pname=p['nombre']: self._on_edit_person(pid, pname))
+            btn_edit.pack(side="right", padx=10, pady=8)
+            
+            _make_row_hover(row_f, [(row_f, row_f.cget("fg_color"))])
+
+    def _on_add_person(self):
+        name = simpledialog.askstring("Añadir Persona", "Nombre de la persona:", parent=self)
+        if name and name.strip():
+            success, msg = self.controller.add_person(name.strip())
+            if success:
+                self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
+                self._refresh_person_management_ui()
+                self.load_personal()
+                self.render_turnos_view()
+            else:
+                self.settings_status_label.configure(text=msg, text_color=P["text_e"])
+
+    def _on_edit_person(self, person_id, current_name):
+        new_name = simpledialog.askstring("Editar Persona", f"Nuevo nombre para {current_name}:", initialvalue=current_name, parent=self)
+        if new_name and new_name.strip() and new_name.strip() != current_name:
+            success, msg = self.controller.edit_person(person_id, new_name.strip())
+            if success:
+                self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
+                self._refresh_person_management_ui()
+                self.load_personal()
+                self.render_turnos_view()
+            else:
+                self.settings_status_label.configure(text=msg, text_color=P["text_e"])
+
+    def _on_delete_person(self, person_id, current_name):
+        if messagebox.askyesno("Eliminar Persona", f"¿Estás seguro que deseas eliminar a {current_name}?\nEsto no modificará el historial pasado.", parent=self):
+            success, msg = self.controller.remove_person(person_id)
+            if success:
+                self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
+                self._refresh_person_management_ui()
+                self.load_personal()
+                self.render_turnos_view()
+            else:
+                self.settings_status_label.configure(text=msg, text_color=P["text_e"])
+
 
     # ══════════════════════════════════════════════════════════════════════════
     #  PESTAÑA 2 — VER TURNOS
@@ -802,6 +887,16 @@ class TurnosApp(ctk.CTk):
                     break
 
         personal   = self.controller.get_personal_list()
+        
+        assigned_names = {sh['persona'] for sh in shifts if sh.get('persona')}
+        for exc in exceptions:
+            assigned_names.add(exc['persona'])
+            
+        all_personas = list(personal)
+        for name in assigned_names:
+            if name not in all_personas and name != "NADIE DISPONIBLE":
+                all_personas.append(name)
+
         _, days_in = calendar.monthrange(year, month)
 
         # El calendario solo necesita mostrar el total de excepciones.
@@ -949,7 +1044,8 @@ class TurnosApp(ctk.CTk):
         row_bg_o = P["bg_row_o"] if not is_past_mo else "#0E1020"
         name_bg  = P["bg_name"]  if not is_past_mo else "#0A0C1E"
 
-        for ri, persona in enumerate(personal):
+        for ri, persona in enumerate(all_personas):
+            is_deleted = persona not in personal
             p_turno  = turno_days.get(persona, set())
             av_color = AVATAR_PAL[ri % len(AVATAR_PAL)]
             row_bg   = row_bg_e if ri % 2 == 0 else row_bg_o
@@ -971,9 +1067,13 @@ class TurnosApp(ctk.CTk):
                              fill="#FFF", font=("Inter", 8, "bold"))
             row_widgets.append((av_c, name_bg))
 
-            lbl_n = tk.Label(name_f, text=_short_name(persona, 4),
+            display_name = _short_name(persona, 4)
+            if is_deleted:
+                display_name += " (Eliminado)"
+
+            lbl_n = tk.Label(name_f, text=display_name,
                              bg=name_bg, fg=P["text"] if not is_past_mo else P["text_s"],
-                             font=("Inter", 10, "bold"), anchor="w")
+                             font=("Inter", 10, "bold" if not is_deleted else "italic"), anchor="w")
             lbl_n.place(x=AV + 14, rely=0.5, anchor="w", width=NAME_W - AV - 18)
             row_widgets.append((lbl_n, name_bg))
 
@@ -1116,9 +1216,14 @@ class TurnosApp(ctk.CTk):
 
             info_c = ctk.CTkFrame(badge, fg_color="transparent")
             info_c.grid(row=0, column=1, sticky="ew", padx=(0, 10), pady=8)
-            ctk.CTkLabel(info_c, text=_short_name(persona, 4),
-                         font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
-                         text_color=P["text"], anchor="w", wraplength=260
+            is_deleted = persona not in personal and persona != "NADIE DISPONIBLE"
+            display_name = _short_name(persona, 4)
+            if is_deleted:
+                display_name += " (Eliminado)"
+
+            ctk.CTkLabel(info_c, text=display_name,
+                         font=ctk.CTkFont(family="Inter", size=13, weight="bold" if not is_deleted else "normal"),
+                         text_color=P["text"] if not is_deleted else P["text_s"], anchor="w", wraplength=260
                          ).pack(fill="x")
 
             dias = []
