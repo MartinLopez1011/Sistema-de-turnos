@@ -11,7 +11,7 @@ Aplicación de escritorio en **Python** que gestiona la asignación rotativa sem
 - **Tecnología principal:** Python + CustomTkinter (GUI dark mode)
 - **Distribución:** Compilado con PyInstaller → `Sistema de Turnos.exe` (standalone, sin instalar Python)
 - **Persistencia:** Un único archivo `config.json` en el directorio del ejecutable
-- **Output:** Archivos `turnos_<Mes>_<Año>.xlsx` generados con `openpyxl`
+- **Output:** Archivos `turnos_<Mes>_<Año>.xlsx` generados con `openpyxl` y el documento ejecutivo `Sistema_de_Gestion_de_Turnos.docx`
 
 ---
 
@@ -26,10 +26,11 @@ models/
 views/
   gui.py                   ← GUI con CustomTkinter (~1400 líneas). TurnosApp(ctk.CTk)
 utils/
-  excel_handler.py         ← Lee template ejemplo.xlsx, escribe turnos, guarda reporte
+  excel_handler.py         ← Construye la plantilla Excel en memoria, escribe turnos y guarda reporte
 assets/                    ← Íconos PNG (success, error, save)
 config.json                ← Base de datos en JSON (ver sección 4)
-ejemplo.xlsx               ← Plantilla Excel base para los reportes
+generar_documento.py      ← Genera el documento ejecutivo editable en Word
+Sistema_de_Gestion_de_Turnos.docx ← Documento ejecutivo generado del proyecto
 ```
 
 ---
@@ -48,7 +49,7 @@ main.py
 
 ### Flujo de generación de un mes:
 
-1. Usuario selecciona **mes/año** y opcionalmente agrega **excepciones** (DA o FL con fecha)
+1. Usuario selecciona **mes/año** y opcionalmente agrega **excepciones** (DA, FL, LIC u OTR con fecha)
 2. `preview_shifts(year, month, exceptions)` → genera vista previa sin guardar
 3. Usuario presiona **"Exportar Excel"** → `process_generation()` → crea `turnos_Mes_Año.xlsx`
 4. Usuario presiona **"Cerrar Mes"** → `advance_queue()` → guarda en `historial`, crea snapshot del mes siguiente, actualiza puntero global
@@ -79,9 +80,11 @@ main.py
 }
 ```
 
-**Tipos de excepción:**
+**Tipos de excepción soportados:**
 - `DA` = Día Administrativo (color naranja `#B45309`)
 - `FL` = Feriado Legal (color violeta `#5B21B6`)
+- `LIC` = Licencia (color turquesa `#0E7490`)
+- `OTR` = Otro (color gris `#374151`)
 
 ---
 
@@ -94,6 +97,8 @@ El algoritmo recorre cada semana del mes calendario y:
 3. Si hay **pendientes** → intenta asignar al primero de la lista que NO tenga excepción
 4. Si no hay pendientes libres → sigue la **lista circular** desde `siguiente_id`
 5. Si alguien es saltado (tiene excepción) → se agrega a `pendientes` para recuperar turno después
+
+La previsualización de un mes futuro sin snapshot encadena temporalmente los meses desde el estado actual para no reiniciar la rotación. Un mes cerrado puede recalcularse si cambian sus excepciones.
 
 **Snapshot:** Al cerrar un mes se guarda el estado `{siguiente_id, pendientes}` del mes SIGUIENTE para que la previsión futura sea correcta aunque se cierren meses fuera de orden.
 
@@ -131,11 +136,11 @@ El algoritmo recorre cada semana del mes calendario y:
 
 ## 7. `ExcelHandler` — Lógica del reporte
 
-1. Carga `ejemplo.xlsx` como plantilla
+1. Construye en memoria la plantilla base con la grilla de 31 días y las personas configuradas
 2. **Auto-detecta** la fila de días buscando la fila con valores 1, 2, 3...
 3. Limpia toda la grilla, pinta fines de semana en gris `#D9D9D9`
 4. Por cada turno: pinta en **rojo** (`#FF3B30`) todos los días de esa semana que pertenezcan al mes
-5. Por cada excepción: sobreescribe la celda con el tipo (`DA`/`FL`) y el color correspondiente
+5. Por cada excepción: sobreescribe la celda con el tipo (`DA`, `FL`, `LIC` u `OTR`) y el color correspondiente
 
 ---
 
@@ -173,9 +178,15 @@ El `.spec` incluye la carpeta `assets/` y produce un ejecutable único.
 
 **Dependencias principales:**
 - `customtkinter` — GUI moderna dark mode
-- `openpyxl` — lectura/escritura de Excel
+- `openpyxl` — creación/escritura de Excel
 - `Pillow` — carga de íconos PNG
+- `python-docx` — generación del documento ejecutivo editable
 - `pyinstaller` — compilación (solo dev)
+
+El generador del Word se ejecuta desde el entorno virtual del proyecto:
+```bash
+.venv\Scripts\python.exe generar_documento.py
+```
 
 ---
 
@@ -184,7 +195,7 @@ El `.spec` incluye la carpeta `assets/` y produce un ejecutable único.
 | Archivo | Riesgo |
 |---------|--------|
 | `config.json` | Único almacén de estado. Modificar a mano puede romper la rotación. Usar `reset_historial.py` para limpiar. |
-| `ejemplo.xlsx` | Plantilla base. Cambiar su estructura rompe la auto-detección de filas en `ExcelHandler`. |
+| `utils/excel_handler.py` | Contiene la estructura base del reporte Excel. Cambiarla puede afectar la detección de filas y días. |
 | `self.inicio` en config | Semanas inmutables ya pasadas. No borrar. |
 
 ---
@@ -227,6 +238,22 @@ El `.spec` incluye la carpeta `assets/` y produce un ejecutable único.
 ## 14. Estado actual (Septiembre 2026)
 
 - Personal: 16 personas activas (IDs 1–16)
-- Siguiente en turnar: ID 13 (PRO CONTRERAS ZAMORANO CAMILA)
-- Historial: semanas de Agosto 2026 cerradas
-- Snapshots: datos de inicio precalculados hasta Septiembre 2026
+- Siguiente en turnar: ID 1 (COM MARFULL VILLANUEVA SCARLETT)
+- Historial: semanas desde el 7 de septiembre hasta el 4 de octubre de 2026
+- Snapshots: datos de inicio disponibles para septiembre y octubre de 2026
+- Excepciones guardadas: periodo septiembre de 2026 sin excepciones registradas
+
+> Este estado refleja `config.json` al 10 de septiembre de 2026. Si el archivo cambia, debe considerarse la fuente de verdad para el estado operativo.
+
+---
+
+## 15. Documento ejecutivo del proyecto
+
+El archivo `Sistema_de_Gestion_de_Turnos.docx` resume el problema, los objetivos, el alcance, los requerimientos, la arquitectura MVC, el flujo mensual, las entradas y salidas y los beneficios esperados. Está dirigido a una persona ejecutiva y contiene tablas y diagramas editables de Word.
+
+Para regenerarlo después de modificar la implementación o `config.json`:
+```bash
+.venv\Scripts\python.exe generar_documento.py
+```
+
+El documento toma el código y la configuración actuales como fuente de verdad. No debe confundirse con una especificación de funcionalidades futuras: exportar Excel y cerrar el mes siguen siendo operaciones separadas, y la exportación no modifica la cola de rotación.
