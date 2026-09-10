@@ -755,6 +755,11 @@ class TurnosApp(ctk.CTk):
             exceptions = self.exceptions  # estado en vivo (no guardado aún)
 
         shifts = self.controller.preview_shifts(year, month, exceptions)
+        generation_warnings = self.controller.shift_manager.last_warnings
+        if generation_warnings:
+            self.set_status(
+                f"⚠ {len(generation_warnings)} feriado repetido por falta de alternativa.",
+                "warn")
 
         exc_map = {}
         for exc in exceptions:
@@ -762,6 +767,7 @@ class TurnosApp(ctk.CTk):
                 exc_map[(exc['persona'], exc['fecha'].day)] = exc['tipo']
 
         turno_days = {}
+        warning_days = {}
         for sh in shifts:
             p = sh['persona']
             if not p: continue
@@ -771,6 +777,12 @@ class TurnosApp(ctk.CTk):
                 if cur.month == month and cur.year == year:
                     turno_days.setdefault(p, set()).add(cur.day)
                 cur += timedelta(days=1)
+            if sh.get('advertencias'):
+                cur = s
+                while cur <= e:
+                    if cur.month == month and cur.year == year:
+                        warning_days.setdefault(p, set()).add(cur.day)
+                    cur += timedelta(days=1)
 
         for exc in exceptions:
             if exc['fecha'].month == month and exc['fecha'].year == year:
@@ -985,7 +997,9 @@ class TurnosApp(ctk.CTk):
                     bg, txt, tc, bold = P["otr"], "OTR", "#FFF", True
                 elif has_t:
                     # Turno: más brillante en semana actual, atenuado en meses pasados
-                    if is_past_mo:
+                    if d in warning_days.get(persona, set()):
+                        bg = P["orange"]
+                    elif is_past_mo:
                         bg = "#5A1010"
                     elif in_cw:
                         bg = P["turno_h"]
@@ -1038,7 +1052,11 @@ class TurnosApp(ctk.CTk):
 
             # TEST ITER 3: tarjetas atenuadas para meses pasados
             card_fg  = P["past_tint"] if is_past_mo else P["bg_card2"]
-            card_bdr = P["today"] if is_cw else (P["border"] if not is_past_mo else "#141830")
+            card_bdr = (
+                P["orange"] if shift.get("advertencias") else
+                P["today"] if is_cw else
+                (P["border"] if not is_past_mo else "#141830")
+            )
 
             card = ctk.CTkFrame(co, fg_color=card_fg, corner_radius=12,
                                 border_width=2 if is_cw else 1,
@@ -1065,6 +1083,16 @@ class TurnosApp(ctk.CTk):
                 ctk.CTkLabel(hf, text="  🗄 HISTORIAL  ",
                              font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
                              text_color=P["text_w"]).pack(padx=2, pady=3)
+                crow += 1
+
+            if shift.get("advertencias"):
+                wf = ctk.CTkFrame(card, fg_color=P["orange"], corner_radius=6)
+                wf.grid(row=crow, column=0, padx=12, pady=(8, 0), sticky="ew")
+                ctk.CTkLabel(
+                    wf,
+                    text="⚠ REPETICIÓN DE FERIADO POR FALTA DE ALTERNATIVA",
+                    font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
+                    text_color="#FFF").pack(padx=8, pady=4)
                 crow += 1
 
             # ITER 3: Añadir numeración "Semana X de Y"
@@ -1423,6 +1451,9 @@ class TurnosApp(ctk.CTk):
             self.preview_textbox.insert("end",
                 f"  {s.strftime('%d/%m')} → {e.strftime('%d/%m')}\n"
                 f"  👤 {_short_name(person, 2)}\n")
+            for warning in sh.get("advertencias", []):
+                self.preview_textbox.insert(
+                    "end", f"  ⚠ {warning['mensaje']} ({', '.join(warning['feriados'])})\n")
             for sk in salt:
                 self.preview_textbox.insert("end",
                     f"     ↷ {_short_name(sk['persona'], 1)} ({sk['tipo']})\n")

@@ -237,6 +237,7 @@ def build_document():
         ("RF-02", "Previsualizar turnos", "El sistema calcula la asignación sin modificar el estado persistido."),
         ("RF-03", "Aplicar rotación", "Se asigna según puntero, pendientes, excepciones e historial."),
         ("RF-04", "Gestionar excepciones", "Se registra persona, fecha y tipo de excepción para el periodo."),
+        ("RF-04A", "Evitar repetición de feriados", "En diciembre se evita repetir el mismo feriado nacional chileno del año anterior cuando existe otra alternativa."),
         ("RF-05", "Cerrar mes", "Se guarda historial, excepciones, snapshots y estado de continuidad."),
         ("RF-06", "Consultar calendario", "Se visualiza la distribución mensual en una vista de calendario."),
         ("RF-07", "Exportar Excel", "Se genera `turnos_<Mes>_<Año>.xlsx` con la plantilla incorporada."),
@@ -249,6 +250,7 @@ def build_document():
         ("Persistencia", "Datos almacenados en JSON y protegidos durante el guardado mediante archivo temporal."),
         ("Usabilidad", "Interfaz gráfica con confirmaciones y mensajes de estado para operaciones relevantes."),
         ("Interoperabilidad", "Salida en formato Excel mediante openpyxl y una plantilla incorporada."),
+        ("Regla anual", "Calendario nacional chileno; los feriados móviles se comparan por nombre y se advierten los casos sin alternativa."),
         ("Mantenibilidad", "Separación de vista, coordinación, lógica de negocio y exportación."),
     ], widths=[1.55, 5.5])
 
@@ -280,6 +282,7 @@ def build_document():
         "Se incorporan las excepciones temporales y se calcula la asignación sin guardar automáticamente cambios.",
         "El algoritmo respeta semanas iniciales inmutables e historial, intenta atender pendientes y luego continúa la lista circular.",
         "Una persona con excepción se omite para esa semana y queda pendiente para recuperar su turno cuando exista disponibilidad.",
+        "En diciembre se consulta el calendario nacional chileno para evitar repetir el mismo feriado del año anterior; si no hay alternativa, el sistema asigna y advierte.",
         "La separación mínima de semanas reduce la posibilidad de asignaciones demasiado cercanas.",
     ])
     add_heading(document, "7.2 Cierre y exportación", level=2)
