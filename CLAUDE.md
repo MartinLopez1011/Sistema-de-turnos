@@ -27,6 +27,7 @@ views/
   gui.py                   ← GUI con CustomTkinter (~1400 líneas). TurnosApp(ctk.CTk)
 utils/
   excel_handler.py         ← Construye la plantilla Excel en memoria, escribe turnos y guarda reporte
+  chilean_holidays.py      ← Obtiene feriados nacionales de Chile y normaliza sus nombres
 assets/                    ← Íconos PNG (success, error, save)
 config.json                ← Base de datos en JSON (ver sección 4)
 generar_documento.py      ← Genera el documento ejecutivo editable en Word
@@ -97,8 +98,12 @@ El algoritmo recorre cada semana del mes calendario y:
 3. Si hay **pendientes** → intenta asignar al primero de la lista que NO tenga excepción
 4. Si no hay pendientes libres → sigue la **lista circular** desde `siguiente_id`
 5. Si alguien es saltado (tiene excepción) → se agrega a `pendientes` para recuperar turno después
+6. En diciembre, evita que una persona repita el mismo feriado nacional chileno del diciembre anterior cuando existe otra alternativa
+7. Si no existe alternativa por las restricciones de rotación, asigna igualmente y registra una advertencia visible
 
 La previsualización de un mes futuro sin snapshot encadena temporalmente los meses desde el estado actual para no reiniciar la rotación. Un mes cerrado puede recalcularse si cambian sus excepciones.
+
+La regla anual de feriados usa solo asignaciones confiables de `historial` o `inicio`. Si no existe el antecedente del diciembre anterior, no aplica el bloqueo. Los feriados móviles se comparan por nombre normalizado y no por fecha fija.
 
 **Snapshot:** Al cerrar un mes se guarda el estado `{siguiente_id, pendientes}` del mes SIGUIENTE para que la previsión futura sea correcta aunque se cierren meses fuera de orden.
 
@@ -174,11 +179,12 @@ Si el proceso muere a mitad, el `.tmp` queda y el original no se toca.
 pyinstaller "Sistema de Turnos.spec"
 ```
 
-El `.spec` incluye la carpeta `assets/` y produce un ejecutable único.
+El `.spec` incluye la carpeta `assets/` y el módulo `holidays.countries.chile`, y produce un ejecutable único.
 
 **Dependencias principales:**
 - `customtkinter` — GUI moderna dark mode
 - `openpyxl` — creación/escritura de Excel
+- `holidays` — calendario de feriados nacionales de Chile
 - `Pillow` — carga de íconos PNG
 - `python-docx` — generación del documento ejecutivo editable
 - `pyinstaller` — compilación (solo dev)

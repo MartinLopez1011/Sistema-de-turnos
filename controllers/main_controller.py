@@ -85,6 +85,7 @@ class MainController:
         try:
             # 1. Generar los turnos basados en el mes y excepciones (forma pura)
             shifts, _, _ = self.shift_manager.generate_shifts(year, month, exceptions)
+            warnings = self.shift_manager.last_warnings
             
             # 2. Inicializar manejador de Excel
             meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
@@ -103,6 +104,11 @@ class MainController:
             # Nota: Ya NO actualizamos el config.json automáticamente aquí
             # para evitar que la cola salte cada vez que el usuario exporta.
             
+            if warnings:
+                return True, (
+                    "Turnos exportados con advertencias: "
+                    f"{len(warnings)} feriado repetido por falta de alternativa"
+                )
             return True, f"Turnos exportados a Excel exitosamente"
             
         except Exception as e:
@@ -111,6 +117,12 @@ class MainController:
     def advance_queue(self, year, month, exceptions):
         try:
             self.shift_manager.advance_month(year, month, exceptions)
+            warnings = self.shift_manager.last_warnings
+            if warnings:
+                return True, (
+                    "Mes guardado con advertencias: "
+                    f"{len(warnings)} feriado repetido por falta de alternativa"
+                )
             return True, "Cola avanzada exitosamente. Empezamos nuevo mes."
         except Exception as e:
             return False, f"Error: {str(e)}"

@@ -1,0 +1,6 @@
+customtkinter
+openpyxl
+Pillow
+python-docx
+holidays>=0.104,<1
+pyinstaller

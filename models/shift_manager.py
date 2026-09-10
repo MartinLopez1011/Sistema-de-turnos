@@ -4,9 +4,12 @@ import collections
 import calendar
 from datetime import datetime, timedelta
 
+from utils.chilean_holidays import december_holidays, national_holidays, normalize_holiday_name
+
 class ShiftManager:
     def __init__(self, config_path):
         self.config_path = config_path
+        self.last_warnings = []
         self.load_config()
 
     def load_config(self):
@@ -131,6 +134,49 @@ class ShiftManager:
 
         return False
 
+    def _week_for_date(self, year, month, target_date):
+        for week in calendar.Calendar().monthdatescalendar(year, month):
+            if week[0] <= target_date <= week[-1]:
+                return week[0], week[-1]
+        return None
+
+    def _historical_assignment_for_date(self, target_date):
+        week = self._week_for_date(target_date.year, 12, target_date)
+        if not week:
+            return None
+        week_key = f"{week[0].isoformat()}_{week[1].isoformat()}"
+        return self.historial.get(week_key) or self.inicio.get(week_key)
+
+    def _december_holiday_restrictions(self, year, weeks):
+        if year <= 1:
+            return {}
+
+        previous_holidays = national_holidays(year - 1)
+        restrictions = {}
+        for holiday in december_holidays(year):
+            holiday_key = normalize_holiday_name(holiday["nombre"])
+            previous_items = previous_holidays.get(holiday_key, [])
+            previous_holiday = next(
+                (item for item in previous_items if item["fecha"].month == 12),
+                None)
+            if not previous_holiday:
+                continue
+
+            previous_person = self._historical_assignment_for_date(previous_holiday["fecha"])
+            if not previous_person:
+                continue
+
+            current_week = next(
+                (week for week in weeks if week[0] <= holiday["fecha"] <= week[1]),
+                None)
+            if current_week:
+                restrictions.setdefault(current_week, []).append({
+                    "feriado": holiday["nombre"],
+                    "fecha": holiday["fecha"],
+                    "persona": previous_person,
+                })
+        return restrictions
+
     def set_starting_person(self, person_name):
         for person in self.personal:
             if person['nombre'] == person_name:
@@ -141,12 +187,17 @@ class ShiftManager:
 
     def generate_shifts(self, year, month, exceptions, state=None,
                         recalculate_history=False):
+        self.last_warnings = []
         cal = calendar.Calendar().monthdatescalendar(year, month)
         weeks = []
         for week in cal:
             start_date = week[0]
             end_date = week[-1]
             weeks.append((start_date, end_date))
+
+        holiday_restrictions = (
+            self._december_holiday_restrictions(year, weeks)
+            if month == 12 else {})
 
         shifts = []
         
@@ -178,6 +229,12 @@ class ShiftManager:
         for start_date, end_date in weeks:
             week_key = f"{start_date.isoformat()}_{end_date.isoformat()}"
             historical_skipped = []
+            week_restrictions = holiday_restrictions.get((start_date, end_date), [])
+            restricted_people = {
+                item["persona"] for item in week_restrictions
+            }
+            blocked_fallback = None
+            blocked_fallback_reason = None
             
             # 2. Respetar inicio inmutable
             if hasattr(self, 'inicio') and week_key in self.inicio:
@@ -270,6 +327,13 @@ class ShiftManager:
                         exc_tipo = exc['tipo']
                         break
 
+                if not has_exception and nombre in restricted_people:
+                    if blocked_fallback is None:
+                        blocked_fallback = (p_id, nombre)
+                        blocked_fallback_reason = week_restrictions
+                    new_pendientes.append(p_id)
+                    continue
+
                 # Un pendiente recupera el turno perdido en la primera semana
                 # disponible; no debe esperar el intervalo de la rotación normal.
                 if has_exception:
@@ -309,6 +373,14 @@ class ShiftManager:
                         exc_tipo = exc['tipo']
                         break
 
+                if not has_exception and nombre in restricted_people:
+                    if blocked_fallback is None:
+                        blocked_fallback = (p_id, nombre)
+                        blocked_fallback_reason = week_restrictions
+                    current_pendientes.append(p_id)
+                    iterations += 1
+                    continue
+
                 # Protección turno doble: si ya hizo turno muy reciente, vuelve al final
                 did_recently = (
                     not has_exception and
@@ -333,6 +405,30 @@ class ShiftManager:
                     assigned = True
                 
                 iterations += 1
+
+            if not assigned and blocked_fallback:
+                fallback_id, fallback_name = blocked_fallback
+                warning = {
+                    "semana": (start_date, end_date),
+                    "persona": fallback_name,
+                    "feriados": [item["feriado"] for item in blocked_fallback_reason],
+                    "fechas": [item["fecha"] for item in blocked_fallback_reason],
+                    "mensaje": (
+                        f"{fallback_name} repite un feriado de diciembre "
+                        "porque no había otra persona disponible"
+                    ),
+                }
+                self.last_warnings.append(warning)
+                shifts.append({
+                    'semana': (start_date, end_date),
+                    'persona': fallback_name,
+                    'saltados': skipped_this_week.copy(),
+                    'advertencias': [warning],
+                })
+                current_pendientes = [
+                    p_id for p_id in current_pendientes if p_id != fallback_id
+                ]
+                assigned = True
                 
             if not assigned:
                 shifts.append({
