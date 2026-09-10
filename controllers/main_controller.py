@@ -32,6 +32,24 @@ class MainController:
         today = date.today()
         target_is_future = (year, month) > (today.year, today.month)
 
+        def exception_signature(items):
+            return sorted(
+                (item['persona'], item['fecha'].isoformat(), item['tipo'])
+                for item in items)
+
+        saved_exceptions = self.shift_manager.get_exceptions(target_key)
+        exceptions_changed = (
+            exception_signature(exceptions) != exception_signature(saved_exceptions))
+
+        # Un mes cerrado puede editarse: si cambiaron sus excepciones,
+        # recalcular desde el estado guardado al inicio del periodo.
+        if target_key in self.shift_manager.snapshots and exceptions_changed:
+            state = self.shift_manager.snapshots[target_key]
+            shifts, _, _ = self.shift_manager.generate_shifts(
+                year, month, exceptions, state=state,
+                recalculate_history=True)
+            return shifts
+
         # A future month without snapshot must continue after the current month,
         # otherwise each preview starts again from the global pointer.
         if not target_is_future or target_key in self.shift_manager.snapshots:
