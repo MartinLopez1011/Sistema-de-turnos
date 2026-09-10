@@ -14,6 +14,10 @@ class MainController:
     def get_personal_list(self):
         return [p['nombre'] for p in self.shift_manager.personal]
 
+    def get_all_persons(self):
+        return self.shift_manager.personal
+
+
     def get_starting_person(self):
         return self.shift_manager.get_person_by_id(self.shift_manager.siguiente_id)
 
@@ -25,6 +29,18 @@ class MainController:
 
     def set_starting_person(self, person_name):
         return self.shift_manager.set_starting_person(person_name)
+
+    def add_person(self, name):
+        new_id = self.shift_manager.add_person(name)
+        return new_id is not None, f"Persona añadida con ID {new_id}" if new_id else "Error al añadir persona"
+
+    def edit_person(self, person_id, new_name):
+        success = self.shift_manager.edit_person(person_id, new_name)
+        return success, "Persona editada" if success else "Persona no encontrada"
+
+    def remove_person(self, person_id):
+        success = self.shift_manager.remove_person(person_id)
+        return success, "Persona eliminada" if success else "Persona no encontrada"
 
     def preview_shifts(self, year, month, exceptions):
         target_key = f"{year}-{month:02d}"

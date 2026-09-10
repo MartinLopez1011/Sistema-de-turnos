@@ -514,3 +514,57 @@ class ShiftManager:
         
         self.save_config()
         return True, "Turnos guardados y cola avanzada."
+
+    # ── Person Management ──────────────────────────────────────
+    def add_person(self, name):
+        """Add a new person with the next sequential ID and persist to config."""
+        try:
+            max_id = max((p['id'] for p in self.personal), default=0)
+            new_id = max_id + 1
+            self.personal.append({"id": new_id, "nombre": name})
+            self.save_config()
+            return new_id
+        except Exception:
+            return None
+
+    def edit_person(self, person_id, new_name):
+        """Edit the name of an existing person and update all historical records."""
+        old_name = None
+        for p in self.personal:
+            if p['id'] == person_id:
+                old_name = p['nombre']
+                p['nombre'] = new_name
+                break
+
+        if old_name:
+            # Update inicio
+            for k, v in self.inicio.items():
+                if v == old_name:
+                    self.inicio[k] = new_name
+                    
+            # Update historial
+            for k, v in self.historial.items():
+                if v == old_name:
+                    self.historial[k] = new_name
+                    
+            # Update excepciones
+            for period, exc_list in self.excepciones.items():
+                for exc in exc_list:
+                    if exc.get('persona') == old_name:
+                        exc['persona'] = new_name
+                        
+            self.save_config()
+            return True
+        return False
+
+    def remove_person(self, person_id):
+        """Remove a person from the personal list and adjust the starting pointer if needed."""
+        for i, p in enumerate(self.personal):
+            if p['id'] == person_id:
+                del self.personal[i]
+                # Adjust siguiente_id if it pointed to the removed person
+                if self.siguiente_id == person_id:
+                    self.siguiente_id = self.personal[0]['id'] if self.personal else 1
+                self.save_config()
+                return True
+        return False
