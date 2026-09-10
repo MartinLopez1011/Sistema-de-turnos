@@ -41,6 +41,8 @@ P = {
     "turno_h":   "#DC2626",
     "da":        "#B45309",
     "fl":        "#5B21B6",
+    "lic":       "#0E7490",
+    "otr":       "#374151",
     "weekend":   "#171D22",
     "text":      "#F1F5F3",
     "text_s":    "#91A0A5",
@@ -296,10 +298,16 @@ class TurnosApp(ctk.CTk):
         rf.grid_columnconfigure((0, 1), weight=1)
         ctk.CTkRadioButton(rf, text="Día Admin (DA)", variable=self.type_var, value="DA",
                            fg_color=P["orange"], hover_color=P["da"]
-                           ).grid(row=0, column=0, padx=10, pady=10, sticky="w")
+                           ).grid(row=0, column=0, padx=10, pady=8, sticky="w")
         ctk.CTkRadioButton(rf, text="Feriado (FL)", variable=self.type_var, value="FL",
                            fg_color=P["purple"], hover_color=P["fl"]
-                           ).grid(row=0, column=1, padx=10, pady=10, sticky="w")
+                           ).grid(row=0, column=1, padx=10, pady=8, sticky="w")
+        ctk.CTkRadioButton(rf, text="Licencia (LIC)", variable=self.type_var, value="LIC",
+                           fg_color=P["lic"], hover_color=P["lic"]
+                           ).grid(row=1, column=0, padx=10, pady=8, sticky="w")
+        ctk.CTkRadioButton(rf, text="Otros (OTR)", variable=self.type_var, value="OTR",
+                           fg_color=P["otr"], hover_color=P["otr"]
+                           ).grid(row=1, column=1, padx=10, pady=8, sticky="w")
 
         ctk.CTkButton(sidebar, text="＋  Añadir excepción",
                       command=self.add_exception,
@@ -335,7 +343,7 @@ class TurnosApp(ctk.CTk):
                  font=ctk.CTkFont(family="Inter", size=24, weight="bold"),
                  text_color=P["text"], anchor="w").pack(fill="x")
         ctk.CTkLabel(title_block,
-             text="Configura las excepciones, revisa la asignación y exporta y guarda el periodo.",
+             text="Configura las excepciones, revisa la asignación y guarda el periodo.",
                  font=ctk.CTkFont(family="Inter", size=12),
                  text_color=P["text_s"], anchor="w").pack(fill="x", pady=(3, 0))
 
@@ -385,7 +393,7 @@ class TurnosApp(ctk.CTk):
         self._status_frame.grid_propagate(False)
         self.status_label = ctk.CTkLabel(
             self._status_frame,
-            text="Listo para revisar, exportar y guardar el periodo.",
+            text="Listo para revisar y guardar el periodo.",
             text_color=P["text_s"], font=ctk.CTkFont(family="Inter", size=13))
         self.status_label.grid(row=0, column=0, padx=14, pady=4)
 
@@ -395,8 +403,8 @@ class TurnosApp(ctk.CTk):
         btn_row.grid_columnconfigure(1, weight=1)
 
         self.save_export_btn = ctk.CTkButton(
-            btn_row, text="📤  Exportar y guardar",
-            command=self.save_and_export, height=42, corner_radius=10,
+            btn_row, text="💾  Guardar mes",
+            command=self.save_month, height=42, corner_radius=10,
             font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
             fg_color=P["green_d"], hover_color=P["green"])
         self.save_export_btn.grid(row=0, column=0, padx=(0, 8), sticky="ew")
@@ -427,14 +435,14 @@ class TurnosApp(ctk.CTk):
             self.title("●  Sistema de Turnos")
         # ITER 1: badge visual en botón de exportar
         if hasattr(self, 'save_export_btn'):
-            self.save_export_btn.configure(text="📤  Exportar y guardar  ●")
+            self.save_export_btn.configure(text="💾  Guardar mes  ●")
 
     def _mark_clean(self):
         """Elimina el indicador de cambios sin guardar del título."""
         self.title("Sistema de Turnos")
         # ITER 1: limpiar badge visual del botón
         if hasattr(self, 'save_export_btn'):
-            self.save_export_btn.configure(text="📤  Exportar y guardar")
+            self.save_export_btn.configure(text="💾  Guardar mes")
 
     def _on_close(self):
         """ITER 3: Confirmación al cerrar si hay cambios sin guardar."""
@@ -667,6 +675,13 @@ class TurnosApp(ctk.CTk):
                   font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
                   command=self.render_turnos_view
                   ).grid(row=0, column=6, padx=(0, 14), pady=12)
+
+        self.calendar_export_btn = ctk.CTkButton(
+            nav, text="Excel", width=58, height=30, corner_radius=7,
+            fg_color=P["green_d"], hover_color=P["green"],
+            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            command=self.export_calendar_excel)
+        self.calendar_export_btn.grid(row=0, column=7, padx=(0, 8), pady=12)
 
         self.vista_scroll = ctk.CTkScrollableFrame(
             parent, fg_color=P["bg_app"], corner_radius=0,
@@ -961,9 +976,13 @@ class TurnosApp(ctk.CTk):
                 in_cw    = d in cur_week_days
 
                 if exc_tipo == "DA":
-                    bg, txt, tc, bold = P["da"],     "DA", "#FFF", True
+                    bg, txt, tc, bold = P["da"],  "DA",  "#FFF", True
                 elif exc_tipo == "FL":
-                    bg, txt, tc, bold = P["fl"],     "FL", "#FFF", True
+                    bg, txt, tc, bold = P["fl"],  "FL",  "#FFF", True
+                elif exc_tipo == "LIC":
+                    bg, txt, tc, bold = P["lic"], "LIC", "#FFF", True
+                elif exc_tipo == "OTR":
+                    bg, txt, tc, bold = P["otr"], "OTR", "#FFF", True
                 elif has_t:
                     # Turno: más brillante en semana actual, atenuado en meses pasados
                     if is_past_mo:
@@ -1092,8 +1111,10 @@ class TurnosApp(ctk.CTk):
                 crow += 1
                 for si, exc_info in enumerate(saltados):
                     tipo  = exc_info['tipo']
-                    cc    = P["da"] if tipo == "DA" else P["fl"]
-                    icon  = "⏭" if tipo == "DA" else "🚫"
+                    _exc_colors = {"DA": P["da"], "FL": P["fl"], "LIC": P["lic"], "OTR": P["otr"]}
+                    _exc_icons  = {"DA": "⏭", "FL": "🚫", "LIC": "📋", "OTR": "📌"}
+                    cc    = _exc_colors.get(tipo, P["otr"])
+                    icon  = _exc_icons.get(tipo, "📌")
                     cf2   = ctk.CTkFrame(ef, fg_color=cc, corner_radius=8)
                     cf2.grid(row=si, column=0, sticky="ew", pady=2)
                     ctk.CTkLabel(cf2,
@@ -1120,7 +1141,7 @@ class TurnosApp(ctk.CTk):
             self.set_status("No hay personal disponible.", "error")
         # Mostrar en la UI las excepciones cargadas (necesario al iniciar o recargar)
         self.refresh_exception_list()
-        self.update_preview()
+        self.refresh_plan_views()
 
     def get_selected_period(self):
         year  = int(self.year_var.get())
@@ -1138,7 +1159,13 @@ class TurnosApp(ctk.CTk):
         self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
         self.plan_period_dirty = True
         self.refresh_exception_list()
+        self.refresh_plan_views()
+
+    def refresh_plan_views(self):
+        """Regenera la previsualización y el calendario con el estado actual."""
         self.update_preview()
+        if hasattr(self, "vista_scroll"):
+            self.render_turnos_view()
 
     def set_status(self, text, level="info"):
         # ITER 1: cancelar fade anterior pendiente
@@ -1162,7 +1189,7 @@ class TurnosApp(ctk.CTk):
             self._status_fade_job = self.after(
                 5000,
                 lambda: self.set_status(
-                    "Listo para revisar, exportar y guardar el periodo.", "info"))
+                    "Listo para revisar y guardar el periodo.", "info"))
 
     def refresh_exception_list(self):
         for w in self.exception_list2.winfo_children():
@@ -1182,7 +1209,8 @@ class TurnosApp(ctk.CTk):
 
         for index, exc in enumerate(self.exceptions):
             tipo   = exc['tipo']
-            chip_c = P["da"] if tipo == "DA" else P["fl"]
+            _exc_colors = {"DA": P["da"], "FL": P["fl"], "LIC": P["lic"], "OTR": P["otr"]}
+            chip_c = _exc_colors.get(tipo, P["otr"])
             row = ctk.CTkFrame(self.exception_list2, fg_color=P["bg_card2"], corner_radius=8,
                                border_width=1, border_color=P["border"])
             row.pack(fill="x", padx=4, pady=3)
@@ -1212,7 +1240,7 @@ class TurnosApp(ctk.CTk):
         removed = self.exceptions.pop(index)
         self.exceptions_by_period[self.active_period_key] = self.exceptions
         self.refresh_exception_list()
-        self.update_preview()
+        self.refresh_plan_views()
         self._mark_dirty()
         self.set_status(f"Excepción eliminada: {removed['fecha'].strftime('%d/%m/%Y')}", "warn")
 
@@ -1279,7 +1307,7 @@ class TurnosApp(ctk.CTk):
             self.refresh_exception_list()
             self.days_entry.delete(0, 'end')
             self.days_entry.focus_set()
-            self.update_preview()
+            self.refresh_plan_views()
             self._mark_dirty()
             n = len(new_exc)
             # TEST ITER 1: mensaje más descriptivo con días y tipo
@@ -1293,75 +1321,86 @@ class TurnosApp(ctk.CTk):
         except Exception as ex:
             self.set_status(f"Error inesperado: {str(ex)}", "error")
 
-    def save_and_export(self):
-        if self.is_exporting: return
-        year, month = self.get_selected_period()
+    def save_month(self):
+        if self.is_exporting:
+            return
 
-        # #1 — Diálogo de confirmación con resumen antes de exportar
-        shifts_preview = self.controller.preview_shifts(year, month, self.exceptions)
-        n_semanas = len(shifts_preview)
-        n_exc     = len(self.exceptions)
+        year, month = self.get_selected_period()
+        exceptions_snapshot = list(self.exceptions)
         confirmed = messagebox.askyesno(
-            "Confirmar exportación",
-            f"¿Exportar {MESES[month-1]} {year}?\n\n"
-            f"  \u2022 {n_semanas} semana{'s' if n_semanas != 1 else ''} calculada{'s' if n_semanas != 1 else ''}\n"
-            f"  \u2022 {n_exc} excepción{'es' if n_exc != 1 else ''} registrada{'s' if n_exc != 1 else ''}\n\n"
-            "Se generará el archivo Excel.\n"
-            "Luego podrás decidir si guardar en historial.",
+            "Guardar mes",
+            f"¿Guardar {MESES[month-1]} {year} en el historial?\n\n"
+            f"  • {len(exceptions_snapshot)} excepción"
+            f"{'es' if len(exceptions_snapshot) != 1 else ''} registrada"
+            f"{'s' if len(exceptions_snapshot) != 1 else ''}.\n\n"
+            "La cola avanzará al siguiente mes.",
             parent=self)
         if not confirmed:
             return
 
         self.is_exporting = True
-        self.save_export_btn.configure(state="disabled", text="⏳  Exportando...")
+        self.save_export_btn.configure(state="disabled", text="⏳  Guardando...")
+        self.set_status("Guardando el mes en el historial...", "warn")
+
+        ok, msg = self.controller.advance_queue(year, month, exceptions_snapshot)
+        self.is_exporting = False
+        if not ok:
+            self.save_export_btn.configure(state="normal", text="💾  Guardar mes")
+            self.set_status(f"Error: {msg}", "error")
+            return
+
+        # Mantener el periodo guardado en memoria permite que el calendario
+        # lo muestre de inmediato con sus excepciones actuales.
+        self.exceptions_by_period[self.active_period_key] = exceptions_snapshot
+        self.calendar_period_override = (year, month)
+        self._mark_clean()
+
+        next_year, next_month = year, month % 12 + 1
+        if next_month == 1:
+            next_year += 1
+        self.month_var.set(MESES[next_month - 1])
+        self.year_var.set(str(next_year))
+        self.active_period_key = self.get_selected_period_key()
+        self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+        self.refresh_exception_list()
+        self.refresh_plan_views()
+        self.save_export_btn.configure(state="normal", text="💾  Guardar mes")
+        self.set_status("Mes guardado en el historial. La cola avanzó al siguiente mes.", "ok")
+
+    def export_calendar_excel(self):
+        if self.is_exporting:
+            return
+
+        year = int(self.v_year_var.get())
+        month = MESES.index(self.v_month_var.get()) + 1
+        period_key = f"{year}-{month:02d}"
+        exceptions = self.exceptions_by_period.get(period_key, [])
+        if period_key == self.active_period_key:
+            exceptions = self.exceptions
+        exceptions_snapshot = list(exceptions)
+
+        confirmed = messagebox.askyesno(
+            "Exportar Excel",
+            f"¿Exportar {MESES[month-1]} {year} a Excel?",
+            parent=self)
+        if not confirmed:
+            return
+
+        self.is_exporting = True
+        self.calendar_export_btn.configure(state="disabled", text="...")
         self.set_status("Generando archivo Excel...", "warn")
 
-        # #8 — Exportación en hilo secundario para no bloquear la UI
-        exceptions_snapshot = list(self.exceptions)
-
         def _on_export_done(ok, msg):
-            """Callback ejecutado en el hilo principal vía self.after."""
             self.is_exporting = False
-            self.save_export_btn.configure(state="normal", text="📤  Exportar y guardar")
-            if not ok:
+            self.calendar_export_btn.configure(state="normal", text="Excel")
+            if ok:
+                self.set_status("Archivo Excel exportado correctamente.", "ok")
+            else:
                 self.set_status(f"Error: {msg}", "error")
-                return
-
-            advance = messagebox.askyesno(
-                "Exportación completada",
-                "El archivo Excel se generó correctamente.\n\n"
-                "¿Guardar este mes en el historial JSON y avanzar la cola?",
-                parent=self)
-            if not advance:
-                self.set_status("Excel exportado. El mes sigue abierto.", "ok")
-                return
-
-            self.save_export_btn.configure(state="disabled", text="Cerrando mes...")
-            ok2, msg2 = self.controller.advance_queue(year, month, exceptions_snapshot)
-            if not ok2:
-                self.save_export_btn.configure(state="normal", text="📤  Exportar y guardar")
-                self.set_status(f"Excel exportado, pero no se pudo cerrar: {msg2}", "warn")
-                return
-
-            self.set_status("Mes exportado y guardado en el historial JSON.", "ok")
-            self._mark_clean()
-            self.exceptions = []
-            self.exceptions_by_period[self.active_period_key] = []
-
-            y, m = self.get_selected_period()
-            m = m % 12 + 1
-            if m == 1: y += 1
-            self.month_var.set(MESES[m - 1])
-            self.year_var.set(str(y))
-            self.calendar_period_override = (year, month)
-            self.active_period_key = self.get_selected_period_key()
-            self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
-            self.refresh_exception_list()
-            self.load_personal()
-            self.save_export_btn.configure(state="normal", text="📤  Exportar y guardar")
 
         def _thread_worker():
-            result = self.controller.process_generation(year, month, exceptions_snapshot)
+            result = self.controller.process_generation(
+                year, month, exceptions_snapshot)
             self.after(0, lambda: _on_export_done(*result))
 
         threading.Thread(target=_thread_worker, daemon=True).start()

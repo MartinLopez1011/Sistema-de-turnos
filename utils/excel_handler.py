@@ -25,6 +25,8 @@ class ExcelHandler:
         red_fill = PatternFill(start_color="FF3B30", end_color="FF3B30", fill_type="solid")
         da_fill = PatternFill(start_color="B45309", end_color="B45309", fill_type="solid")
         fl_fill = PatternFill(start_color="5B21B6", end_color="5B21B6", fill_type="solid")
+        lic_fill = PatternFill(start_color="0E7490", end_color="0E7490", fill_type="solid")
+        otr_fill = PatternFill(start_color="374151", end_color="374151", fill_type="solid")
         center_align = Alignment(horizontal="center", vertical="center")
         thin_border = Border(
             left=Side(style='thin', color="000000"),
@@ -140,7 +142,8 @@ class ExcelHandler:
                     col_idx = day_columns[day_val]
                     cell = self.sheet.cell(row=row_idx, column=col_idx)
                     cell.value = exc['tipo']
-                    cell.fill = da_fill if exc['tipo'] == 'DA' else fl_fill
+                    _exc_fills = {'DA': da_fill, 'FL': fl_fill, 'LIC': lic_fill, 'OTR': otr_fill}
+                    cell.fill = _exc_fills.get(exc['tipo'], otr_fill)
                     cell.alignment = center_align
                     cell.font = bold_font
                     cell.border = thin_border
