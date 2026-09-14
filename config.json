@@ -37,16 +37,16 @@
       "nombre": "PRO MARCHANT VENEGAS KARINA"
     },
     {
-      "id": 16,
-      "nombre": "PRO FLORES ROJAS NATALIA"
-    },
-    {
       "id": 14,
       "nombre": "PRO ALVIÑA NEIRA PRISCILA"
     },
     {
       "id": 15,
       "nombre": "PRO MARTINEZ DOUZET BRYANN"
+    },
+    {
+      "id": 16,
+      "nombre": "PRO FLORES ROJAS NATALIA"
     }
   ],
   "inicio": {},
