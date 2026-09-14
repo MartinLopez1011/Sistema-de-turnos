@@ -277,50 +277,13 @@ class TurnosApp(ctk.CTk):
             sidebar, variable=self.person_var, values=["Cargando..."],
             fg_color=P["bg_input"], button_color=P["accent_d"],
             button_hover_color=P["accent"], dropdown_fg_color=P["bg_card"],
-            command=lambda _: self.days_entry.focus_set() if hasattr(self, 'days_entry') else None)  # ITER 1: auto-focus
+            command=lambda _: self.days_entry.focus_set() if hasattr(self, 'days_entry') else None)
         self.person_dropdown.grid(row=4, column=0, padx=16, pady=(0, 4), sticky="ew")
 
-        _section_header(sidebar, "Excepción", row=5, pady_top=10)
-        ctk.CTkLabel(sidebar, text="Días del mes (ej: 5, 12, 19)",
-                     font=ctk.CTkFont(family="Inter", size=12),
-                     text_color=P["text_s"]).grid(row=6, column=0, padx=16, pady=(0, 3), sticky="w")
-        self.days_entry = ctk.CTkEntry(sidebar, placeholder_text="Separados por coma",
-                                       fg_color=P["bg_input"],
-                                       border_color=P["border"], border_width=1,
-                                       height=36)
-        self.days_entry.grid(row=7, column=0, padx=16, pady=(0, 10), sticky="ew")
-        self.days_entry.bind("<Return>", lambda _: self.add_exception())
-        self.days_entry.bind("<Key>", lambda _: self.days_entry.configure(border_color=P["border"]))
-
-        self.type_var = ctk.StringVar(value="DA")
-        rf = ctk.CTkFrame(sidebar, fg_color=P["bg_input"], corner_radius=8)
-        rf.grid(row=8, column=0, padx=16, pady=(0, 4), sticky="ew")
-        rf.grid_columnconfigure((0, 1), weight=1)
-        ctk.CTkRadioButton(rf, text="Día Admin (DA)", variable=self.type_var, value="DA",
-                           fg_color=P["orange"], hover_color=P["da"]
-                           ).grid(row=0, column=0, padx=10, pady=8, sticky="w")
-        ctk.CTkRadioButton(rf, text="Feriado (FL)", variable=self.type_var, value="FL",
-                           fg_color=P["purple"], hover_color=P["fl"]
-                           ).grid(row=0, column=1, padx=10, pady=8, sticky="w")
-        ctk.CTkRadioButton(rf, text="Licencia (LIC)", variable=self.type_var, value="LIC",
-                           fg_color=P["lic"], hover_color=P["lic"]
-                           ).grid(row=1, column=0, padx=10, pady=8, sticky="w")
-        ctk.CTkRadioButton(rf, text="Otros (OTR)", variable=self.type_var, value="OTR",
-                           fg_color=P["otr"], hover_color=P["otr"]
-                           ).grid(row=1, column=1, padx=10, pady=8, sticky="w")
-
-        ctk.CTkButton(sidebar, text="＋  Añadir excepción",
-                      command=self.add_exception,
-                      fg_color=P["green_d"], hover_color=P["green"],
-                      height=38, corner_radius=8,
-                      font=ctk.CTkFont(family="Inter", size=14, weight="bold")
-                      ).grid(row=9, column=0, padx=16, pady=(6, 4), sticky="ew")
-
-        # ITER 1: Widget "Próximo Turno" en sidebar
-        _section_header(sidebar, "Próximo Turno", row=10, pady_top=10)
+        # Contexto inmediato: Próximo turno justo debajo de Persona
         self.next_turno_frame = ctk.CTkFrame(
             sidebar, fg_color=P["bg_input"], corner_radius=8)
-        self.next_turno_frame.grid(row=11, column=0, padx=16, pady=(0, 4), sticky="ew")
+        self.next_turno_frame.grid(row=5, column=0, padx=16, pady=(4, 4), sticky="ew")
         self.next_turno_frame.grid_columnconfigure(0, weight=1)
         self.next_turno_lbl = ctk.CTkLabel(
             self.next_turno_frame,
@@ -329,23 +292,76 @@ class TurnosApp(ctk.CTk):
             text_color=P["text_s"], wraplength=220, justify="left", anchor="w")
         self.next_turno_lbl.grid(row=0, column=0, padx=10, pady=8, sticky="ew")
 
+        _section_header(sidebar, "Excepción", row=6, pady_top=10)
+        
+        # Agrupar el formulario de excepción en un contenedor (Card)
+        exc_form = ctk.CTkFrame(sidebar, fg_color=P["bg_card2"], corner_radius=8)
+        exc_form.grid(row=7, column=0, padx=16, pady=(0, 4), sticky="ew")
+        exc_form.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(exc_form, text="Días del mes (ej: 5, 12, 19)",
+                     font=ctk.CTkFont(family="Inter", size=12),
+                     text_color=P["text_s"]).grid(row=0, column=0, padx=12, pady=(10, 3), sticky="w")
+        
+        self.days_entry = ctk.CTkEntry(exc_form, placeholder_text="Separados por coma",
+                                       fg_color=P["bg_input"],
+                                       border_color=P["border"], border_width=1,
+                                       height=36)
+        self.days_entry.grid(row=1, column=0, padx=12, pady=(0, 10), sticky="ew")
+        self.days_entry.bind("<Return>", lambda _: self.add_exception())
+        self.days_entry.bind("<Key>", lambda _: self.days_entry.configure(border_color=P["border"]))
+
+        self.type_var = ctk.StringVar(value="DA")
+        
+        # SegmentedButton más moderno que los RadioButtons
+        self.type_segmented = ctk.CTkSegmentedButton(
+            exc_form, variable=self.type_var, values=["DA", "FL", "LIC", "OTR"],
+            fg_color=P["bg_input"],
+            selected_color=P["accent_d"],
+            selected_hover_color=P["accent"],
+            unselected_color=P["bg_input"],
+            unselected_hover_color=P["bg_hover"],
+            text_color=P["text"]
+        )
+        self.type_segmented.grid(row=2, column=0, padx=12, pady=(0, 12), sticky="ew")
+
+        ctk.CTkButton(exc_form, text="＋  Añadir",
+                      command=self.add_exception,
+                      fg_color=P["green_d"], hover_color=P["green"],
+                      height=36, corner_radius=6,
+                      font=ctk.CTkFont(family="Inter", size=13, weight="bold")
+                      ).grid(row=3, column=0, padx=12, pady=(0, 12), sticky="ew")
+
         # ── Main content ──────────────────────────────────────────────────────
         main = ctk.CTkFrame(parent, fg_color="transparent")
-        main.grid(row=0, column=1, sticky="nsew", padx=20, pady=20)
+        main.grid(row=0, column=1, sticky="nsew", padx=24, pady=24)
         main.grid_columnconfigure(1, weight=3)
-        main.grid_columnconfigure(0, weight=1)
+        main.grid_columnconfigure(0, weight=2)
         main.grid_rowconfigure(1, weight=1)
         self.main_frame = main
 
         title_block = ctk.CTkFrame(main, fg_color="transparent")
-        title_block.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 16))
-        ctk.CTkLabel(title_block, text="Planificación de turnos",
-                 font=ctk.CTkFont(family="Inter", size=24, weight="bold"),
-                 text_color=P["text"], anchor="w").pack(fill="x")
-        ctk.CTkLabel(title_block,
-             text="Configura las excepciones, revisa la asignación y guarda el periodo.",
-                 font=ctk.CTkFont(family="Inter", size=12),
-                 text_color=P["text_s"], anchor="w").pack(fill="x", pady=(3, 0))
+        title_block.grid(row=0, column=0, columnspan=2, sticky="ew", pady=(0, 20))
+        title_block.grid_columnconfigure(0, weight=1)
+
+        # Header Titles
+        headers_f = ctk.CTkFrame(title_block, fg_color="transparent")
+        headers_f.grid(row=0, column=0, sticky="w")
+        ctk.CTkLabel(headers_f, text="Planificación de turnos",
+                     font=ctk.CTkFont(family="Inter", size=26, weight="bold"),
+                     text_color=P["text"], anchor="w").pack(fill="x")
+        ctk.CTkLabel(headers_f,
+                     text="Configura las excepciones, revisa la asignación y guarda el periodo.",
+                     font=ctk.CTkFont(family="Inter", size=13),
+                     text_color=P["text_s"], anchor="w").pack(fill="x", pady=(4, 0))
+
+        # Botón calendario movido al encabezado como acción secundaria
+        ctk.CTkButton(title_block, text="📅 Abrir calendario",
+                      command=self._jump_to_vista, height=38, corner_radius=8,
+                      font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
+                      fg_color=P["bg_card2"], hover_color=P["bg_hover"],
+                      border_width=1, border_color=P["border"], text_color=P["text"]
+                      ).grid(row=0, column=1, sticky="e", padx=(10, 0))
 
         exc_frame = ctk.CTkFrame(main, fg_color=P["bg_card"], corner_radius=12,
                                  border_width=1, border_color=P["border"])
@@ -354,14 +370,14 @@ class TurnosApp(ctk.CTk):
         exc_frame.grid_columnconfigure(0, weight=1)
         ctk.CTkLabel(exc_frame, text="Excepciones del periodo",
                      font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
-                     text_color=P["text"]).grid(row=0, column=0, padx=14, pady=(14, 2), sticky="w")
+                     text_color=P["text"]).grid(row=0, column=0, padx=16, pady=(16, 2), sticky="w")
         self.exc_count_label2 = ctk.CTkLabel(exc_frame, text="Ninguna registrada",
                                              text_color=P["text_s"], anchor="w",
                                              font=ctk.CTkFont(family="Inter", size=12))
-        self.exc_count_label2.grid(row=1, column=0, padx=14, pady=(0, 8), sticky="ew")
+        self.exc_count_label2.grid(row=1, column=0, padx=16, pady=(0, 8), sticky="ew")
         self.exception_list2 = ctk.CTkScrollableFrame(
             exc_frame, fg_color="transparent", scrollbar_button_color=P["border_h"])
-        self.exception_list2.grid(row=2, column=0, padx=8, pady=(0, 10), sticky="nsew")
+        self.exception_list2.grid(row=2, column=0, padx=10, pady=(0, 10), sticky="nsew")
 
         preview_frame = ctk.CTkFrame(main, fg_color=P["bg_card"], corner_radius=12,
                                      border_width=1, border_color=P["border"])
@@ -370,50 +386,41 @@ class TurnosApp(ctk.CTk):
         preview_frame.grid_rowconfigure(2, weight=1)
         ctk.CTkLabel(preview_frame, text="Vista previa",
                      font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
-                     text_color=P["text"]).grid(row=0, column=0, padx=14, pady=(14, 2), sticky="w")
+                     text_color=P["text"]).grid(row=0, column=0, padx=16, pady=(16, 2), sticky="w")
         ctk.CTkLabel(preview_frame,
                      text="Se actualiza al cambiar el periodo o excepciones",
                      text_color=P["text_s"], anchor="w",
                      font=ctk.CTkFont(family="Inter", size=12)
-                     ).grid(row=1, column=0, padx=14, pady=(0, 8), sticky="ew")
+                     ).grid(row=1, column=0, padx=16, pady=(0, 8), sticky="ew")
         self.preview_textbox = ctk.CTkTextbox(
             preview_frame, font=ctk.CTkFont(family="Courier", size=13),
             fg_color=P["bg_card2"], border_width=0, text_color=P["text"])
-        self.preview_textbox.grid(row=2, column=0, padx=8, pady=(0, 10), sticky="nsew")
+        self.preview_textbox.grid(row=2, column=0, padx=10, pady=(0, 12), sticky="nsew")
         self.preview_textbox.configure(state="disabled")
 
         bottom = ctk.CTkFrame(main, fg_color="transparent")
         bottom.grid(row=2, column=0, columnspan=2, pady=(16, 0), sticky="ew")
         bottom.grid_columnconfigure(0, weight=1)
+        bottom.grid_columnconfigure(1, weight=0)
 
         self._status_frame = ctk.CTkFrame(
-            bottom, fg_color=P["bg_card"], corner_radius=8, height=36)
-        self._status_frame.grid(row=0, column=0, sticky="ew", pady=(0, 10))
+            bottom, fg_color=P["bg_card"], corner_radius=8, height=42)
+        self._status_frame.grid(row=0, column=0, sticky="ew", padx=(0, 12))
         self._status_frame.grid_columnconfigure(0, weight=1)
         self._status_frame.grid_propagate(False)
         self.status_label = ctk.CTkLabel(
             self._status_frame,
             text="Listo para revisar y guardar el periodo.",
             text_color=P["text_s"], font=ctk.CTkFont(family="Inter", size=13))
-        self.status_label.grid(row=0, column=0, padx=14, pady=4)
+        self.status_label.grid(row=0, column=0, padx=16, pady=8, sticky="w")
 
-        btn_row = ctk.CTkFrame(bottom, fg_color="transparent")
-        btn_row.grid(row=1, column=0, sticky="ew")
-        btn_row.grid_columnconfigure(0, weight=3)
-        btn_row.grid_columnconfigure(1, weight=1)
-
+        # CTA Principal a la derecha
         self.save_export_btn = ctk.CTkButton(
-            btn_row, text="💾  Guardar mes",
-            command=self.save_month, height=42, corner_radius=10,
+            bottom, text="💾  Guardar mes",
+            command=self.save_month, height=42, corner_radius=10, width=180,
             font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
             fg_color=P["green_d"], hover_color=P["green"])
-        self.save_export_btn.grid(row=0, column=0, padx=(0, 8), sticky="ew")
-
-        ctk.CTkButton(btn_row, text="📅 Abrir calendario",
-                      command=self._jump_to_vista, height=42, corner_radius=10,
-                  font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
-                      fg_color=P["accent_d"], hover_color=P["accent"]
-                      ).grid(row=0, column=1, sticky="ew")
+        self.save_export_btn.grid(row=0, column=1, sticky="e")
 
     def _jump_to_vista(self):
         if self.calendar_period_override is not None:
@@ -1272,9 +1279,9 @@ class TurnosApp(ctk.CTk):
                                    font=("Inter", 10, "bold" if bold else "normal"))
                     lbl.place(relx=0.5, rely=0.5, anchor="center")
 
-                if not is_deleted and not is_past_mo:
-                    def make_handler(p, day, exc):
-                        return lambda e: self._handle_calendar_click(p, day, exc)
+                if not is_deleted and not is_past_mo and not is_closed:
+                    def make_handler(p, day, exc, y=year, m=month):
+                        return lambda e: self._handle_calendar_click(p, day, exc, y, m)
                     handler = make_handler(persona, d, exc_tipo)
                     cf.bind("<Button-1>", handler)
                     if lbl:
@@ -1535,13 +1542,21 @@ class TurnosApp(ctk.CTk):
                           command=lambda i=index: self.remove_exception(i)
                           ).grid(row=0, column=1, padx=6, pady=6)
 
-    def _handle_calendar_click(self, persona, day, exc_tipo):
-        year, month = self.get_selected_period()
+    def _handle_calendar_click(self, persona, day, exc_tipo, c_year, c_month):
+        active_year, active_month = self.get_selected_period()
+        
+        # Sincronizar pestaña principal si el usuario edita desde un mes distinto al activo
+        if active_year != c_year or active_month != c_month:
+            self.month_var.set(MESES[c_month-1])
+            self.year_var.set(str(c_year))
+            self.on_period_change()
+            active_year, active_month = c_year, c_month
+
         if exc_tipo:
             if messagebox.askyesno("Eliminar excepción", f"¿Eliminar la excepción {exc_tipo} de {_short_name(persona, 2)} el día {day}?", parent=self):
                 # Encontrar y eliminar
                 for i, exc in enumerate(self.exceptions):
-                    if exc['persona'] == persona and exc['fecha'].day == day and exc['fecha'].month == month and exc['fecha'].year == year:
+                    if exc['persona'] == persona and exc['fecha'].day == day and exc['fecha'].month == active_month and exc['fecha'].year == active_year:
                         self.remove_exception(i)
                         break
         else:
@@ -1765,35 +1780,71 @@ class TurnosApp(ctk.CTk):
 
         self.preview_textbox.configure(state="normal")
         self.preview_textbox.delete("0.0", "end")
-        self.preview_textbox.insert("end", f"{'─'*38}\n")
-        self.preview_textbox.insert("end", f"  {MESES[month-1].upper()} {year}\n")
-        self.preview_textbox.insert("end", f"{'─'*38}\n\n")
+        
+        # Configurar tags para destacar elementos
+        self.preview_textbox.tag_config("header", foreground=P["accent"])
+        self.preview_textbox.tag_config("date", foreground=P["text_s"])
+        self.preview_textbox.tag_config("person", foreground=P["text_ok"])
+        self.preview_textbox.tag_config("warning", foreground=P["orange"])
+        self.preview_textbox.tag_config("skip", foreground=P["text_s"])
+        self.preview_textbox.tag_config("current", background=P["bg_hover"], foreground=P["text"])
+
+        self.preview_textbox.insert("end", f"{'─'*38}\n", "header")
+        self.preview_textbox.insert("end", f"  {MESES[month-1].upper()} {year}\n", "header")
+        self.preview_textbox.insert("end", f"{'─'*38}\n\n", "header")
+
+        today = date.today()
 
         for sh in shifts:
             s, e   = sh['semana']
             person = sh['persona'] or "NADIE DISPONIBLE"
             salt   = sh.get('saltados', [])
+            
+            is_current = s <= today <= e
+            if is_current:
+                self.preview_textbox.insert("end", f" ▶ SEMANA ACTUAL\n", "header")
+            
+            # Tags condicionales
+            line_tags = ("current",) if is_current else ()
+            date_tags = ("date", "current") if is_current else ("date",)
+            person_tags = ("person", "current") if is_current else ("person",)
+
             self.preview_textbox.insert("end",
-                f"  {s.strftime('%d/%m')} → {e.strftime('%d/%m')}\n"
-                f"  👤 {_short_name(person, 2)}\n")
+                f"  📅 {s.strftime('%d/%m')} → {e.strftime('%d/%m')}\n", date_tags)
+            self.preview_textbox.insert("end",
+                f"  👤 {_short_name(person, 2)}\n", person_tags)
+            
             for warning in sh.get("advertencias", []):
                 self.preview_textbox.insert(
-                    "end", f"  ⚠ {warning['mensaje']} ({', '.join(warning['feriados'])})\n")
+                    "end", f"  ⚠ {warning['mensaje']} ({', '.join(warning['feriados'])})\n", "warning")
             for sk in salt:
                 self.preview_textbox.insert("end",
-                    f"     ↷ {_short_name(sk['persona'], 1)} ({sk['tipo']})\n")
+                    f"     ↷ {_short_name(sk['persona'], 1)} ({sk['tipo']})\n", "skip")
             self.preview_textbox.insert("end", "\n")
 
         self.preview_textbox.configure(state="disabled")
 
         if hasattr(self, 'next_turno_lbl'):
-            first_shift = next((sh for sh in shifts if sh.get('persona')), None)
+            today = date.today()
+            # Buscar el turno actual o el próximo en la lista
+            first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)
+            
+            # Si no hay turnos futuros (ej. viendo un mes pasado), mostrar el primero del mes
+            if not first_shift:
+                first_shift = next((sh for sh in shifts if sh.get('persona')), None)
+                
             if first_shift:
                 p_name = _short_name(first_shift['persona'], 3)
                 s_date = first_shift['semana'][0].strftime('%d/%m')
                 e_date = first_shift['semana'][1].strftime('%d/%m')
+                
+                if first_shift['semana'][0] <= today <= first_shift['semana'][1]:
+                    prefix = "Actual"
+                else:
+                    prefix = "Próximo"
+                    
                 self.next_turno_lbl.configure(
-                    text=f"Próximo: {p_name}\nSemana: {s_date} - {e_date}"
+                    text=f"{prefix}: {p_name}\nSemana: {s_date} - {e_date}"
                 )
             else:
                 self.next_turno_lbl.configure(text="Sin turnos en este periodo")

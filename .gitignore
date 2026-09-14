@@ -1,0 +1,18 @@
+# Entornos virtuales
+.venv/
+venv/
+env/
+
+# Caché de Python
+__pycache__/
+*.pyc
+.pytest_cache/
+
+# Archivos de configuración locales
+config.json
+temp_config.json
+
+# Builds de PyInstaller
+build/
+dist/
+*.spec
