@@ -141,40 +141,42 @@ class ShiftManager:
         return None
 
     def _historical_assignment_for_date(self, target_date):
-        week = self._week_for_date(target_date.year, 12, target_date)
+        week = self._week_for_date(target_date.year, target_date.month, target_date)
         if not week:
             return None
         week_key = f"{week[0].isoformat()}_{week[1].isoformat()}"
         return self.historial.get(week_key) or self.inicio.get(week_key)
 
-    def _december_holiday_restrictions(self, year, weeks):
-        if year <= 1:
-            return {}
-
-        previous_holidays = national_holidays(year - 1)
+    def _get_holiday_restrictions(self, year, month, weeks):
+        """
+        Obtiene las restricciones de asignación basadas en feriados pasados.
+        Actualmente implementa la regla de Diciembre para evitar repetir feriados.
+        """
         restrictions = {}
-        for holiday in december_holidays(year):
-            holiday_key = normalize_holiday_name(holiday["nombre"])
-            previous_items = previous_holidays.get(holiday_key, [])
-            previous_holiday = next(
-                (item for item in previous_items if item["fecha"].month == 12),
-                None)
-            if not previous_holiday:
-                continue
+        if month == 12 and year > 1:
+            previous_holidays = national_holidays(year - 1)
+            for holiday in december_holidays(year):
+                holiday_key = normalize_holiday_name(holiday["nombre"])
+                previous_items = previous_holidays.get(holiday_key, [])
+                previous_holiday = next(
+                    (item for item in previous_items if item["fecha"].month == 12),
+                    None)
+                if not previous_holiday:
+                    continue
 
-            previous_person = self._historical_assignment_for_date(previous_holiday["fecha"])
-            if not previous_person:
-                continue
+                previous_person = self._historical_assignment_for_date(previous_holiday["fecha"])
+                if not previous_person:
+                    continue
 
-            current_week = next(
-                (week for week in weeks if week[0] <= holiday["fecha"] <= week[1]),
-                None)
-            if current_week:
-                restrictions.setdefault(current_week, []).append({
-                    "feriado": holiday["nombre"],
-                    "fecha": holiday["fecha"],
-                    "persona": previous_person,
-                })
+                current_week = next(
+                    (week for week in weeks if week[0] <= holiday["fecha"] <= week[1]),
+                    None)
+                if current_week:
+                    restrictions.setdefault(current_week, []).append({
+                        "feriado": holiday["nombre"],
+                        "fecha": holiday["fecha"],
+                        "persona": previous_person,
+                    })
         return restrictions
 
     def set_starting_person(self, person_name):
@@ -195,9 +197,7 @@ class ShiftManager:
             end_date = week[-1]
             weeks.append((start_date, end_date))
 
-        holiday_restrictions = (
-            self._december_holiday_restrictions(year, weeks)
-            if month == 12 else {})
+        holiday_restrictions = self._get_holiday_restrictions(year, month, weeks)
 
         shifts = []
         
