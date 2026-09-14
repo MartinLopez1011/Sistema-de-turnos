@@ -1,12 +1,12 @@
 {
   "personal": [
     {
-      "id": 2,
-      "nombre": "COM FREZ FLORES JANETTE"
-    },
-    {
       "id": 4,
       "nombre": "COM (A) MIRANDA CRISTI CLAUDIA"
+    },
+    {
+      "id": 2,
+      "nombre": "COM FREZ FLORES JANETTE"
     },
     {
       "id": 5,
@@ -37,21 +37,21 @@
       "nombre": "PRO MARCHANT VENEGAS KARINA"
     },
     {
+      "id": 16,
+      "nombre": "PRO FLORES ROJAS NATALIA"
+    },
+    {
       "id": 14,
       "nombre": "PRO ALVIÑA NEIRA PRISCILA"
     },
     {
       "id": 15,
       "nombre": "PRO MARTINEZ DOUZET BRYANN"
-    },
-    {
-      "id": 16,
-      "nombre": "PRO FLORES ROJAS NATALIA"
     }
   ],
   "inicio": {},
   "historial": {},
-  "siguiente_id": 2,
+  "siguiente_id": 4,
   "pendientes": [],
   "snapshots": {},
   "excepciones": {}
