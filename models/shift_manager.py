@@ -349,7 +349,8 @@ class ShiftManager:
                     shifts.append({
                         'semana': (start_date, end_date),
                         'persona': nombre,
-                        'saltados': skipped_this_week.copy()
+                        'saltados': skipped_this_week.copy(),
+                        'es_recuperacion': True
                     })
                     assigned = True
                     

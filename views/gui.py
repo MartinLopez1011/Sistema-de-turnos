@@ -1119,10 +1119,20 @@ class TurnosApp(ctk.CTk):
                 cf.grid_propagate(False)
                 row_widgets.append((cf, bg))
 
+                lbl = None
                 if txt:
                     lbl = tk.Label(cf, text=txt, bg=bg, fg=tc,
                                    font=("Inter", 10, "bold" if bold else "normal"))
                     lbl.place(relx=0.5, rely=0.5, anchor="center")
+
+                if not is_deleted and not is_past_mo:
+                    def make_handler(p, day, exc):
+                        return lambda e: self._handle_calendar_click(p, day, exc)
+                    handler = make_handler(persona, d, exc_tipo)
+                    cf.bind("<Button-1>", handler)
+                    if lbl:
+                        lbl.bind("<Button-1>", handler)
+
 
             _make_row_hover(cal_table, row_widgets)
 
@@ -1193,6 +1203,15 @@ class TurnosApp(ctk.CTk):
                     text="⚠ REPETICIÓN DE FERIADO POR FALTA DE ALTERNATIVA",
                     font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
                     text_color="#FFF").pack(padx=8, pady=4)
+                crow += 1
+
+            if shift.get("es_recuperacion"):
+                rf = ctk.CTkFrame(card, fg_color="#1E3A8A", corner_radius=6)
+                rf.grid(row=crow, column=0, padx=12, pady=(8, 0), sticky="w")
+                ctk.CTkLabel(
+                    rf, text="  🔄 TURNO RECUPERADO  ",
+                    font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
+                    text_color="#93C5FD").pack(padx=2, pady=3)
                 crow += 1
 
             # ITER 3: Añadir numeración "Semana X de Y"
@@ -1368,6 +1387,26 @@ class TurnosApp(ctk.CTk):
                           font=ctk.CTkFont(size=12),
                           command=lambda i=index: self.remove_exception(i)
                           ).grid(row=0, column=1, padx=6, pady=6)
+
+    def _handle_calendar_click(self, persona, day, exc_tipo):
+        year, month = self.get_selected_period()
+        if exc_tipo:
+            if messagebox.askyesno("Eliminar excepción", f"¿Eliminar la excepción {exc_tipo} de {_short_name(persona, 2)} el día {day}?", parent=self):
+                # Encontrar y eliminar
+                for i, exc in enumerate(self.exceptions):
+                    if exc['persona'] == persona and exc['fecha'].day == day and exc['fecha'].month == month and exc['fecha'].year == year:
+                        self.remove_exception(i)
+                        break
+        else:
+            tipo = simpledialog.askstring("Añadir Excepción", "Tipo de excepción (DA, FL, LIC, OTR):", parent=self)
+            if tipo and tipo.upper() in ["DA", "FL", "LIC", "OTR"]:
+                self.person_var.set(persona)
+                self.days_entry.delete(0, 'end')
+                self.days_entry.insert(0, str(day))
+                self.type_var.set(tipo.upper())
+                self.add_exception()
+                # Volver a "Ver Turnos"
+                self._jump_to_vista()
 
     def remove_exception(self, index):
         removed = self.exceptions.pop(index)
@@ -1565,3 +1604,15 @@ class TurnosApp(ctk.CTk):
             self.preview_textbox.insert("end", "\n")
 
         self.preview_textbox.configure(state="disabled")
+
+        if hasattr(self, 'next_turno_lbl'):
+            first_shift = next((sh for sh in shifts if sh.get('persona')), None)
+            if first_shift:
+                p_name = _short_name(first_shift['persona'], 3)
+                s_date = first_shift['semana'][0].strftime('%d/%m')
+                e_date = first_shift['semana'][1].strftime('%d/%m')
+                self.next_turno_lbl.configure(
+                    text=f"Próximo: {p_name}\nSemana: {s_date} - {e_date}"
+                )
+            else:
+                self.next_turno_lbl.configure(text="Sin turnos en este periodo")
