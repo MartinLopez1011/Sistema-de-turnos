@@ -569,3 +569,36 @@ class ShiftManager:
                 self.save_config()
                 return True
         return False
+
+    def move_person_up(self, person_id):
+        """Mueve a una persona una posición arriba en la lista de personal."""
+        for i, p in enumerate(self.personal):
+            if p['id'] == person_id:
+                if i > 0:
+                    self.personal[i], self.personal[i-1] = self.personal[i-1], self.personal[i]
+                    self.save_config()
+                    return True
+                break
+        return False
+
+    def move_person_down(self, person_id):
+        """Mueve a una persona una posición abajo en la lista de personal."""
+        for i, p in enumerate(self.personal):
+            if p['id'] == person_id:
+                if i < len(self.personal) - 1:
+                    self.personal[i], self.personal[i+1] = self.personal[i+1], self.personal[i]
+                    self.save_config()
+                    return True
+                break
+        return False
+
+    def reset_historial(self):
+        """Limpia todo el historial de la aplicación manteniendo solo la lista de personal."""
+        self.inicio = {}
+        self.historial = {}
+        self.siguiente_id = self.personal[0]['id'] if self.personal else 1
+        self.pendientes = []
+        self.snapshots = {}
+        self.excepciones = {}
+        self.save_config()
+        return True

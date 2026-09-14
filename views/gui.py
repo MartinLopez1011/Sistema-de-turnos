@@ -166,8 +166,8 @@ class TurnosApp(ctk.CTk):
         super().__init__()
         self.controller = controller
         self.title("Sistema de Turnos")
-        self.geometry("1240x760")
-        self.minsize(1040, 620)
+        self.geometry("1400x780")
+        self.minsize(1280, 620)
         self.configure(fg_color=P["bg_app"])
 
         self.exceptions           = []
@@ -512,8 +512,8 @@ class TurnosApp(ctk.CTk):
         parent.grid_columnconfigure(0, weight=1)
         parent.grid_rowconfigure(0, weight=1)
 
-        wrapper = ctk.CTkFrame(parent, fg_color="transparent")
-        wrapper.grid(row=0, column=0, padx=28, pady=28, sticky="nsew")
+        wrapper = ctk.CTkScrollableFrame(parent, fg_color="transparent")
+        wrapper.grid(row=0, column=0, padx=20, pady=20, sticky="nsew")
         wrapper.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(wrapper, text="Ajustes",
@@ -575,10 +575,34 @@ class TurnosApp(ctk.CTk):
             text_color=P["text_s"], justify="left", anchor="w").grid(
                 row=3, column=0, pady=(14, 0), sticky="w")
 
+        # ── Exportar a Excel ─────────────────────────────────────────────────────
+        export_card = ctk.CTkFrame(wrapper, fg_color=P["bg_card"], corner_radius=12,
+                                   border_width=1, border_color=P["border"])
+        export_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
+        export_card.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(export_card, text="Exportar Calendario",
+                     font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+                     text_color=P["text"], anchor="w").grid(
+                         row=0, column=0, padx=20, pady=(20, 4), sticky="w")
+        ctk.CTkLabel(
+            export_card,
+            text="Genera un archivo Excel del periodo seleccionado en el menú lateral.",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w").grid(
+                row=1, column=0, padx=20, pady=(0, 14), sticky="w")
+        
+        self.calendar_export_btn = ctk.CTkButton(
+            export_card, text="📊  Exportar a Excel", command=self.export_calendar_excel,
+            height=38, width=220, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
+            fg_color=P["green_d"], hover_color=P["green"])
+        self.calendar_export_btn.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="w")
+
         # ── Gestión de Personal ──────────────────────────────────────────────────
         person_card = ctk.CTkFrame(wrapper, fg_color=P["bg_card"], corner_radius=12,
                                    border_width=1, border_color=P["border"])
-        person_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
+        person_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
         person_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(person_card, text="Gestión de Personal",
@@ -603,7 +627,7 @@ class TurnosApp(ctk.CTk):
         # ── Zona de peligro — Reset historial ────────────────────────────────────
         danger_card = ctk.CTkFrame(wrapper, fg_color=P["bg_card"], corner_radius=12,
                                    border_width=1, border_color=P["red_d"])
-        danger_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
+        danger_card.grid(row=6, column=0, sticky="ew", pady=(20, 0))
         danger_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(danger_card, text="⚠  Zona de peligro",
@@ -651,11 +675,118 @@ class TurnosApp(ctk.CTk):
                                      fg_color=P["accent_d"], hover_color=P["accent"],
                                      command=lambda pid=p['id'], pname=p['nombre']: self._on_edit_person(pid, pname))
             btn_edit.pack(side="right", padx=10, pady=8)
+
+            btn_down = ctk.CTkButton(row_f, text="⬇", width=28, height=24,
+                                     fg_color=P["bg_card2"], hover_color=P["border_h"], text_color=P["text_s"],
+                                     command=lambda pid=p['id']: self._on_move_down(pid))
+            if i < len(persons) - 1:
+                btn_down.pack(side="right", padx=(2, 10), pady=8)
+            else:
+                btn_down.pack(side="right", padx=(2, 10), pady=8)
+                btn_down.configure(state="disabled")
+
+            btn_up = ctk.CTkButton(row_f, text="⬆", width=28, height=24,
+                                   fg_color=P["bg_card2"], hover_color=P["border_h"], text_color=P["text_s"],
+                                   command=lambda pid=p['id']: self._on_move_up(pid))
+            if i > 0:
+                btn_up.pack(side="right", padx=(10, 2), pady=8)
+            else:
+                btn_up.pack(side="right", padx=(10, 2), pady=8)
+                btn_up.configure(state="disabled")
             
             _make_row_hover(row_f, [(row_f, row_f.cget("fg_color"))])
 
+    def _on_move_up(self, person_id):
+        success, msg = self.controller.move_person_up(person_id)
+        if success:
+            self._refresh_person_management_ui()
+            self.load_personal()
+
+    def _on_move_down(self, person_id):
+        success, msg = self.controller.move_person_down(person_id)
+        if success:
+            self._refresh_person_management_ui()
+            self.load_personal()
+
+    def _custom_input_dialog(self, title, prompt, initialvalue=""):
+        dialog = ctk.CTkToplevel(self)
+        dialog.title(title)
+        dialog.geometry("380x200")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        dialog.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() - dialog.winfo_width()) // 2
+        y = self.winfo_y() + (self.winfo_height() - dialog.winfo_height()) // 2
+        dialog.geometry(f"+{x}+{y}")
+
+        result = [None]
+
+        ctk.CTkLabel(dialog, text=prompt, font=ctk.CTkFont(family="Inter", size=14, weight="bold")).pack(pady=(20, 10))
+        entry = ctk.CTkEntry(dialog, width=280)
+        entry.pack(pady=(0, 20))
+        if initialvalue:
+            entry.insert(0, initialvalue)
+        entry.focus()
+
+        def submit():
+            result[0] = entry.get()
+            dialog.destroy()
+
+        def cancel():
+            dialog.destroy()
+
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=40)
+        ctk.CTkButton(btn_frame, text="Cancelar", fg_color=P["bg_row_e"], hover_color=P["border_h"], text_color=P["text"], command=cancel, width=120).pack(side="left")
+        ctk.CTkButton(btn_frame, text="Aceptar", fg_color=P["accent_d"], hover_color=P["accent"], command=submit, width=120).pack(side="right")
+        
+        dialog.bind("<Return>", lambda e: submit())
+        dialog.bind("<Escape>", lambda e: cancel())
+        
+        self.wait_window(dialog)
+        return result[0]
+
+    def _custom_confirm_dialog(self, title, prompt, is_danger=False):
+        dialog = ctk.CTkToplevel(self)
+        dialog.title(title)
+        dialog.geometry("400x200")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        dialog.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() - dialog.winfo_width()) // 2
+        y = self.winfo_y() + (self.winfo_height() - dialog.winfo_height()) // 2
+        dialog.geometry(f"+{x}+{y}")
+
+        result = [False]
+
+        ctk.CTkLabel(dialog, text=prompt, font=ctk.CTkFont(family="Inter", size=13), wraplength=360).pack(pady=(30, 20))
+
+        def submit():
+            result[0] = True
+            dialog.destroy()
+
+        def cancel():
+            dialog.destroy()
+
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=40)
+        
+        confirm_color = P["red_d"] if is_danger else P["accent_d"]
+        confirm_hover = P["red"] if is_danger else P["accent"]
+
+        ctk.CTkButton(btn_frame, text="Cancelar", fg_color=P["bg_row_e"], hover_color=P["border_h"], text_color=P["text"], command=cancel, width=120).pack(side="left")
+        ctk.CTkButton(btn_frame, text="Confirmar", fg_color=confirm_color, hover_color=confirm_hover, command=submit, width=120).pack(side="right")
+        
+        dialog.bind("<Return>", lambda e: submit())
+        dialog.bind("<Escape>", lambda e: cancel())
+        
+        self.wait_window(dialog)
+        return result[0]
+
     def _on_add_person(self):
-        name = simpledialog.askstring("Añadir Persona", "Nombre de la persona:", parent=self)
+        name = self._custom_input_dialog("Añadir Persona", "Nombre de la persona:")
         if name and name.strip():
             success, msg = self.controller.add_person(name.strip())
             if success:
@@ -667,7 +798,7 @@ class TurnosApp(ctk.CTk):
                 self.settings_status_label.configure(text=msg, text_color=P["text_e"])
 
     def _on_edit_person(self, person_id, current_name):
-        new_name = simpledialog.askstring("Editar Persona", f"Nuevo nombre para {current_name}:", initialvalue=current_name, parent=self)
+        new_name = self._custom_input_dialog("Editar Persona", f"Nuevo nombre para {current_name}:", initialvalue=current_name)
         if new_name and new_name.strip() and new_name.strip() != current_name:
             success, msg = self.controller.edit_person(person_id, new_name.strip())
             if success:
@@ -679,13 +810,36 @@ class TurnosApp(ctk.CTk):
                 self.settings_status_label.configure(text=msg, text_color=P["text_e"])
 
     def _on_delete_person(self, person_id, current_name):
-        if messagebox.askyesno("Eliminar Persona", f"¿Estás seguro que deseas eliminar a {current_name}?\nEsto no modificará el historial pasado.", parent=self):
+        if self._custom_confirm_dialog("Eliminar Persona", f"¿Estás seguro que deseas eliminar a {current_name}?\nEsto no modificará el historial pasado.", is_danger=True):
             success, msg = self.controller.remove_person(person_id)
             if success:
                 self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
                 self._refresh_person_management_ui()
                 self.load_personal()
                 self.render_turnos_view()
+            else:
+                self.settings_status_label.configure(text=msg, text_color=P["text_e"])
+
+    def _reset_historial(self):
+        if self._custom_confirm_dialog("Resetear historial", "Estás a punto de ELIMINAR todo el historial y configuraciones previas.\n\n¿Estás completamente seguro de continuar?", is_danger=True):
+            # Asumimos que controller.reset_historial existe o podemos limpiar config.json.
+            # Por ahora mandamos mensaje.
+            if hasattr(self.controller, 'reset_historial'):
+                success, msg = self.controller.reset_historial()
+            else:
+                self.controller.config["historial"] = []
+                self.controller.config["mes_actual"] = None
+                self.controller.config["siguiente_id"] = None
+                self.controller.config["pendientes"] = []
+                self.controller.config["exceptions"] = []
+                self.controller.save_config()
+                success, msg = True, "Historial borrado."
+                
+            if success:
+                self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
+                self.load_personal()
+                self.render_turnos_view()
+                self.tabview.set("  📋  Planificación  ")
             else:
                 self.settings_status_label.configure(text=msg, text_color=P["text_e"])
 
@@ -760,13 +914,6 @@ class TurnosApp(ctk.CTk):
                   font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
                   command=self.render_turnos_view
                   ).grid(row=0, column=6, padx=(0, 14), pady=12)
-
-        self.calendar_export_btn = ctk.CTkButton(
-            nav, text="Excel", width=58, height=30, corner_radius=7,
-            fg_color=P["green_d"], hover_color=P["green"],
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
-            command=self.export_calendar_excel)
-        self.calendar_export_btn.grid(row=0, column=7, padx=(0, 8), pady=12)
 
         self.vista_scroll = ctk.CTkScrollableFrame(
             parent, fg_color=P["bg_app"], corner_radius=0,
@@ -967,9 +1114,9 @@ class TurnosApp(ctk.CTk):
         # ══════════════════════════════════════════════════════════════════════
         #  GRILLA UNIFICADA — header y filas en el MISMO grid (cal_table)
         # ══════════════════════════════════════════════════════════════════════
-        CELL_W = 30
-        CELL_H = 46
-        HDR_H  = 58
+        CELL_W = 34
+        CELL_H = 50
+        HDR_H  = 62
         NAME_W = 240   # Ampliado para mostrar nombres completos
 
         # TEST ITER 3: tinte más oscuro para meses pasados
@@ -989,9 +1136,9 @@ class TurnosApp(ctk.CTk):
 
         cal_table.grid_columnconfigure(0, minsize=NAME_W)
         for c in range(1, days_in + 1):
-            cal_table.grid_columnconfigure(c, minsize=CELL_W, weight=0)
-        # Columna relleno al final: absorbe el espacio sobrante sin crear columna vacía visual
-        cal_table.grid_columnconfigure(days_in + 1, weight=1)
+            cal_table.grid_columnconfigure(c, minsize=CELL_W, weight=1, uniform="days")
+        # La columna de relleno ya no necesita absorber el espacio (las columnas de días se expanden juntas)
+        cal_table.grid_columnconfigure(days_in + 1, weight=0)
 
         # ── Header ────────────────────────────────────────────────────────────
         hdr_bg = P["bg_hdr"] if not is_past_mo else "#0A0C14"
@@ -1398,15 +1545,49 @@ class TurnosApp(ctk.CTk):
                         self.remove_exception(i)
                         break
         else:
-            tipo = simpledialog.askstring("Añadir Excepción", "Tipo de excepción (DA, FL, LIC, OTR):", parent=self)
-            if tipo and tipo.upper() in ["DA", "FL", "LIC", "OTR"]:
-                self.person_var.set(persona)
-                self.days_entry.delete(0, 'end')
-                self.days_entry.insert(0, str(day))
-                self.type_var.set(tipo.upper())
-                self.add_exception()
-                # Volver a "Ver Turnos"
-                self._jump_to_vista()
+            self._show_add_exception_dialog(persona, day)
+
+    def _show_add_exception_dialog(self, persona, day):
+        dialog = ctk.CTkToplevel(self)
+        dialog.title("Añadir Excepción")
+        dialog.geometry("340x220")
+        dialog.transient(self)
+        dialog.grab_set()
+        
+        dialog.update_idletasks()
+        x = self.winfo_x() + (self.winfo_width() - dialog.winfo_width()) // 2
+        y = self.winfo_y() + (self.winfo_height() - dialog.winfo_height()) // 2
+        dialog.geometry(f"+{x}+{y}")
+
+        ctk.CTkLabel(dialog, text=f"Añadir excepción para\n{_short_name(persona, 3)} el día {day}",
+                     font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+                     text_color=P["text"]).pack(pady=(20, 10))
+
+        def on_select(tipo):
+            dialog.destroy()
+            self.person_var.set(persona)
+            self.days_entry.delete(0, 'end')
+            self.days_entry.insert(0, str(day))
+            self.type_var.set(tipo)
+            self.add_exception()
+            self._jump_to_vista()
+
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
+        btn_frame.grid_columnconfigure((0, 1), weight=1)
+
+        ctk.CTkButton(btn_frame, text="DA (Día Admin)", fg_color=P["orange"], hover_color=P["da"],
+                      font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+                      command=lambda: on_select("DA")).grid(row=0, column=0, padx=5, pady=5, sticky="ew")
+        ctk.CTkButton(btn_frame, text="FL (Feriado)", fg_color=P["purple"], hover_color=P["fl"],
+                      font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+                      command=lambda: on_select("FL")).grid(row=0, column=1, padx=5, pady=5, sticky="ew")
+        ctk.CTkButton(btn_frame, text="LIC (Licencia)", fg_color=P["lic"], hover_color=P["lic"],
+                      font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+                      command=lambda: on_select("LIC")).grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+        ctk.CTkButton(btn_frame, text="OTR (Otros)", fg_color=P["otr"], hover_color=P["border"],
+                      font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+                      command=lambda: on_select("OTR")).grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
     def remove_exception(self, index):
         removed = self.exceptions.pop(index)

@@ -42,6 +42,18 @@ class MainController:
         success = self.shift_manager.remove_person(person_id)
         return success, "Persona eliminada" if success else "Persona no encontrada"
 
+    def move_person_up(self, person_id):
+        success = self.shift_manager.move_person_up(person_id)
+        return success, "Orden actualizado" if success else "Error al actualizar"
+
+    def move_person_down(self, person_id):
+        success = self.shift_manager.move_person_down(person_id)
+        return success, "Orden actualizado" if success else "Error al actualizar"
+
+    def reset_historial(self):
+        success = self.shift_manager.reset_historial()
+        return success, "Historial y configuraciones eliminadas correctamente" if success else "Error al limpiar historial"
+
     def preview_shifts(self, year, month, exceptions):
         target_key = f"{year}-{month:02d}"
         today = date.today()
