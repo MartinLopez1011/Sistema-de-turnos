@@ -21,12 +21,3 @@ def national_holidays(year):
         result.setdefault(key, []).append({"fecha": holiday_date, "nombre": name})
     return result
 
-
-def december_holidays(year):
-    """Devuelve los feriados nacionales que caen en diciembre del año indicado."""
-    return [
-        holiday
-        for items in national_holidays(year).values()
-        for holiday in items
-        if holiday["fecha"].month == 12
-    ]

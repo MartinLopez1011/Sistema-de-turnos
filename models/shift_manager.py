@@ -4,7 +4,7 @@ import collections
 import calendar
 from datetime import datetime, timedelta
 
-from utils.chilean_holidays import december_holidays, national_holidays, normalize_holiday_name
+from utils.chilean_holidays import national_holidays, normalize_holiday_name
 
 class ShiftManager:
     def __init__(self, config_path):
@@ -150,33 +150,46 @@ class ShiftManager:
     def _get_holiday_restrictions(self, year, month, weeks):
         """
         Obtiene las restricciones de asignación basadas en feriados pasados.
-        Actualmente implementa la regla de Diciembre para evitar repetir feriados.
+        Evita que una persona repita el mismo feriado (buscado por nombre) 
+        que ya trabajó el año anterior.
         """
         restrictions = {}
-        if month == 12 and year > 1:
-            previous_holidays = national_holidays(year - 1)
-            for holiday in december_holidays(year):
-                holiday_key = normalize_holiday_name(holiday["nombre"])
-                previous_items = previous_holidays.get(holiday_key, [])
-                previous_holiday = next(
-                    (item for item in previous_items if item["fecha"].month == 12),
-                    None)
-                if not previous_holiday:
-                    continue
+        if year <= 1:
+            return restrictions
+            
+        previous_holidays = national_holidays(year - 1)
+        current_year_holidays = national_holidays(year)
+        
+        all_current_holidays = [
+            holiday for items in current_year_holidays.values() for holiday in items
+        ]
+        
+        for holiday in all_current_holidays:
+            current_week = next(
+                (week for week in weeks if week[0] <= holiday["fecha"] <= week[1]),
+                None)
+                
+            if not current_week:
+                continue
+                
+            holiday_key = normalize_holiday_name(holiday["nombre"])
+            previous_items = previous_holidays.get(holiday_key, [])
+            
+            # Buscar el feriado del año pasado sin importar en qué mes cayó
+            previous_holiday = next((item for item in previous_items), None)
+            if not previous_holiday:
+                continue
 
-                previous_person = self._historical_assignment_for_date(previous_holiday["fecha"])
-                if not previous_person:
-                    continue
+            previous_person = self._historical_assignment_for_date(previous_holiday["fecha"])
+            if not previous_person:
+                continue
 
-                current_week = next(
-                    (week for week in weeks if week[0] <= holiday["fecha"] <= week[1]),
-                    None)
-                if current_week:
-                    restrictions.setdefault(current_week, []).append({
-                        "feriado": holiday["nombre"],
-                        "fecha": holiday["fecha"],
-                        "persona": previous_person,
-                    })
+            restrictions.setdefault(current_week, []).append({
+                "feriado": holiday["nombre"],
+                "fecha": holiday["fecha"],
+                "persona": previous_person,
+            })
+            
         return restrictions
 
     def set_starting_person(self, person_name):
@@ -415,7 +428,7 @@ class ShiftManager:
                     "feriados": [item["feriado"] for item in blocked_fallback_reason],
                     "fechas": [item["fecha"] for item in blocked_fallback_reason],
                     "mensaje": (
-                        f"{fallback_name} repite un feriado de diciembre "
+                        f"{fallback_name} repite un feriado "
                         "porque no había otra persona disponible"
                     ),
                 }
