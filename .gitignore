@@ -16,3 +16,4 @@ temp_config.json
 build/
 dist/
 *.spec
+*.xlsx

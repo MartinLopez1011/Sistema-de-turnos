@@ -134,6 +134,28 @@ class ShiftManager:
 
         return False
 
+    def _was_forced_recently(self, nombre, before_date, current_exceptions, min_gap_weeks=4):
+        cutoff = before_date - timedelta(weeks=min_gap_weeks)
+        
+        for exc in current_exceptions:
+            if exc.get('persona') == nombre and exc.get('tipo') == "FOR":
+                if cutoff <= exc['fecha'] < before_date:
+                    return True
+                    
+        for period_key, exc_list in self.excepciones.items():
+            for exc in exc_list:
+                if exc.get('persona') == nombre and exc.get('tipo') == "FOR":
+                    fecha_str = exc.get('fecha')
+                    if isinstance(fecha_str, str):
+                        fecha = datetime.strptime(fecha_str, '%Y-%m-%d').date()
+                    else:
+                        fecha = fecha_str
+                        
+                    if cutoff <= fecha < before_date:
+                        return True
+                        
+        return False
+
     def _week_for_date(self, year, month, target_date):
         for week in calendar.Calendar().monthdatescalendar(year, month):
             if week[0] <= target_date <= week[-1]:
@@ -263,7 +285,8 @@ class ShiftManager:
                 historical_person = self.historial[week_key]
                 historical_exception = any(
                     exc['persona'] == historical_person and
-                    start_date <= exc['fecha'] <= end_date
+                    start_date <= exc['fecha'] <= end_date and
+                    exc['tipo'] != 'FOR'
                     for exc in exceptions
                 )
                 if not historical_exception and not history_recalculated:
@@ -321,6 +344,20 @@ class ShiftManager:
                 
             assigned = False
             skipped_this_week = historical_skipped.copy()
+            
+            # 3.0 Intentar asignación forzada (FOR)
+            for exc in exceptions:
+                if start_date <= exc['fecha'] <= end_date and exc['tipo'] == "FOR":
+                    nombre_forzado = exc['persona']
+                    current_pendientes = [p for p in current_pendientes if self.get_person_by_id(p) != nombre_forzado]
+                    shifts.append({
+                        'semana': (start_date, end_date),
+                        'persona': nombre_forzado,
+                        'saltados': skipped_this_week.copy(),
+                        'es_forzado': True
+                    })
+                    assigned = True
+                    break
             
             # 3. Intentar asignar a pendientes (Opción B)
             new_pendientes = []
@@ -408,8 +445,9 @@ class ShiftManager:
                     skipped_this_week.append({'persona': nombre, 'tipo': exc_tipo})
                 elif did_recently:
                     # Mandarlo al fondo de pendientes para que recupere su lugar
-                    # más adelante sin duplicar turno
-                    current_pendientes.append(p_id)
+                    # más adelante sin duplicar turno, a menos que haya sido forzado
+                    if not self._was_forced_recently(nombre, start_date, exceptions, min_gap_weeks=4):
+                        current_pendientes.append(p_id)
                 else:
                     shifts.append({
                         'semana': (start_date, end_date),

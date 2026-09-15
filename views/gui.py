@@ -43,6 +43,7 @@ P = {
     "fl":        "#5B21B6",
     "lic":       "#0E7490",
     "otr":       "#374151",
+    "for":       "#059669",
     "weekend":   "#171D22",
     "text":      "#F1F5F3",
     "text_s":    "#91A0A5",
@@ -315,7 +316,7 @@ class TurnosApp(ctk.CTk):
         
         # SegmentedButton más moderno que los RadioButtons
         self.type_segmented = ctk.CTkSegmentedButton(
-            exc_form, variable=self.type_var, values=["DA", "FL", "LIC", "OTR"],
+            exc_form, variable=self.type_var, values=["DA", "FL", "LIC", "OTR", "FOR"],
             fg_color=P["bg_input"],
             selected_color=P["accent_d"],
             selected_hover_color=P["accent"],
@@ -1249,6 +1250,8 @@ class TurnosApp(ctk.CTk):
                     bg, txt, tc, bold = P["lic"], "LIC", "#FFF", True
                 elif exc_tipo == "OTR":
                     bg, txt, tc, bold = P["otr"], "OTR", "#FFF", True
+                elif exc_tipo == "FOR":
+                    bg, txt, tc, bold = P["for"], "FOR", "#FFF", True
                 elif has_t:
                     # Turno: más brillante en semana actual, atenuado en meses pasados
                     if d in warning_days.get(persona, set()):
@@ -1417,8 +1420,8 @@ class TurnosApp(ctk.CTk):
                 crow += 1
                 for si, exc_info in enumerate(saltados):
                     tipo  = exc_info['tipo']
-                    _exc_colors = {"DA": P["da"], "FL": P["fl"], "LIC": P["lic"], "OTR": P["otr"]}
-                    _exc_icons  = {"DA": "⏭", "FL": "🚫", "LIC": "📋", "OTR": "📌"}
+                    _exc_colors = {"DA": P["da"], "FL": P["fl"], "LIC": P["lic"], "OTR": P["otr"], "FOR": P["for"]}
+                    _exc_icons  = {"DA": "⏭", "FL": "🚫", "LIC": "📋", "OTR": "📌", "FOR": "⭐"}
                     cc    = _exc_colors.get(tipo, P["otr"])
                     icon  = _exc_icons.get(tipo, "📌")
                     cf2   = ctk.CTkFrame(ef, fg_color=cc, corner_radius=8)
@@ -1515,7 +1518,7 @@ class TurnosApp(ctk.CTk):
 
         for index, exc in enumerate(self.exceptions):
             tipo   = exc['tipo']
-            _exc_colors = {"DA": P["da"], "FL": P["fl"], "LIC": P["lic"], "OTR": P["otr"]}
+            _exc_colors = {"DA": P["da"], "FL": P["fl"], "LIC": P["lic"], "OTR": P["otr"], "FOR": P["for"]}
             chip_c = _exc_colors.get(tipo, P["otr"])
             row = ctk.CTkFrame(self.exception_list2, fg_color=P["bg_card2"], corner_radius=8,
                                border_width=1, border_color=P["border"])
@@ -1589,20 +1592,23 @@ class TurnosApp(ctk.CTk):
 
         btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
         btn_frame.pack(fill="both", expand=True, padx=20, pady=(0, 20))
-        btn_frame.grid_columnconfigure((0, 1), weight=1)
+        btn_frame.grid_columnconfigure((0, 1, 2), weight=1)
 
-        ctk.CTkButton(btn_frame, text="DA (Día Admin)", fg_color=P["orange"], hover_color=P["da"],
+        ctk.CTkButton(btn_frame, text="DA", fg_color=P["orange"], hover_color=P["da"],
                       font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
                       command=lambda: on_select("DA")).grid(row=0, column=0, padx=5, pady=5, sticky="ew")
-        ctk.CTkButton(btn_frame, text="FL (Feriado)", fg_color=P["purple"], hover_color=P["fl"],
+        ctk.CTkButton(btn_frame, text="FL", fg_color=P["purple"], hover_color=P["fl"],
                       font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
                       command=lambda: on_select("FL")).grid(row=0, column=1, padx=5, pady=5, sticky="ew")
-        ctk.CTkButton(btn_frame, text="LIC (Licencia)", fg_color=P["lic"], hover_color=P["lic"],
+        ctk.CTkButton(btn_frame, text="LIC", fg_color=P["lic"], hover_color=P["lic"],
                       font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-                      command=lambda: on_select("LIC")).grid(row=1, column=0, padx=5, pady=5, sticky="ew")
-        ctk.CTkButton(btn_frame, text="OTR (Otros)", fg_color=P["otr"], hover_color=P["border"],
+                      command=lambda: on_select("LIC")).grid(row=0, column=2, padx=5, pady=5, sticky="ew")
+        ctk.CTkButton(btn_frame, text="OTR", fg_color=P["otr"], hover_color=P["border"],
                       font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-                      command=lambda: on_select("OTR")).grid(row=1, column=1, padx=5, pady=5, sticky="ew")
+                      command=lambda: on_select("OTR")).grid(row=1, column=0, padx=5, pady=5, sticky="ew")
+        ctk.CTkButton(btn_frame, text="FOR", fg_color=P["for"], hover_color=P["green_d"],
+                      font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+                      command=lambda: on_select("FOR")).grid(row=1, column=1, padx=5, pady=5, sticky="ew")
 
     def remove_exception(self, index):
         removed = self.exceptions.pop(index)
