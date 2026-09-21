@@ -56,6 +56,12 @@ def test_add_person(manager):
     assert manager.personal[-1]["id"] == 4
 
 
+def test_add_person_rejects_blank_and_duplicate_names(manager):
+    assert manager.add_person("   ") is None
+    assert manager.add_person("  sgt (f) perez juan  ") is None
+    assert len(manager.personal) == 3
+
+
 def test_edit_person_updates_history_and_exceptions(manager):
     """
     Prueba MUY IMPORTANTE: Al editar el nombre de una persona, 
@@ -92,6 +98,27 @@ def test_remove_person_updates_pointer(manager):
     assert manager.siguiente_id == 1
     # Y Ana ya no debe estar en la lista
     assert not any(p["id"] == 2 for p in manager.personal)
+
+
+def test_remove_person_cleans_future_rotation_references(manager):
+    manager.pendientes = [2, 3]
+    manager.snapshots = {
+        "2024-02": {"siguiente_id": 2, "pendientes": [2, 3]},
+        "2024-03": {"siguiente_id": 3, "pendientes": [2]},
+    }
+
+    assert manager.remove_person(2) is True
+
+    assert manager.pendientes == [3]
+    assert manager.snapshots["2024-02"] == {
+        "siguiente_id": 1,
+        "pendientes": [3],
+    }
+    assert manager.snapshots["2024-03"] == {
+        "siguiente_id": 3,
+        "pendientes": [],
+    }
+    assert manager.historial["2024-01-01_2024-01-07"] == "CBO (M) GOMEZ ANA"
 
 
 def test_move_person_order(manager):

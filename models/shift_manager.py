@@ -570,14 +570,25 @@ class ShiftManager:
     # ── Person Management ──────────────────────────────────────
     def add_person(self, name):
         """Add a new person with the next sequential ID and persist to config."""
-        try:
-            max_id = max((p['id'] for p in self.personal), default=0)
-            new_id = max_id + 1
-            self.personal.append({"id": new_id, "nombre": name})
-            self.save_config()
-            return new_id
-        except Exception:
+        if not isinstance(name, str):
             return None
+
+        normalized_name = " ".join(name.split())
+        if not normalized_name:
+            return None
+
+        normalized_names = {
+            " ".join(person["nombre"].split()).casefold()
+            for person in self.personal
+        }
+        if normalized_name.casefold() in normalized_names:
+            return None
+
+        max_id = max((p['id'] for p in self.personal), default=0)
+        new_id = max_id + 1
+        self.personal.append({"id": new_id, "nombre": normalized_name})
+        self.save_config()
+        return new_id
 
     def edit_person(self, person_id, new_name):
         """Edit the name of an existing person and update all historical records."""
@@ -610,13 +621,31 @@ class ShiftManager:
         return False
 
     def remove_person(self, person_id):
-        """Remove a person from the personal list and adjust the starting pointer if needed."""
+        """Remove a person from future rotation while preserving past records."""
         for i, p in enumerate(self.personal):
             if p['id'] == person_id:
                 del self.personal[i]
-                # Adjust siguiente_id if it pointed to the removed person
+
+                replacement_id = self.personal[0]["id"] if self.personal else 1
+
                 if self.siguiente_id == person_id:
-                    self.siguiente_id = self.personal[0]['id'] if self.personal else 1
+                    self.siguiente_id = replacement_id
+
+                self.pendientes = [
+                    pending_id for pending_id in self.pendientes
+                    if pending_id != person_id
+                ]
+                for snapshot in self.snapshots.values():
+                    if not isinstance(snapshot, dict):
+                        continue
+                    snapshot["pendientes"] = [
+                        pending_id
+                        for pending_id in snapshot.get("pendientes", [])
+                        if pending_id != person_id
+                    ]
+                    if snapshot.get("siguiente_id") == person_id:
+                        snapshot["siguiente_id"] = replacement_id
+
                 self.save_config()
                 return True
         return False
