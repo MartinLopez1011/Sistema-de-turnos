@@ -5,6 +5,9 @@ import calendar
 from datetime import datetime, timedelta
 
 from utils.chilean_holidays import national_holidays, normalize_holiday_name
+from utils.logger import get_logger
+
+logger = get_logger("shift_manager")
 
 class ShiftManager:
     def __init__(self, config_path):
@@ -57,9 +60,52 @@ class ShiftManager:
                 f.flush()
                 os.fsync(f.fileno())
             os.replace(temporary_path, self.config_path)
+            logger.debug("Configuración guardada en %s", self.config_path)
         finally:
             if os.path.exists(temporary_path):
                 os.remove(temporary_path)
+
+    def create_backup(self, tag=None):
+        """Crea una copia de seguridad fechada de config.json en la carpeta backups/."""
+        try:
+            config_dir = os.path.dirname(os.path.abspath(self.config_path))
+            backups_dir = os.path.join(config_dir, "backups")
+            os.makedirs(backups_dir, exist_ok=True)
+
+            timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+            tag_str = f"_{tag}" if tag else ""
+            backup_filename = f"config_{timestamp}{tag_str}.json"
+            backup_path = os.path.join(backups_dir, backup_filename)
+
+            payload = {
+                "personal": self.personal,
+                "inicio": self.inicio,
+                "historial": self.historial,
+                "siguiente_id": self.siguiente_id,
+                "pendientes": self.pendientes,
+                "snapshots": self.snapshots,
+                "excepciones": self.excepciones
+            }
+            with open(backup_path, 'w', encoding='utf-8') as f:
+                json.dump(payload, f, indent=2, ensure_ascii=False)
+
+            logger.info("Backup creado: %s", backup_path)
+
+            # Rotar manteniendo un máximo de 20 backups
+            existing_backups = sorted(
+                [f for f in os.listdir(backups_dir) if f.startswith("config_") and f.endswith(".json")]
+            )
+            if len(existing_backups) > 20:
+                for old_f in existing_backups[:-20]:
+                    try:
+                        os.remove(os.path.join(backups_dir, old_f))
+                    except OSError:
+                        pass
+
+            return backup_path
+        except Exception as e:
+            logger.warning("Error creando backup de config: %s", e)
+            return None
 
     def get_exceptions(self, period_key):
         exceptions = []
@@ -506,6 +552,7 @@ class ShiftManager:
         return shifts, current_siguiente_id, current_pendientes
 
     def advance_month(self, year, month, exceptions):
+        self.create_backup(f"pre_advance_{year}_{month:02d}")
         period_key = f"{year}-{month:02d}"
         previous_exceptions = self.get_exceptions(period_key)
         exception_signature = lambda items: sorted(
@@ -672,13 +719,30 @@ class ShiftManager:
                 break
         return False
 
-    def reset_historial(self):
-        """Limpia todo el historial de la aplicación manteniendo solo la lista de personal."""
-        self.inicio = {}
+    def reset_historial(self, preserve_inicio=True):
+        """Limpia historial, snapshots y excepciones, preservando personal e inicio por defecto."""
+        self.create_backup("pre_reset")
+        if not preserve_inicio:
+            self.inicio = {}
         self.historial = {}
-        self.siguiente_id = self.personal[0]['id'] if self.personal else 1
-        self.pendientes = []
         self.snapshots = {}
+        self.pendientes = []
         self.excepciones = {}
+
+        # Recalcular siguiente_id a partir de la última asignación de inicio
+        personal_ids = [p['id'] for p in self.personal]
+        if self.inicio and personal_ids:
+            ultima_semana = sorted(self.inicio.keys())[-1]
+            ultimo_nombre = self.inicio[ultima_semana]
+            ultimo_idx = next((i for i, p in enumerate(self.personal) if p['nombre'] == ultimo_nombre), None)
+            if ultimo_idx is not None:
+                siguiente_idx = (ultimo_idx + 1) % len(personal_ids)
+                self.siguiente_id = personal_ids[siguiente_idx]
+            else:
+                self.siguiente_id = personal_ids[0]
+        else:
+            self.siguiente_id = personal_ids[0] if personal_ids else 1
+
         self.save_config()
+        logger.info("Historial reseteado (preserve_inicio=%s). Siguiente ID: %s", preserve_inicio, self.siguiente_id)
         return True

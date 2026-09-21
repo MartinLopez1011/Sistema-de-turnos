@@ -2,6 +2,9 @@ import os
 from datetime import date
 from models.shift_manager import ShiftManager
 from utils.excel_handler import ExcelHandler
+from utils.logger import get_logger
+
+logger = get_logger("controller")
 
 class MainController:
     def __init__(self, root_path):
@@ -50,8 +53,8 @@ class MainController:
         success = self.shift_manager.move_person_down(person_id)
         return success, "Orden actualizado" if success else "Error al actualizar"
 
-    def reset_historial(self):
-        success = self.shift_manager.reset_historial()
+    def reset_historial(self, preserve_inicio=True):
+        success = self.shift_manager.reset_historial(preserve_inicio=preserve_inicio)
         return success, "Historial y configuraciones eliminadas correctamente" if success else "Error al limpiar historial"
 
     def preview_shifts(self, year, month, exceptions):
@@ -91,7 +94,10 @@ class MainController:
 
         while (preview_year, preview_month) <= (year, month):
             preview_key = f"{preview_year}-{preview_month:02d}"
-            period_exceptions = exceptions if preview_key == target_key else []
+            period_exceptions = (
+                exceptions if preview_key == target_key
+                else self.shift_manager.get_exceptions(preview_key)
+            )
             shifts, final_id, final_pending = self.shift_manager.generate_shifts(
                 preview_year, preview_month, period_exceptions, state=state)
             if preview_key == target_key:
@@ -109,7 +115,7 @@ class MainController:
 
         return []
 
-    def process_generation(self, year, month, exceptions):
+    def process_generation(self, year, month, exceptions, target_path=None):
         try:
             # 1. Generar los turnos basados en el mes y excepciones (forma pura)
             shifts, _, _ = self.shift_manager.generate_shifts(year, month, exceptions)
@@ -118,7 +124,7 @@ class MainController:
             # 2. Inicializar manejador de Excel
             meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
             nombre_mes = meses[month - 1]
-            dynamic_output = os.path.join(self.root_path, f"turnos_{nombre_mes}_{year}.xlsx")
+            dynamic_output = target_path or os.path.join(self.root_path, f"turnos_{nombre_mes}_{year}.xlsx")
             
             excel_handler = ExcelHandler(dynamic_output, self.shift_manager.personal)
             excel_handler.load_template()
@@ -128,18 +134,24 @@ class MainController:
             
             # 4. Guardar archivo
             excel_handler.save_report()
-            
-            # Nota: Ya NO actualizamos el config.json automáticamente aquí
-            # para evitar que la cola salte cada vez que el usuario exporta.
+            logger.info("Excel exportado exitosamente a %s", dynamic_output)
             
             if warnings:
                 return True, (
                     "Turnos exportados con advertencias: "
                     f"{len(warnings)} feriado repetido por falta de alternativa"
                 )
-            return True, f"Turnos exportados a Excel exitosamente"
+            return True, f"Turnos exportados a Excel exitosamente ({os.path.basename(dynamic_output)})"
             
+        except PermissionError:
+            file_name = os.path.basename(dynamic_output) if 'dynamic_output' in locals() else "el archivo"
+            logger.error("Error de permisos al escribir Excel %s", file_name)
+            return False, (
+                f"No se pudo guardar '{file_name}'. El archivo está abierto en Microsoft Excel u otra aplicación. "
+                "Por favor ciérralo e intenta nuevamente."
+            )
         except Exception as e:
+            logger.error("Error en process_generation: %s", e, exc_info=True)
             return False, f"Error: {str(e)}"
 
     def advance_queue(self, year, month, exceptions):

@@ -22,13 +22,18 @@ main.py                    ← Entrypoint. Detecta si es .exe o script y resuelv
 controllers/
   main_controller.py       ← Orquesta modelo y vista. Sin lógica de negocio.
 models/
-  shift_manager.py         ← TODA la lógica de negocio (rotación, snapshots, excepciones)
+  shift_manager.py         ← TODA la lógica de negocio (rotación, snapshots, excepciones, backups)
 views/
-  gui.py                   ← GUI con CustomTkinter (~1400 líneas). TurnosApp(ctk.CTk)
+  gui.py                   ← Ventana principal TurnosApp (coordinador liviano)
+  theme.py                 ← Paleta de diseño P, avatares, constantes MESES/DIAS
+  components/              ← Widgets auxiliares y diálogos CTk modales
+  tabs/                    ← Pestañas modulares: tab_plan, tab_calendar, tab_settings
 utils/
+  logger.py                ← Logging rotativo en archivo (turnos.log) y consola
   excel_handler.py         ← Construye la plantilla Excel en memoria, escribe turnos y guarda reporte
   chilean_holidays.py      ← Obtiene feriados nacionales de Chile y normaliza sus nombres
 assets/                    ← Íconos PNG (success, error, save)
+backups/                   ← Respaldos automáticos fechados de config.json
 config.json                ← Base de datos en JSON (ver sección 4)
 generar_documento.py      ← Genera el documento ejecutivo editable en Word
 Sistema_de_Gestion_de_Turnos.docx ← Documento ejecutivo generado del proyecto
@@ -225,18 +230,6 @@ El generador del Word se ejecuta desde el entorno virtual del proyecto:
 ### Al modificar la GUI:
 - Usar siempre colores del diccionario `P`, nunca hardcodear hex
 - Nuevos widgets deben usar `fg_color=P["bg_card"]` o similar
-- El hover de filas usa `_make_row_hover()` — aplicar en cualquier lista nueva
-PS C:\Users\Soporte\Documents\Sistema de turnos> python main.py
-Traceback (most recent call last):
-  File "C:\Users\Soporte\Documents\Sistema de turnos\main.py", line 2, in <module>
-    from controllers.main_controller import MainController
-  File "C:\Users\Soporte\Documents\Sistema de turnos\controllers\main_controller.py", line 3, in <module>
-    from models.shift_manager import ShiftManager
-  File "C:\Users\Soporte\Documents\Sistema de turnos\models\shift_manager.py", line 7, in <module>
-    from utils.chilean_holidays import december_holidays, national_holidays, normalize_holiday_name
-  File "C:\Users\Soporte\Documents\Sistema de turnos\utils\chilean_holidays.py", line 5, in <module>
-    import holidays
-ModuleNotFoundError: No module named 'holidays'
 ### Al tocar `config.json`:
 - Nunca leer/escribir directamente fuera de `ShiftManager`
 - Si se agrega un campo nuevo, agregarlo también en `save_config()` Y en `load_config()`
