@@ -13,13 +13,18 @@ No cambies de lugar el archivo `config.json`. La aplicación lo necesita para co
 En la pestaña **Planificación**:
 
 1. Selecciona el **mes** y el **año**.
-2. Revisa la tabla de turnos.
-3. Si alguien no puede tomar turno, agrega una excepción:
+2. Revisa la lista de tarjetas semanales en el panel **Vista previa**.
+3. Si alguien no puede tomar turno, agrega una excepción en el panel lateral:
    - Selecciona la persona.
-   - Escribe el día o los días. Ejemplo: `5, 12, 19`.
-   - Elige el tipo: `DA`, `FL`, `LIC` u `OTR`.
-   - Pulsa **Añadir**.
-4. Revisa nuevamente la tabla.
+   - Escribe el día o rango de días (ejemplo: `1-5, 12, 19`).
+   - Elige el tipo de ausencia: `DA` (Día Administrativo), `FL` (Feriado Legal), `LIC` (Licencia médica) u `OTR` (Otro motivo).
+   - Pulsa **＋ Añadir**.
+4. Si necesitas asignar a alguien específico a una guardia sin registrar una excepción de ausencia:
+   - En la tarjeta semanal correspondiente, pulsa el botón **✏️ Cambiar**.
+   - Selecciona al funcionario en la lista desplegable y pulsa **Asignar Guardia**.
+   - La tarjeta mostrará la etiqueta verde `📌 MANUAL`.
+   - Si deseas volver a la rotación calculada automáticamente, pulsa el botón **↺ Auto**.
+5. Revisa que todas las semanas estén como esperas antes de exportar o guardar el mes.
 
 ## 3. Ver el calendario
 

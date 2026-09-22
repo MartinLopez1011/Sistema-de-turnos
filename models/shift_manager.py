@@ -54,6 +54,7 @@ class ShiftManager:
         self.pendientes = []
         self.snapshots = {}
         self.excepciones = {}
+        self.asignaciones_manuales = {}
 
     def _parse_config_data(self, data):
         self.inicio = data.get('inicio', {})
@@ -64,6 +65,8 @@ class ShiftManager:
         self.snapshots = data.get('snapshots', {})
         saved_exceptions = data.get('excepciones', {})
         self.excepciones = saved_exceptions if isinstance(saved_exceptions, dict) else {}
+        saved_manual = data.get('asignaciones_manuales', {})
+        self.asignaciones_manuales = saved_manual if isinstance(saved_manual, dict) else {}
 
         # Normalizar keys de snapshots al formato YYYY-MM (con cero)
         raw_snapshots = self.snapshots
@@ -91,7 +94,8 @@ class ShiftManager:
             "siguiente_id": self.siguiente_id,
             "pendientes": self.pendientes,
             "snapshots": self.snapshots,
-            "excepciones": self.excepciones
+            "excepciones": self.excepciones,
+            "asignaciones_manuales": self.asignaciones_manuales
         }
         try:
             with open(temporary_path, 'w', encoding='utf-8') as f:
@@ -123,7 +127,8 @@ class ShiftManager:
                 "siguiente_id": self.siguiente_id,
                 "pendientes": self.pendientes,
                 "snapshots": self.snapshots,
-                "excepciones": self.excepciones
+                "excepciones": self.excepciones,
+                "asignaciones_manuales": self.asignaciones_manuales
             }
             with open(backup_path, 'w', encoding='utf-8') as f:
                 json.dump(payload, f, indent=2, ensure_ascii=False)
@@ -163,6 +168,22 @@ class ShiftManager:
             except (KeyError, TypeError, ValueError):
                 continue
         return exceptions
+
+    def get_manual_assignments(self, period_key):
+        return dict(self.asignaciones_manuales.get(period_key, {}))
+
+    def set_manual_assignment(self, period_key, week_key, person_name):
+        if period_key not in self.asignaciones_manuales:
+            self.asignaciones_manuales[period_key] = {}
+        self.asignaciones_manuales[period_key][week_key] = person_name
+        self.save_config()
+
+    def remove_manual_assignment(self, period_key, week_key):
+        if period_key in self.asignaciones_manuales and week_key in self.asignaciones_manuales[period_key]:
+            del self.asignaciones_manuales[period_key][week_key]
+            if not self.asignaciones_manuales[period_key]:
+                del self.asignaciones_manuales[period_key]
+            self.save_config()
 
     def get_person_by_id(self, p_id):
         for p in self.personal:
@@ -348,7 +369,7 @@ class ShiftManager:
         return False
 
     def generate_shifts(self, year, month, exceptions, state=None,
-                        recalculate_history=False):
+                        recalculate_history=False, manual_assignments=None):
         self.last_warnings = []
         cal = calendar.Calendar().monthdatescalendar(year, month)
         weeks = []
@@ -363,6 +384,8 @@ class ShiftManager:
         
         # 1. Cargar snapshot o estado temporal para calcular una previsión encadenada
         snapshot_key = f"{year}-{month:02d}"
+        if manual_assignments is None:
+            manual_assignments = self.asignaciones_manuales.get(snapshot_key, {})
         if state is not None:
             current_siguiente_id = state["siguiente_id"]
             current_pendientes = state["pendientes"].copy()
@@ -415,7 +438,12 @@ class ShiftManager:
                     exc['tipo'] != 'FOR'
                     for exc in exceptions
                 )
-                if not historical_exception and not history_recalculated:
+                has_manual_override = bool(
+                    manual_assignments and
+                    week_key in manual_assignments and
+                    manual_assignments[week_key] != historical_person
+                )
+                if not historical_exception and not history_recalculated and not has_manual_override:
                     # Avanzar el puntero para que la rotación refleje quién ya hizo turno
                     hist_idx = next(
                         (i for i, p in enumerate(self.personal)
@@ -436,12 +464,21 @@ class ShiftManager:
                         if personal_ids[current_person_index] == personal_ids[hist_idx]:
                             current_person_index = next_idx
                             current_siguiente_id = personal_ids[current_person_index]
+
+                    is_hist_manual = bool(
+                        (self.asignaciones_manuales.get(snapshot_key, {}).get(week_key) == historical_person) or
+                        (manual_assignments and manual_assignments.get(week_key) == historical_person)
+                    )
                     shifts.append({
                         'semana': (start_date, end_date),
                         'persona': historical_person,
-                        'saltados': []
+                        'saltados': [],
+                        'es_manual': is_hist_manual
                     })
                     continue
+
+                if has_manual_override:
+                    history_recalculated = True
 
                 if historical_exception:
                     historical_type = next(
@@ -471,19 +508,37 @@ class ShiftManager:
             assigned = False
             skipped_this_week = historical_skipped.copy()
             
-            # 3.0 Intentar asignación forzada (FOR)
-            for exc in exceptions:
-                if start_date <= exc['fecha'] <= end_date and exc['tipo'] == "FOR":
-                    nombre_forzado = exc['persona']
-                    current_pendientes = [p for p in current_pendientes if self.get_person_by_id(p) != nombre_forzado]
-                    shifts.append({
-                        'semana': (start_date, end_date),
-                        'persona': nombre_forzado,
-                        'saltados': skipped_this_week.copy(),
-                        'es_forzado': True
-                    })
-                    assigned = True
-                    break
+            # 3.0 Asignación manual directa (Alternativa 1)
+            if manual_assignments and week_key in manual_assignments:
+                nombre_manual = manual_assignments[week_key]
+                manual_id = next((p['id'] for p in self.personal if p['nombre'] == nombre_manual), None)
+                if manual_id:
+                    current_pendientes = [p for p in current_pendientes if p != manual_id]
+                    if personal_ids and personal_ids[current_person_index] == manual_id:
+                        current_person_index = (current_person_index + 1) % len(personal_ids)
+                        current_siguiente_id = personal_ids[current_person_index]
+                shifts.append({
+                    'semana': (start_date, end_date),
+                    'persona': nombre_manual,
+                    'saltados': skipped_this_week.copy(),
+                    'es_manual': True
+                })
+                assigned = True
+
+            # 3.0b Intentar asignación forzada legacy (FOR en excepciones)
+            if not assigned:
+                for exc in exceptions:
+                    if start_date <= exc['fecha'] <= end_date and exc['tipo'] == "FOR":
+                        nombre_forzado = exc['persona']
+                        current_pendientes = [p for p in current_pendientes if self.get_person_by_id(p) != nombre_forzado]
+                        shifts.append({
+                            'semana': (start_date, end_date),
+                            'persona': nombre_forzado,
+                            'saltados': skipped_this_week.copy(),
+                            'es_forzado': True
+                        })
+                        assigned = True
+                        break
             
             # 3. Intentar asignar a pendientes (Opción B)
             new_pendientes = []
@@ -668,9 +723,11 @@ class ShiftManager:
 
         return shifts, current_siguiente_id, current_pendientes
 
-    def advance_month(self, year, month, exceptions):
+    def advance_month(self, year, month, exceptions, manual_assignments=None):
         self.create_backup(f"pre_advance_{year}_{month:02d}")
         period_key = f"{year}-{month:02d}"
+        if manual_assignments is None:
+            manual_assignments = self.asignaciones_manuales.get(period_key, {})
 
         # Determinar si este periodo es anterior al frente de rotación ya registrado en historial o snapshots
         latest_recorded_period = None
@@ -703,11 +760,15 @@ class ShiftManager:
             is_past_period = True
 
         previous_exceptions = self.get_exceptions(period_key)
+        previous_manual = self.get_manual_assignments(period_key)
         exception_signature = lambda items: sorted(
             (item['persona'], item['fecha'].isoformat(), item['tipo'])
             for item in items)
+        manual_assignments_dict = dict(manual_assignments) if manual_assignments is not None else {}
         exceptions_changed = (
-            exception_signature(exceptions) != exception_signature(previous_exceptions))
+            exception_signature(exceptions) != exception_signature(previous_exceptions) or
+            manual_assignments_dict != previous_manual
+        )
 
         if period_key not in self.snapshots:
             self.snapshots[period_key] = {
@@ -719,7 +780,8 @@ class ShiftManager:
         shifts, final_id, final_pendientes = self.generate_shifts(
             year, month, exceptions,
             state=recalculation_state,
-            recalculate_history=exceptions_changed)
+            recalculate_history=exceptions_changed,
+            manual_assignments=manual_assignments)
         
         for shift in shifts:
             start_date = shift['semana'][0]
@@ -764,6 +826,11 @@ class ShiftManager:
             }
             for exc in exceptions
         ]
+        if manual_assignments is not None:
+            if manual_assignments:
+                self.asignaciones_manuales[period_key] = dict(manual_assignments)
+            elif period_key in self.asignaciones_manuales:
+                del self.asignaciones_manuales[period_key]
         
         self.save_config()
         return True, "Turnos guardados y cola avanzada."
@@ -895,6 +962,7 @@ class ShiftManager:
         self.snapshots = {}
         self.pendientes = []
         self.excepciones = {}
+        self.asignaciones_manuales = {}
 
         # Recalcular siguiente_id a partir de la última asignación de inicio
         personal_ids = [p['id'] for p in self.personal]

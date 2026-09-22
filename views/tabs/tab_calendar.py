@@ -173,7 +173,12 @@ class TabCalendar:
         if viewing_key == self.app.active_period_key:
             exceptions = self.app.exceptions
 
-        shifts = self.controller.preview_shifts(year, month, exceptions)
+        manual_assignments = self.app.manual_assignments_by_period.get(viewing_key, {})
+        if viewing_key == self.app.active_period_key:
+            manual_assignments = self.app.manual_assignments
+
+        shifts = self.controller.preview_shifts(
+            year, month, exceptions, manual_assignments=manual_assignments)
         generation_warnings = self.controller.shift_manager.last_warnings
         if generation_warnings:
             self.app.set_status(f"⚠ {len(generation_warnings)} feriado repetido por falta de alternativa.", "warn")
@@ -541,6 +546,16 @@ class TabCalendar:
                     rf, text="  🔄 TURNO RECUPERADO  ",
                     font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
                     text_color="#93C5FD"
+                ).pack(padx=2, pady=3)
+                crow += 1
+
+            if shift.get("es_manual") or shift.get("es_forzado"):
+                mf = ctk.CTkFrame(card, fg_color="#065F46", corner_radius=6)
+                mf.grid(row=crow, column=0, padx=12, pady=(8, 0), sticky="w")
+                ctk.CTkLabel(
+                    mf, text="  📌 ASIGNACIÓN MANUAL  ",
+                    font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
+                    text_color="#A7F3D0"
                 ).pack(padx=2, pady=3)
                 crow += 1
 

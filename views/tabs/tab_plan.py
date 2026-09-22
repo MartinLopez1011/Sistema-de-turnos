@@ -3,8 +3,9 @@ from datetime import datetime, date
 import customtkinter as ctk
 from tkinter import messagebox
 
-from views.theme import P, MESES, EXC_COLORS
-from views.components.widgets import _section_header, _short_name
+from views.theme import P, AVATAR_PAL, MESES, EXC_COLORS, EXC_ICONS
+from views.components.widgets import _section_header, _short_name, _initials, _avatar_ctk
+from views.components.dialogs import SelectPersonDialog
 
 class TabPlan:
     def __init__(self, parent_tab, app):
@@ -19,7 +20,7 @@ class TabPlan:
         self.next_turno_lbl = None
         self.exc_count_label = None
         self.exception_list = None
-        self.preview_textbox = None
+        self.preview_scroll = None
         self.save_btn = None
         self.status_label = None
         self._status_frame = None
@@ -120,7 +121,7 @@ class TabPlan:
 
         self.type_var = ctk.StringVar(value="DA")
         self.type_segmented = ctk.CTkSegmentedButton(
-            exc_form, variable=self.type_var, values=["DA", "FL", "LIC", "OTR", "FOR"],
+            exc_form, variable=self.type_var, values=["DA", "FL", "LIC", "OTR"],
             fg_color=P["bg_input"],
             selected_color=P["accent_d"],
             selected_hover_color=P["accent"],
@@ -220,12 +221,11 @@ class TabPlan:
             font=ctk.CTkFont(family="Inter", size=12)
         ).grid(row=1, column=0, padx=16, pady=(0, 8), sticky="ew")
 
-        self.preview_textbox = ctk.CTkTextbox(
-            preview_frame, font=ctk.CTkFont(family="Courier", size=13),
-            fg_color=P["bg_card2"], border_width=0, text_color=P["text"]
+        self.preview_scroll = ctk.CTkScrollableFrame(
+            preview_frame, fg_color="transparent", scrollbar_button_color=P["border_h"]
         )
-        self.preview_textbox.grid(row=2, column=0, padx=10, pady=(0, 12), sticky="nsew")
-        self.preview_textbox.configure(state="disabled")
+        self.preview_scroll.grid(row=2, column=0, padx=10, pady=(0, 12), sticky="nsew")
+        self.preview_scroll.grid_columnconfigure(0, weight=1)
 
         # Barra inferior de estado y acción principal
         bottom = ctk.CTkFrame(main, fg_color="transparent")
@@ -415,53 +415,171 @@ class TabPlan:
             self.app.set_status(f"Error inesperado: {str(ex)}", "error")
 
     def update_preview(self, shifts, year, month):
-        self.preview_textbox.configure(state="normal")
-        self.preview_textbox.delete("0.0", "end")
+        for w in self.preview_scroll.winfo_children():
+            w.destroy()
 
-        self.preview_textbox.tag_config("header", foreground=P["accent"])
-        self.preview_textbox.tag_config("date", foreground=P["text_s"])
-        self.preview_textbox.tag_config("person", foreground=P["text_ok"])
-        self.preview_textbox.tag_config("warning", foreground=P["orange"])
-        self.preview_textbox.tag_config("skip", foreground=P["text_s"])
-        self.preview_textbox.tag_config("current", background=P["bg_hover"], foreground=P["text"])
-
-        self.preview_textbox.insert("end", f"{'─'*38}\n", "header")
-        self.preview_textbox.insert("end", f"  {MESES[month-1].upper()} {year}\n", "header")
-        self.preview_textbox.insert("end", f"{'─'*38}\n\n", "header")
+        if not shifts:
+            ctk.CTkLabel(
+                self.preview_scroll, text="Sin turnos calculados para este periodo.",
+                font=ctk.CTkFont(family="Inter", size=13),
+                text_color=P["text_s"]
+            ).pack(pady=24)
+            self.next_turno_lbl.configure(text="Sin turnos en este periodo")
+            return
 
         today = date.today()
+        personal = self.controller.get_personal_list()
 
-        for sh in shifts:
+        for idx, sh in enumerate(shifts):
             s, e = sh['semana']
             person = sh['persona'] or "NADIE DISPONIBLE"
             salt = sh.get('saltados', [])
+            is_manual = sh.get('es_manual', False) or sh.get('es_forzado', False)
+            is_current = (s <= today <= e)
+            week_key = f"{s.strftime('%Y-%m-%d')}_{e.strftime('%Y-%m-%d')}"
 
-            is_current = s <= today <= e
+            av_idx = personal.index(person) if person in personal else 0
+            av_color = AVATAR_PAL[av_idx % len(AVATAR_PAL)] if person != "NADIE DISPONIBLE" else P["border"]
+
+            card_border = P["today"] if is_current else (P["accent_d"] if is_manual else P["border"])
+            card = ctk.CTkFrame(
+                self.preview_scroll,
+                fg_color=P["bg_card2"],
+                corner_radius=10,
+                border_width=2 if is_current else 1,
+                border_color=card_border
+            )
+            card.pack(fill="x", padx=4, pady=5)
+            card.grid_columnconfigure(0, weight=1)
+
+            crow = 0
+
+            # Encabezado de la tarjeta semanal
+            header = ctk.CTkFrame(card, fg_color="transparent")
+            header.grid(row=crow, column=0, sticky="ew", padx=12, pady=(10, 4))
+            header.grid_columnconfigure(0, weight=1)
+            crow += 1
+
+            date_text = f"📅  {s.strftime('%d/%m')} → {e.strftime('%d/%m')}  ·  Semana {idx + 1}"
+            ctk.CTkLabel(
+                header, text=date_text,
+                font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+                text_color=P["text_a"] if not is_current else P["accent"]
+            ).grid(row=0, column=0, sticky="w")
+
+            badges_f = ctk.CTkFrame(header, fg_color="transparent")
+            badges_f.grid(row=0, column=1, sticky="e")
+
             if is_current:
-                self.preview_textbox.insert("end", " ▶ SEMANA ACTUAL\n", "header")
+                cur_badge = ctk.CTkFrame(badges_f, fg_color=P["today_bg"], corner_radius=5)
+                cur_badge.pack(side="left", padx=(0, 6))
+                ctk.CTkLabel(
+                    cur_badge, text=" ● ACTUAL ",
+                    font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
+                    text_color=P["accent"]
+                ).pack(padx=4, pady=2)
 
-            line_tags = ("current",) if is_current else ()
-            date_tags = ("date", "current") if is_current else ("date",)
-            person_tags = ("person", "current") if is_current else ("person",)
+            if is_manual:
+                man_badge = ctk.CTkFrame(badges_f, fg_color="#065F46", corner_radius=5)
+                man_badge.pack(side="left")
+                ctk.CTkLabel(
+                    man_badge, text=" 📌 MANUAL ",
+                    font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
+                    text_color="#A7F3D0"
+                ).pack(padx=4, pady=2)
+            else:
+                auto_badge = ctk.CTkFrame(badges_f, fg_color=P["bg_input"], corner_radius=5)
+                auto_badge.pack(side="left")
+                ctk.CTkLabel(
+                    auto_badge, text=" 🤖 AUTOMÁTICO ",
+                    font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
+                    text_color=P["text_s"]
+                ).pack(padx=4, pady=2)
 
-            self.preview_textbox.insert(
-                "end", f"  📅 {s.strftime('%d/%m')} → {e.strftime('%d/%m')}\n", date_tags
+            # Fila de persona asignada y botones de acción
+            body = ctk.CTkFrame(card, fg_color="transparent")
+            body.grid(row=crow, column=0, sticky="ew", padx=12, pady=(4, 10))
+            body.grid_columnconfigure(1, weight=1)
+            crow += 1
+
+            av = _avatar_ctk(body, _initials(person), av_color, size=34)
+            av.grid(row=0, column=0, padx=(0, 10), sticky="w")
+
+            name_lbl = ctk.CTkLabel(
+                body, text=_short_name(person, 3),
+                font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
+                text_color=P["text_ok"] if not is_manual else P["green"],
+                anchor="w"
             )
-            self.preview_textbox.insert(
-                "end", f"  👤 {_short_name(person, 2)}\n", person_tags
+            name_lbl.grid(row=0, column=1, sticky="w")
+
+            actions_f = ctk.CTkFrame(body, fg_color="transparent")
+            actions_f.grid(row=0, column=2, sticky="e")
+
+            def _on_change(wk=week_key, cur_p=person, s_d=s, e_d=e):
+                available = self.controller.get_personal_list()
+                if not available:
+                    self.app.set_status("No hay personal disponible para asignar.", "error")
+                    return
+                chosen = SelectPersonDialog.show(
+                    self.app,
+                    title="Cambiar Guardia de Turno",
+                    prompt=f"Selecciona el funcionario asignado a la guardia:\n{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}",
+                    persons=available,
+                    current_person=cur_p
+                )
+                if chosen:
+                    self.app.set_manual_assignment(wk, chosen)
+
+            btn_change = ctk.CTkButton(
+                actions_f, text="✏️ Cambiar",
+                font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+                fg_color=P["bg_input"], hover_color=P["bg_hover"],
+                border_width=1, border_color=P["border_h"],
+                text_color=P["text"], height=28, width=82,
+                command=_on_change
             )
+            btn_change.pack(side="left", padx=(0, 4))
 
-            for warning in sh.get("advertencias", []):
-                self.preview_textbox.insert(
-                    "end", f"  ⚠ {warning['mensaje']} ({', '.join(warning['feriados'])})\n", "warning"
-                )
-            for sk in salt:
-                self.preview_textbox.insert(
-                    "end", f"     ↷ {_short_name(sk['persona'], 1)} ({sk['tipo']})\n", "skip"
-                )
-            self.preview_textbox.insert("end", "\n")
+            if is_manual:
+                def _on_reset(wk=week_key):
+                    self.app.clear_manual_assignment(wk)
 
-        self.preview_textbox.configure(state="disabled")
+                btn_reset = ctk.CTkButton(
+                    actions_f, text="↺ Auto",
+                    font=ctk.CTkFont(family="Inter", size=11),
+                    fg_color=P["bg_card"], hover_color=P["red_d"],
+                    border_width=1, border_color=P["border"],
+                    text_color=P["text_s"], height=28, width=64,
+                    command=_on_reset
+                )
+                btn_reset.pack(side="left")
+
+            # Advertencias y saltados
+            if sh.get("advertencias"):
+                wf = ctk.CTkFrame(card, fg_color=P["orange"], corner_radius=6)
+                wf.grid(row=crow, column=0, padx=12, pady=(0, 6), sticky="ew")
+                crow += 1
+                for w_item in sh["advertencias"]:
+                    ctk.CTkLabel(
+                        wf, text=f"⚠ {w_item['mensaje']} ({', '.join(w_item['feriados'])})",
+                        font=ctk.CTkFont(family="Inter", size=10, weight="bold"),
+                        text_color="#000"
+                    ).pack(padx=8, pady=3, anchor="w")
+
+            if salt:
+                sf = ctk.CTkFrame(card, fg_color="transparent")
+                sf.grid(row=crow, column=0, padx=12, pady=(0, 8), sticky="ew")
+                crow += 1
+                for sk in salt:
+                    tipo = sk['tipo']
+                    cc = EXC_COLORS.get(tipo, P["otr"])
+                    icon = EXC_ICONS.get(tipo, "📌")
+                    ctk.CTkLabel(
+                        sf, text=f"↷ {icon} {_short_name(sk['persona'], 2)} ({tipo})",
+                        font=ctk.CTkFont(family="Inter", size=10),
+                        text_color=P["text_s"]
+                    ).pack(anchor="w", padx=2)
 
         # Actualizar tarjeta de próximo turno
         first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)

@@ -30,6 +30,12 @@ class MainController:
             for period_key in self.shift_manager.excepciones
         }
 
+    def get_saved_manual_assignments(self):
+        return {
+            period_key: self.shift_manager.get_manual_assignments(period_key)
+            for period_key in self.shift_manager.asignaciones_manuales
+        }
+
     def set_starting_person(self, person_name):
         return self.shift_manager.set_starting_person(person_name)
 
@@ -69,7 +75,7 @@ class MainController:
         success = self.shift_manager.reset_historial(preserve_inicio=preserve_inicio)
         return success, "Historial y configuraciones eliminadas correctamente" if success else "Error al limpiar historial"
 
-    def preview_shifts(self, year, month, exceptions):
+    def preview_shifts(self, year, month, exceptions, manual_assignments=None):
         target_key = f"{year}-{month:02d}"
         today = date.today()
         target_is_future = (year, month) > (today.year, today.month)
@@ -80,22 +86,26 @@ class MainController:
                 for item in items)
 
         saved_exceptions = self.shift_manager.get_exceptions(target_key)
+        saved_manual = self.shift_manager.get_manual_assignments(target_key)
+        active_manual = manual_assignments if manual_assignments is not None else saved_manual
         exceptions_changed = (
-            exception_signature(exceptions) != exception_signature(saved_exceptions))
+            exception_signature(exceptions) != exception_signature(saved_exceptions) or
+            active_manual != saved_manual)
 
-        # Un mes cerrado puede editarse: si cambiaron sus excepciones,
+        # Un mes cerrado puede editarse: si cambiaron sus excepciones o asignaciones manuales,
         # recalcular desde el estado guardado al inicio del periodo.
         if target_key in self.shift_manager.snapshots and exceptions_changed:
             state = self.shift_manager.snapshots[target_key]
             shifts, _, _ = self.shift_manager.generate_shifts(
                 year, month, exceptions, state=state,
-                recalculate_history=True)
+                recalculate_history=True, manual_assignments=active_manual)
             return shifts
 
         # A future month without snapshot must continue after the current month,
         # otherwise each preview starts again from the global pointer.
         if not target_is_future or target_key in self.shift_manager.snapshots:
-            shifts, _, _ = self.shift_manager.generate_shifts(year, month, exceptions)
+            shifts, _, _ = self.shift_manager.generate_shifts(
+                year, month, exceptions, manual_assignments=active_manual)
             return shifts
 
         state = {
@@ -110,8 +120,13 @@ class MainController:
                 exceptions if preview_key == target_key
                 else self.shift_manager.get_exceptions(preview_key)
             )
+            period_manual = (
+                active_manual if preview_key == target_key
+                else self.shift_manager.get_manual_assignments(preview_key)
+            )
             shifts, final_id, final_pending = self.shift_manager.generate_shifts(
-                preview_year, preview_month, period_exceptions, state=state)
+                preview_year, preview_month, period_exceptions, state=state,
+                manual_assignments=period_manual)
             if preview_key == target_key:
                 return shifts
 
@@ -127,10 +142,10 @@ class MainController:
 
         return []
 
-    def process_generation(self, year, month, exceptions, target_path=None):
+    def process_generation(self, year, month, exceptions, manual_assignments=None, target_path=None):
         try:
             # 1. Generar los turnos usando preview_shifts para garantizar paridad exacta con la UI
-            shifts = self.preview_shifts(year, month, exceptions)
+            shifts = self.preview_shifts(year, month, exceptions, manual_assignments=manual_assignments)
             warnings = self.shift_manager.last_warnings
             
             # 2. Inicializar manejador de Excel garantizando paridad con personal histórico
@@ -180,9 +195,9 @@ class MainController:
             logger.error("Error en process_generation: %s", e, exc_info=True)
             return False, f"Error: {str(e)}"
 
-    def advance_queue(self, year, month, exceptions):
+    def advance_queue(self, year, month, exceptions, manual_assignments=None):
         try:
-            self.shift_manager.advance_month(year, month, exceptions)
+            self.shift_manager.advance_month(year, month, exceptions, manual_assignments=manual_assignments)
             warnings = self.shift_manager.last_warnings
             if warnings:
                 return True, (

@@ -82,6 +82,9 @@ main.py
   },
   "excepciones": {                                              // Excepciones guardadas por período
     "2026-09": [{"persona": "NOMBRE", "fecha": "2026-09-15", "tipo": "DA"}]
+  },
+  "asignaciones_manuales": {                                    // Asignaciones forzadas/manuales por semana
+    "2026-09": {"2026-09-07_2026-09-13": "COM PEREZ JUAN"}
   }
 }
 ```
@@ -91,6 +94,7 @@ main.py
 - `FL` = Feriado Legal (color violeta `#5B21B6`)
 - `LIC` = Licencia (color turquesa `#0E7490`)
 - `OTR` = Otro (color gris `#374151`)
+*(Nota: El tipo legacy `FOR` se mantiene como fallback de compatibilidad histórica, pero fue reemplazado en la interfaz por asignación manual directa en la tarjeta semanal).*
 
 ---
 
@@ -98,13 +102,14 @@ main.py
 
 El algoritmo recorre cada semana del mes calendario y:
 
-1. Si la semana está en `self.inicio` → asigna fijo, continúa (no modifica puntero)
-2. Si la semana está en `self.historial` → respeta lo guardado, SALVO que el asignado tenga excepción en esa semana (en ese caso recalcula)
-3. Si hay **pendientes** → intenta asignar al primero de la lista que NO tenga excepción
-4. Si no hay pendientes libres → sigue la **lista circular** desde `siguiente_id`
-5. Si alguien es saltado (tiene excepción) → se agrega a `pendientes` para recuperar turno después
-6. En diciembre, evita que una persona repita el mismo feriado nacional chileno del diciembre anterior cuando existe otra alternativa
-7. Si no existe alternativa por las restricciones de rotación, asigna igualmente y registra una advertencia visible
+1. Si la semana tiene asignación manual directa (`manual_assignments` o `asignaciones_manuales`) → asigna a esa persona, marca `es_manual: True` y avanza el puntero/pendientes.
+2. Si la semana está en `self.inicio` → asigna fijo, continúa (no modifica puntero)
+3. Si la semana está en `self.historial` → respeta lo guardado, SALVO que el asignado tenga excepción en esa semana (en ese caso recalcula)
+4. Si hay **pendientes** → intenta asignar al primero de la lista que NO tenga excepción
+5. Si no hay pendientes libres → sigue la **lista circular** desde `siguiente_id`
+6. Si alguien es saltado (tiene excepción) → se agrega a `pendientes` para recuperar turno después
+7. En diciembre, evita que una persona repita el mismo feriado nacional chileno del diciembre anterior cuando existe otra alternativa
+8. Si no existe alternativa por las restricciones de rotación, asigna igualmente y registra una advertencia visible
 
 La previsualización de un mes futuro sin snapshot encadena temporalmente los meses desde el estado actual para no reiniciar la rotación. Un mes cerrado puede recalcularse si cambian sus excepciones.
 

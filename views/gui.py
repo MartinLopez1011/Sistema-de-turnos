@@ -28,6 +28,8 @@ class TurnosApp(ctk.CTk):
 
         self.exceptions = []
         self.exceptions_by_period = {}
+        self.manual_assignments = {}
+        self.manual_assignments_by_period = {}
         self.active_period_key = None
         self.is_exporting = False
         self.plan_period_dirty = False
@@ -101,16 +103,20 @@ class TurnosApp(ctk.CTk):
     def on_period_change(self):
         if self.active_period_key is not None:
             self.exceptions_by_period[self.active_period_key] = self.exceptions
+            self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
         self.active_period_key = self.get_selected_period_key()
         self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+        self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
         self.plan_period_dirty = True
         self.tab_plan.refresh_exceptions(self.exceptions)
         self.refresh_plan_views()
 
     def load_personal(self):
         self.exceptions_by_period = self.controller.get_saved_exceptions()
+        self.manual_assignments_by_period = self.controller.get_saved_manual_assignments()
         self.active_period_key = self.get_selected_period_key()
         self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+        self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
 
         personal = self.controller.get_personal_list()
         self.tab_plan.refresh_personal(personal)
@@ -133,9 +139,25 @@ class TurnosApp(ctk.CTk):
             self.mark_dirty()
             self.set_status(f"Excepción eliminada: {removed['fecha'].strftime('%d/%m/%Y')}", "warn")
 
+    def set_manual_assignment(self, week_key, person_name):
+        self.manual_assignments[week_key] = person_name
+        self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
+        self.refresh_plan_views()
+        self.mark_dirty()
+        self.set_status(f"Guardia asignada manualmente: {person_name}", "ok")
+
+    def clear_manual_assignment(self, week_key):
+        if week_key in self.manual_assignments:
+            del self.manual_assignments[week_key]
+            self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
+            self.refresh_plan_views()
+            self.mark_dirty()
+            self.set_status("Asignación manual revertida a rotación automática.", "info")
+
     def refresh_plan_views(self):
         year, month = self.get_selected_period()
-        shifts = self.controller.preview_shifts(year, month, self.exceptions)
+        shifts = self.controller.preview_shifts(
+            year, month, self.exceptions, manual_assignments=self.manual_assignments)
         self.tab_plan.update_preview(shifts, year, month)
         if hasattr(self, "tab_calendar") and self.tab_calendar.vista_scroll:
             self.tab_calendar.render_turnos_view()
@@ -194,10 +216,12 @@ class TurnosApp(ctk.CTk):
 
         year, month = self.get_selected_period()
         exceptions_snapshot = list(self.exceptions)
+        manual_snapshot = dict(self.manual_assignments)
         confirmed = messagebox.askyesno(
             "Guardar mes",
             f"¿Guardar {MESES[month-1]} {year} en el historial?\n\n"
-            f"  • {len(exceptions_snapshot)} excepción{'es' if len(exceptions_snapshot) != 1 else ''} registrada{'s' if len(exceptions_snapshot) != 1 else ''}.\n\n"
+            f"  • {len(exceptions_snapshot)} excepción{'es' if len(exceptions_snapshot) != 1 else ''} registrada{'s' if len(exceptions_snapshot) != 1 else ''}.\n"
+            f"  • {len(manual_snapshot)} asignación{'es' if len(manual_snapshot) != 1 else ''} manual{'es' if len(manual_snapshot) != 1 else ''}.\n\n"
             "La cola avanzará al siguiente mes.",
             parent=self
         )
@@ -208,7 +232,8 @@ class TurnosApp(ctk.CTk):
         self.tab_plan.save_btn.configure(state="disabled", text="⏳  Guardando...")
         self.set_status("Guardando el mes en el historial...", "warn")
 
-        ok, msg = self.controller.advance_queue(year, month, exceptions_snapshot)
+        ok, msg = self.controller.advance_queue(
+            year, month, exceptions_snapshot, manual_assignments=manual_snapshot)
         self.is_exporting = False
         if not ok:
             self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
@@ -216,6 +241,7 @@ class TurnosApp(ctk.CTk):
             return
 
         self.exceptions_by_period[self.active_period_key] = exceptions_snapshot
+        self.manual_assignments_by_period[self.active_period_key] = manual_snapshot
         self.calendar_period_override = (year, month)
         self.mark_clean()
 
@@ -227,6 +253,7 @@ class TurnosApp(ctk.CTk):
         self.year_var.set(str(next_year))
         self.active_period_key = self.get_selected_period_key()
         self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+        self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
 
         self.tab_plan.refresh_exceptions(self.exceptions)
         self.refresh_plan_views()
@@ -240,9 +267,12 @@ class TurnosApp(ctk.CTk):
         year, month = self.tab_calendar.get_current_view_period()
         period_key = f"{year}-{month:02d}"
         exceptions = self.exceptions_by_period.get(period_key, [])
+        manual_assignments = self.manual_assignments_by_period.get(period_key, {})
         if period_key == self.active_period_key:
             exceptions = self.exceptions
+            manual_assignments = self.manual_assignments
         exceptions_snapshot = list(exceptions)
+        manual_snapshot = dict(manual_assignments)
 
         nombre_mes = MESES[month - 1]
         default_filename = f"turnos_{nombre_mes}_{year}.xlsx"
@@ -275,7 +305,7 @@ class TurnosApp(ctk.CTk):
 
         def _thread_worker():
             result = self.controller.process_generation(
-                year, month, exceptions_snapshot, target_path=target_file
+                year, month, exceptions_snapshot, manual_assignments=manual_snapshot, target_path=target_file
             )
             self.after(0, lambda: _on_export_done(*result))
 
