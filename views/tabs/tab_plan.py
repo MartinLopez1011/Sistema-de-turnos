@@ -5,7 +5,7 @@ from tkinter import messagebox
 
 from views.theme import P, AVATAR_PAL, MESES, EXC_COLORS, EXC_ICONS
 from views.components.widgets import _section_header, _short_name, _initials, _avatar_ctk
-from views.components.dialogs import SelectPersonDialog
+from views.components.dialogs import SelectPersonDialog, ChangeShiftDialog
 
 class TabPlan:
     def __init__(self, parent_tab, app):
@@ -549,15 +549,17 @@ class TabPlan:
                 if not available:
                     self.app.set_status("No hay personal disponible para asignar.", "error")
                     return
-                chosen = SelectPersonDialog.show(
+                dates_str = f"{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}"
+                res = ChangeShiftDialog.show(
                     self.app,
                     title="Cambiar Guardia de Turno",
-                    prompt=f"Selecciona el funcionario asignado a la guardia:\n{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}",
+                    dates_prompt=dates_str,
                     persons=available,
                     current_person=cur_p
                 )
-                if chosen:
-                    self.app.set_manual_assignment(wk, chosen)
+                if res:
+                    chosen, motive = res
+                    self.app.set_manual_assignment(wk, chosen, motivo=motive)
 
             btn_change = ctk.CTkButton(
                 actions_f, text="✏️ Cambiar",
@@ -582,6 +584,17 @@ class TabPlan:
                     command=_on_reset
                 )
                 btn_reset.pack(side="left")
+
+                motive = self.app.get_manual_motive(week_key)
+                if motive:
+                    mf = ctk.CTkFrame(card, fg_color="transparent")
+                    mf.grid(row=crow, column=0, padx=12, pady=(0, 4), sticky="ew")
+                    crow += 1
+                    ctk.CTkLabel(
+                        mf, text=f"📝 Motivo: {motive}",
+                        font=ctk.CTkFont(family="Inter", size=10, slant="italic"),
+                        text_color=P["green"], wraplength=230, justify="left", anchor="w"
+                    ).pack(anchor="w", padx=2)
 
             # Advertencias y saltados
             if sh.get("advertencias"):

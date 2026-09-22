@@ -1034,3 +1034,691 @@ TypeError: ControllerExportParityTests.test_process_generation_matches_preview_s
 2026-09-22 15:42:44 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpg0ipc7yu\backups\config_20260922_154244_pre_advance_2026_10.json
 2026-09-22 15:42:44 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqykex2gb\backups\config_20260922_154244_pre_advance_2026_04.json
 2026-09-22 15:42:45 [WARNING] turnos.shift_manager: Error creando backup de config: 
+2026-09-22 16:07:35 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmphtgnwq3_\parity_test.xlsx
+2026-09-22 16:07:35 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:07:36 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpe4gnrdxk\test_deleted_person_export.xlsx
+2026-09-22 16:07:36 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpfzbg52j_\test_legend.xlsx
+2026-09-22 16:07:36 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpbucrqp59\test_title.xlsx
+2026-09-22 16:07:36 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpovwynbyg\backups\config.json.corrupted_20260922_160736
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmppb4r79r9\backups\config_20260922_160736_pre_advance_2026_10.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp08puhl3x\backups\config_20260922_160736_pre_advance_2026_04.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp08puhl3x\backups\config_20260922_160736_pre_advance_2026_04.json
+2026-09-22 16:07:36 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp1wvyo3r5\excel_test.xlsx
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpryf5jswj\backups\config_20260922_160736_pre_advance_2026_10.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4gzruskb\backups\config_20260922_160736_pre_advance_2026_09.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp2e3k3ygd\backups\config_20260922_160736_pre_advance_2026_07.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp2e3k3ygd\backups\config_20260922_160736_pre_advance_2026_08.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp2e3k3ygd\backups\config_20260922_160736_pre_advance_2026_06.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp5tfvm9q2\backups\config_20260922_160736_pre_advance_2026_05.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp5tfvm9q2\backups\config_20260922_160736_pre_advance_2026_06.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpfks07xxj\backups\config_20260922_160736_pre_reset.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp83o3syaf\backups\config_20260922_160736_test_tag.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4sslk_zm\backups\config_20260922_160736_pre_reset.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpr7efjnqz\backups\config_20260922_160736_pre_reset.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpa2uw16s8\backups\config_20260922_160736_pre_advance_2024_04.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpa2uw16s8\backups\config_20260922_160736_pre_advance_2024_05.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpa2uw16s8\backups\config_20260922_160736_pre_advance_2024_03.json
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:07:36 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpez5r11ht\backups\corrupt_config.json.corrupted_20260922_160736
+2026-09-22 16:07:36 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmprd3glxkt\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:07:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-64\test_transicion_mes_y_snapshot0\backups\config_20260922_160736_pre_advance_2024_04.json
+2026-09-22 16:10:42 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmph1s41xmp\backups\config_20260922_161042_pre_advance_2026_10.json
+2026-09-22 16:11:27 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpruevusj7\backups\config_20260922_161127_pre_advance_2026_10.json
+2026-09-22 16:15:02 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp5t0g69t6\parity_test.xlsx
+2026-09-22 16:15:02 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:15:02 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpm41oo_7o\test_deleted_person_export.xlsx
+2026-09-22 16:15:02 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmps3ppanar\test_legend.xlsx
+2026-09-22 16:15:02 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmprisqe3pk\test_title.xlsx
+2026-09-22 16:15:02 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:15:02 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpule3904o\backups\config.json.corrupted_20260922_161502
+2026-09-22 16:15:02 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpu4pom240\backups\config_20260922_161502_pre_advance_2026_10.json
+2026-09-22 16:15:02 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpg13act1d\backups\config_20260922_161502_pre_advance_2026_04.json
+2026-09-22 16:15:02 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpg13act1d\backups\config_20260922_161502_pre_advance_2026_04.json
+2026-09-22 16:15:03 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpwxv2zuh3\excel_test.xlsx
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_8t5dqqg\backups\config_20260922_161503_pre_advance_2026_10.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpxjuyihb2\backups\config_20260922_161503_pre_advance_2026_09.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp58pxub3h\backups\config_20260922_161503_pre_advance_2026_07.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp58pxub3h\backups\config_20260922_161503_pre_advance_2026_08.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp58pxub3h\backups\config_20260922_161503_pre_advance_2026_06.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpsmdtlhv8\backups\config_20260922_161503_pre_advance_2026_05.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpsmdtlhv8\backups\config_20260922_161503_pre_advance_2026_06.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp95fn8yi8\backups\config_20260922_161503_pre_reset.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpb9kv8w9x\backups\config_20260922_161503_test_tag.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmplp1xb5bj\backups\config_20260922_161503_pre_reset.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpslzlbit7\backups\config_20260922_161503_pre_reset.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp8tzjt5qa\backups\config_20260922_161503_pre_advance_2024_04.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp8tzjt5qa\backups\config_20260922_161503_pre_advance_2024_05.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp8tzjt5qa\backups\config_20260922_161503_pre_advance_2024_03.json
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:15:03 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpqk703e39\backups\corrupt_config.json.corrupted_20260922_161503
+2026-09-22 16:15:03 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmpotjkpcwf\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:15:03 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-67\test_transicion_mes_y_snapshot0\backups\config_20260922_161503_pre_advance_2024_04.json
+2026-09-22 16:15:40 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpg2fu3tv8\parity_test.xlsx
+2026-09-22 16:15:40 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:15:40 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpy9mr2bz9\test_deleted_person_export.xlsx
+2026-09-22 16:15:41 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpobszayon\test_legend.xlsx
+2026-09-22 16:15:41 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp5xs6m8rp\test_title.xlsx
+2026-09-22 16:15:41 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpg9vdpay1\backups\config.json.corrupted_20260922_161541
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpb1o4g0qi\backups\config_20260922_161541_pre_advance_2026_10.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1867a7h0\backups\config_20260922_161541_pre_advance_2026_04.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1867a7h0\backups\config_20260922_161541_pre_advance_2026_04.json
+2026-09-22 16:15:41 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpvx7k6dd3\excel_test.xlsx
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4c1a3mwa\backups\config_20260922_161541_pre_advance_2026_10.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqfu32ydq\backups\config_20260922_161541_pre_advance_2026_09.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1mnxt8s6\backups\config_20260922_161541_pre_advance_2026_07.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1mnxt8s6\backups\config_20260922_161541_pre_advance_2026_08.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1mnxt8s6\backups\config_20260922_161541_pre_advance_2026_06.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwl87zf88\backups\config_20260922_161541_pre_advance_2026_05.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwl87zf88\backups\config_20260922_161541_pre_advance_2026_06.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpq8pm9sr7\backups\config_20260922_161541_pre_reset.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpgj82n02t\backups\config_20260922_161541_test_tag.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpvlyxjk4x\backups\config_20260922_161541_pre_reset.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmponkep6rb\backups\config_20260922_161541_pre_reset.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1oexjn00\backups\config_20260922_161541_pre_advance_2024_04.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1oexjn00\backups\config_20260922_161541_pre_advance_2024_05.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1oexjn00\backups\config_20260922_161541_pre_advance_2024_03.json
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:15:41 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpwnyvr74a\backups\corrupt_config.json.corrupted_20260922_161541
+2026-09-22 16:15:41 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmpst0u3lr4\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:15:41 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-68\test_transicion_mes_y_snapshot0\backups\config_20260922_161541_pre_advance_2024_04.json
+2026-09-22 16:16:17 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp_yycw631\parity_test.xlsx
+2026-09-22 16:16:17 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:16:17 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpy_4pss5e\test_deleted_person_export.xlsx
+2026-09-22 16:16:17 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp78bnuv66\test_legend.xlsx
+2026-09-22 16:16:17 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpg97fw252\test_title.xlsx
+2026-09-22 16:16:17 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmp9lhlszay\backups\config.json.corrupted_20260922_161617
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwg1_mg9e\backups\config_20260922_161617_pre_advance_2026_10.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpo6xe9__1\backups\config_20260922_161617_pre_advance_2026_04.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpo6xe9__1\backups\config_20260922_161617_pre_advance_2026_04.json
+2026-09-22 16:16:17 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpgvm8uv58\excel_test.xlsx
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpv15v4bi0\backups\config_20260922_161617_pre_advance_2026_10.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp9584raho\backups\config_20260922_161617_pre_advance_2026_09.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1r4dymsu\backups\config_20260922_161617_pre_advance_2026_07.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1r4dymsu\backups\config_20260922_161617_pre_advance_2026_08.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1r4dymsu\backups\config_20260922_161617_pre_advance_2026_06.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpfhoaxlsa\backups\config_20260922_161617_pre_advance_2026_05.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpfhoaxlsa\backups\config_20260922_161617_pre_advance_2026_06.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpojdb5bad\backups\config_20260922_161617_pre_reset.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqb6smyyq\backups\config_20260922_161617_test_tag.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpfgm5c26n\backups\config_20260922_161617_pre_reset.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp367qpue2\backups\config_20260922_161617_pre_reset.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpj68pm7c1\backups\config_20260922_161617_pre_advance_2024_04.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpj68pm7c1\backups\config_20260922_161617_pre_advance_2024_05.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpj68pm7c1\backups\config_20260922_161617_pre_advance_2024_03.json
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:16:17 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpu2r9cuxc\backups\corrupt_config.json.corrupted_20260922_161617
+2026-09-22 16:16:17 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmpqjb21_mg\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:16:17 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-69\test_transicion_mes_y_snapshot0\backups\config_20260922_161617_pre_advance_2024_04.json
+2026-09-22 16:16:55 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpks_3cm65\parity_test.xlsx
+2026-09-22 16:16:56 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:16:56 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpw8cy73c4\test_deleted_person_export.xlsx
+2026-09-22 16:16:56 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpp0_puri_\test_legend.xlsx
+2026-09-22 16:16:56 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpmcf9xoc6\test_title.xlsx
+2026-09-22 16:16:56 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmp4fqyopra\backups\config.json.corrupted_20260922_161656
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwexz8uf6\backups\config_20260922_161656_pre_advance_2026_10.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpb5pldgqm\backups\config_20260922_161656_pre_advance_2026_04.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpb5pldgqm\backups\config_20260922_161656_pre_advance_2026_04.json
+2026-09-22 16:16:56 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmprdw1lc2q\excel_test.xlsx
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmptn56g8_z\backups\config_20260922_161656_pre_advance_2026_10.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqr3eswjm\backups\config_20260922_161656_pre_advance_2026_09.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6_02qdc5\backups\config_20260922_161656_pre_advance_2026_07.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6_02qdc5\backups\config_20260922_161656_pre_advance_2026_08.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6_02qdc5\backups\config_20260922_161656_pre_advance_2026_06.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpnff5peh9\backups\config_20260922_161656_pre_advance_2026_05.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpnff5peh9\backups\config_20260922_161656_pre_advance_2026_06.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmplq8wfkls\backups\config_20260922_161656_pre_reset.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpztb9anjw\backups\config_20260922_161656_test_tag.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpzb9q5wb6\backups\config_20260922_161656_pre_reset.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpxfb55yh0\backups\config_20260922_161656_pre_reset.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpw5_4w3tj\backups\config_20260922_161656_pre_advance_2024_04.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpw5_4w3tj\backups\config_20260922_161656_pre_advance_2024_05.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpw5_4w3tj\backups\config_20260922_161656_pre_advance_2024_03.json
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:16:56 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpllwa8i7v\backups\corrupt_config.json.corrupted_20260922_161656
+2026-09-22 16:16:56 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmpaauivnt0\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:16:56 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-70\test_transicion_mes_y_snapshot0\backups\config_20260922_161656_pre_advance_2024_04.json
+2026-09-22 16:25:32 [CRITICAL] turnos.main: Excepción no controlada capturada:
+Traceback (most recent call last):
+  File "C:\Users\Soporte\Documents\Sistema de turnos\main.py", line 54, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\main.py", line 36, in main
+    app = TurnosApp(controller)
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\gui.py", line 52, in __init__
+    self._setup_ui()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\gui.py", line 81, in _setup_ui
+    self.tab_settings = TabSettings(self.raw_tab_ajustes, self)
+                        ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\tabs\tab_settings.py", line 21, in __init__
+    self._build_ui()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\tabs\tab_settings.py", line 172, in _build_ui
+    self.webhook_entry = ctk.CTkEntry(
+                         ~~~~~~~~~~~~^
+        url_box, variable=self.webhook_url_var,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        placeholder_text="https://script.google.com/macros/s/.../exec",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        height=36, fg_color=P["bg_input"], border_color=P["border"]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Soporte\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\customtkinter\windows\widgets\ctk_entry.py", line 93, in __init__
+    check_kwargs_empty(kwargs, raise_error=True)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Soporte\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\customtkinter\windows\widgets\utility\utility_functions.py", line 18, in check_kwargs_empty
+    raise ValueError(f"{list(kwargs_dict.keys())} are not supported arguments. Look at the documentation for supported arguments.")
+ValueError: ['variable'] are not supported arguments. Look at the documentation for supported arguments.
+
+2026-09-22 16:25:41 [CRITICAL] turnos.main: Excepción no controlada capturada:
+Traceback (most recent call last):
+  File "C:\Users\Soporte\Documents\Sistema de turnos\main.py", line 54, in <module>
+    main()
+    ~~~~^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\main.py", line 36, in main
+    app = TurnosApp(controller)
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\gui.py", line 52, in __init__
+    self._setup_ui()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\gui.py", line 81, in _setup_ui
+    self.tab_settings = TabSettings(self.raw_tab_ajustes, self)
+                        ~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\tabs\tab_settings.py", line 21, in __init__
+    self._build_ui()
+    ~~~~~~~~~~~~~~^^
+  File "C:\Users\Soporte\Documents\Sistema de turnos\views\tabs\tab_settings.py", line 172, in _build_ui
+    self.webhook_entry = ctk.CTkEntry(
+                         ~~~~~~~~~~~~^
+        url_box, variable=self.webhook_url_var,
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        placeholder_text="https://script.google.com/macros/s/.../exec",
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+        height=36, fg_color=P["bg_input"], border_color=P["border"]
+        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+    )
+    ^
+  File "C:\Users\Soporte\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\customtkinter\windows\widgets\ctk_entry.py", line 93, in __init__
+    check_kwargs_empty(kwargs, raise_error=True)
+    ~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Soporte\AppData\Local\Python\pythoncore-3.14-64\Lib\site-packages\customtkinter\windows\widgets\utility\utility_functions.py", line 18, in check_kwargs_empty
+    raise ValueError(f"{list(kwargs_dict.keys())} are not supported arguments. Look at the documentation for supported arguments.")
+ValueError: ['variable'] are not supported arguments. Look at the documentation for supported arguments.
+
+2026-09-22 16:27:27 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmph55fy0qc\parity_test.xlsx
+2026-09-22 16:27:27 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:27:27 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpnkuaw6kp\test_deleted_person_export.xlsx
+2026-09-22 16:27:27 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp55ul72yp\test_legend.xlsx
+2026-09-22 16:27:27 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp2zdf3np9\test_title.xlsx
+2026-09-22 16:27:28 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmp6je0ousa\backups\config.json.corrupted_20260922_162728
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp0vheyws1\backups\config_20260922_162728_pre_advance_2026_10.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpsor8de9z\backups\config_20260922_162728_pre_advance_2026_04.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpsor8de9z\backups\config_20260922_162728_pre_advance_2026_04.json
+2026-09-22 16:27:28 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpfarjowx4\excel_test.xlsx
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpfn8fqvr_\backups\config_20260922_162728_pre_advance_2026_10.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpg7xdpabo\backups\config_20260922_162728_pre_advance_2026_09.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmppchbgjq_\backups\config_20260922_162728_pre_advance_2026_07.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmppchbgjq_\backups\config_20260922_162728_pre_advance_2026_08.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmppchbgjq_\backups\config_20260922_162728_pre_advance_2026_06.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe_1rbgo2\backups\config_20260922_162728_pre_advance_2026_05.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe_1rbgo2\backups\config_20260922_162728_pre_advance_2026_06.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_18siz30\backups\config_20260922_162728_pre_reset.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpegiij0dj\backups\config_20260922_162728_test_tag.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe9q6ifcm\backups\config_20260922_162728_pre_reset.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpvxote6l9\backups\config_20260922_162728_pre_reset.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6pvffrr0\backups\config_20260922_162728_pre_advance_2024_04.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6pvffrr0\backups\config_20260922_162728_pre_advance_2024_05.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6pvffrr0\backups\config_20260922_162728_pre_advance_2024_03.json
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:27:28 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmph0r78ro6\backups\corrupt_config.json.corrupted_20260922_162728
+2026-09-22 16:27:28 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmptl4bhl4q\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:27:28 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-71\test_transicion_mes_y_snapshot0\backups\config_20260922_162728_pre_advance_2024_04.json
+2026-09-22 16:27:55 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 16:28:15 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 16:33:35 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpb7bw8adk\parity_test.xlsx
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: 
+2026-09-22 16:33:35 [ERROR] turnos.email_notifier: [EMAIL] La URL del Webhook de notificaciones no está configurada.
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://fake.url
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (0): []
+2026-09-22 16:33:35 [ERROR] turnos.email_notifier: [EMAIL] No hay destinatarios válidos con formato de correo correcto.
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "error", "message": "Cuota diaria excedida"}
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'error', 'message': 'Cuota diaria excedida'}
+2026-09-22 16:33:35 [ERROR] turnos.email_notifier: [EMAIL] Error devuelto por Google Apps Script: Cuota diaria excedida
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "ok"}
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok'}
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] ✓ Correo enviado exitosamente a todos los destinatarios.
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:33:35 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:33:35 [ERROR] turnos.email_notifier: [EMAIL] Tiempo de espera agotado al conectar con el servicio de notificaciones.
+2026-09-22 16:33:35 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:33:35 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp9qg4czyi\test_deleted_person_export.xlsx
+2026-09-22 16:33:35 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpcsz4n_jl\test_legend.xlsx
+2026-09-22 16:33:35 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpcwmil8qm\test_title.xlsx
+2026-09-22 16:33:36 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmp2w90c1o0\backups\config.json.corrupted_20260922_163336
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpq094gjz4\backups\config_20260922_163336_pre_advance_2026_10.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpvssrivj7\backups\config_20260922_163336_pre_advance_2026_04.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpvssrivj7\backups\config_20260922_163336_pre_advance_2026_04.json
+2026-09-22 16:33:36 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp27453lfr\excel_test.xlsx
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpydmc633q\backups\config_20260922_163336_pre_advance_2026_10.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp7pi7dj6d\backups\config_20260922_163336_pre_advance_2026_09.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmps8irc0mj\backups\config_20260922_163336_pre_advance_2026_07.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmps8irc0mj\backups\config_20260922_163336_pre_advance_2026_08.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmps8irc0mj\backups\config_20260922_163336_pre_advance_2026_06.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp5nyq2kvu\backups\config_20260922_163336_pre_advance_2026_05.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp5nyq2kvu\backups\config_20260922_163336_pre_advance_2026_06.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpn25usm4p\backups\config_20260922_163336_pre_reset.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp02mecrwa\backups\config_20260922_163336_test_tag.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpbk5sofrd\backups\config_20260922_163336_pre_reset.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmphuu5rk6f\backups\config_20260922_163336_pre_reset.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4vvbifwh\backups\config_20260922_163336_pre_advance_2024_04.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4vvbifwh\backups\config_20260922_163336_pre_advance_2024_05.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4vvbifwh\backups\config_20260922_163336_pre_advance_2024_03.json
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:33:36 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmp0a4if65u\backups\corrupt_config.json.corrupted_20260922_163336
+2026-09-22 16:33:36 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp3fpx_cyl\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:33:36 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-72\test_transicion_mes_y_snapshot0\backups\config_20260922_163336_pre_advance_2024_04.json
+2026-09-22 16:35:22 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 16:35:40 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:35:40 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:35:40 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/library/d/TU_SCRIPT_ID/1
+2026-09-22 16:35:40 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:35:40 [INFO] turnos.email_notifier: [EMAIL] Asunto: '[Sistema de Turnos] Prueba de Notificación Exitosa'
+2026-09-22 16:35:40 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 177 caracteres
+2026-09-22 16:35:40 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:35:40 [ERROR] turnos.email_notifier: [EMAIL] Error HTTP 401: Unauthorized. Detalle: <!DOCTYPE html><html lang="es"><head><script nonce="3ZGKmilIE3IIRzyDm2pB8A">window['ppConfig'] = {productName: '26981ed0d57bbad37e728ff58134270c', deleteIsEnforced:  false , sealIsEnforced:  false , heartbeatRate:  0.5 , periodicReportingRateMillis:  60000.0 , disableAllReporting:  false };(function(){'use strict';function k(a){var b=0;return function(){return b<a.length?{done:!1,value:a[b++]}:{done:!0}}}function l(a){var b=typeof Symbol!="undefined"&&Symbol.iterator&&a[Symbol.iterator];if(b)return b.call(a);if(typeof a.length=="number")return{next:k(a)};throw Error(String(a)+" is not an iterable or ArrayLike");}var m=typeof Object.defineProperties=="function"?Object.defineProperty:function(a,b,c){if(a==Array.prototype||a==Object.prototype)return a;a[b]=c.value;return a};
+function n(a){a=["object"==typeof globalThis&&globalThis,a,"object"==typeof window&&window,"object"==typeof self&&self,"object"==typeof global&&global];for(var b=0;b<a.length;++b){var c=a[b];if(c&&c.Math==Math)return c}throw Error("Cannot find global object");}var p=n(this);function q(a,b){if(b)a:{var c=p;a=a.split(".");for(var d=0;d<a.length-1;d++){var e=a[d];if(!(e in c))break a;c=c[e]}a=a[a.length-1];d=c[a];b=b(d);b!=d&&b!=null&&m(c,a,{configurable:!0,writable:!0,value:b})}}
+q("Object.is",function(a){return a?a:function(b,c){return b===c?b!==0||1/b===1/c:b!==b&&c!==c}});q("Array.prototype.includes",function(a){return a?a:function(b,c){var d=this;d instanceof String&&(d=String(d));var e=d.length;c=c||0;for(c<0&&(c=Math.max(c+e,0));c<e;c++){var f=d[c];if(f===b||Object.is(f,b))return!0}return!1}});
+q("String.prototype.includes",function(a){return a?a:function(b,c){if(this==null)throw new TypeError("The 'this' value for String.prototype.includes must not be null or undefined");if(b instanceof RegExp)throw new TypeError("First argument to String.prototype.includes must not be a regular expression");return this.indexOf(b,c||0)!==-1}});function r(a,b,c){a("https://csp.withgoogle.com/csp/proto/"+encodeURIComponent(b),JSON.stringify(c))}function t(){var a;if((a=window.ppConfig)==null?0:a.disableAllReporting)return function(){};var b,c,d,e;return(e=(b=window)==null?void 0:(c=b.navigator)==null?void 0:(d=c.sendBeacon)==null?void 0:d.bind(navigator))!=null?e:u}function u(a,b){var c=new XMLHttpRequest;c.open("POST",a);c.send(b)}
+function v(){var a=(w=Object.prototype)==null?void 0:w.__lookupGetter__("__proto__"),b=x,c=y;return function(){var d=a.call(this),e,f,g,h;r(c,b,{type:"ACCESS_GET",origin:(f=window.location.origin)!=null?f:"unknown",report:{className:(g=d==null?void 0:(e=d.constructor)==null?void 0:e.name)!=null?g:"unknown",stackTrace:(h=Error().stack)!=null?h:"unknown"}});return d}}
+function z(){var a=(A=Object.prototype)==null?void 0:A.__lookupSetter__("__proto__"),b=x,c=y;return function(d){d=a.call(this,d);var e,f,g,h;r(c,b,{type:"ACCESS_SET",origin:(f=window.location.origin)!=null?f:"unknown",report:{className:(g=d==null?void 0:(e=d.constructor)==null?void 0:e.name)!=null?g:"unknown",stackTrace:(h=Error().stack)!=null?h:"unknown"}});return d}}function B(a,b){C(a.productName,b);setInterval(function(){C(a.productName,b)},a.periodicReportingRateMillis)}
+var D="constructor __defineGetter__ __defineSetter__ hasOwnProperty __lookupGetter__ __lookupSetter__ isPrototypeOf propertyIsEnumerable toString valueOf __proto__ toLocaleString x_ngfn_x".split(" "),E=D.concat,G=navigator.userAgent.match(/Firefox\/([0-9]+)\./),H=(!G||G.length<2?0:Number(G[1])<75)?["toSource"]:[],I;if(H instanceof Array)I=H;else{for(var J=l(H),K,L=[];!(K=J.next()).done;)L.push(K.value);I=L}var M=E.call(D,I),N=[];
+function C(a,b){var c=[],d=l(Object.getOwnPropertyNames(Object.prototype)),e=d.next(),f;try{for(;!e.done;e=d.next()){var g=e.value;M.includes(g)||N.includes(g)||c.push(g)}}finally{e&&!e.done&&(f=d.return)&&f.call(d)}e=Object.prototype;d=[];for(f=0;f<c.length;f++)g=c[f],d[f]={name:g,descriptor:Object.getOwnPropertyDescriptor(Object.prototype,g),type:typeof e[g]};if(d.length!==0){c=l(d);e=c.next();var h;try{for(;!e.done;e=c.next())N.push(e.value.name)}finally{e&&!e.done&&(h=c.return)&&h.call(c)}var F;
+r(b,a,{type:"SEAL",origin:(F=window.location.origin)!=null?F:"unknown",report:{blockers:d}})}};var O=Math.random(),P=t(),Q=window.ppConfig;Q&&(Q.disableAllReporting||Q.deleteIsEnforced&&Q.sealIsEnforced||O<Q.heartbeatRate&&r(P,Q.productName,{origin:window.location.origin,type:"HEARTBEAT"}));var y=t(),R=window.ppConfig;if(R)if(R.deleteIsEnforced)delete Object.prototype.__proto__;else if(!R.disableAllReporting){var x=R.productName;try{var w,A;Object.defineProperty(Object.prototype,"__proto__",{enumerable:!1,get:v(),set:z()})}catch(a){}}
+(function(){var a=t(),b=window.ppConfig;b&&(b.sealIsEnforced?Object.seal(Object.prototype):b.disableAllReporting||(document.readyState!=="loading"?B(b,a):document.addEventListener("DOMContentLoaded",function(){B(b,a)})))})();}).call(this);
+</script><meta name="description" content="Procesamiento de textos, presentaciones y hojas de cálculo en la Web"><meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0"><link rel="shortcut icon" href="//docs.google.com/favicon.ico"><title>No se encontró la página</title><meta name="referrer" content="origin"><link href="//fonts.googleapis.com/css?family=Product+Sans" rel="stylesheet" type="text/css" nonce="sulUnFL64sPOKGnPfapeIQ"><style nonce="sulUnFL64sPOKGnPfapeIQ">#drive-logo{margin:18px 0;position:absolute;white-space:nowrap}.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/1x/googlelogo_color_116x41dp.png);-webkit-background-size:116px 41px;background-size:116px 41px;display:inline-block;height:41px;vertical-align:bottom;width:116px}.docs-drivelogo-text{color:var(--gm3-sys-color-on-surface,#1f1f1f);display:inline-block;opacity:.54;text-decoration:none;font-family:Product Sans,Arial,Helvetica,sans-serif;font-size:2rem;text-rendering:optimizeLegibility;position:relative;top:-6px;left:-7px;-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale}@media (-webkit-min-device-pixel-ratio:1.5),(min-resolution:144dpi){.docs-drivelogo-img{background-image:url(//ssl.gstatic.com/images/branding/googlelogo/2x/googlelogo_color_116x41dp.png)}}.goog-inline-block{position:relative;display:-moz-inline-box;display:inline-block}* html .goog-inline-block{display:inline}:first-child+html .goog-inline-block{display:inline}sentinel{}</style><style type="text/css" nonce="sulUnFL64sPOKGnPfapeIQ">body {background-color: #fff; font-family: Arial,sans-serif; font-size: 13px; margin: 0; padding: 0;}a, a:link, a:visited {color: #112ABB;}</style><style type="text/css" nonce="sulUnFL64sPOKGnPfapeIQ">.errorMessage {font-size: 12pt; font-weight: bold; line-height: 150%;}</style></head><body><div id="outerContainer"><div id="innerContainer"><div style="position: absolute; top: -80px;"><div id="drive-logo"><a href="/"><span class="docs-drivelogo-img" title="Logotipo de Google"></span><span class="docs-drivelogo-text">&nbsp;Drive</span></a></div></div><div align="center"><p class="errorMessage" style="padding-top: 50px">No se pudo abrir el archivo en este momento.</p><p> Verifica la dirección e inténtalo de nuevo.</p><div style="background: #F0F6FF; border: 1px solid black; margin-top: 35px; padding: 10px 125px; width: 300px;"><p><strong>Realiza tus proyectos con Google Drive</strong></p><p>Las aplicaciones de Google Drive te facilitan la tarea de crear, almacenar y compartir documentos, hojas de cálculo, presentaciones y otros archivos en línea.</p><p>Obtén más información en <a href="https://drive.google.com/start/apps">drive.google.com/start/apps</a>.</p></div></div></div></div></body><style nonce="sulUnFL64sPOKGnPfapeIQ">html {height: 100%; overflow: auto;}body {height: 100%; overflow: auto;}#outerContainer {margin: auto; max-width: 750px;}#innerContainer {margin-bottom: 20px; margin-left: 40px; margin-right: 40px; margin-top: 80px; position: relative;}</style></html>
+2026-09-22 16:35:52 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 16:36:03 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:36:03 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:36:03 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://new.webhook.url
+2026-09-22 16:36:03 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmial.com']
+2026-09-22 16:36:03 [INFO] turnos.email_notifier: [EMAIL] Asunto: '[Sistema de Turnos] Prueba de Notificación Exitosa'
+2026-09-22 16:36:03 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 177 caracteres
+2026-09-22 16:36:03 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:36:03 [ERROR] turnos.email_notifier: [EMAIL] Error de conexión con el servicio de correo: [Errno 11001] getaddrinfo failed
+2026-09-22 16:36:14 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:36:14 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:36:14 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://new.webhook.url
+2026-09-22 16:36:14 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:36:14 [INFO] turnos.email_notifier: [EMAIL] Asunto: '[Sistema de Turnos] Prueba de Notificación Exitosa'
+2026-09-22 16:36:14 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 177 caracteres
+2026-09-22 16:36:14 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:36:14 [ERROR] turnos.email_notifier: [EMAIL] Error de conexión con el servicio de correo: [Errno 11001] getaddrinfo failed
+2026-09-22 16:37:41 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 16:37:55 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:37:55 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:37:55 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec
+2026-09-22 16:37:55 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:37:55 [INFO] turnos.email_notifier: [EMAIL] Asunto: '[Sistema de Turnos] Prueba de Notificación Exitosa'
+2026-09-22 16:37:55 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 177 caracteres
+2026-09-22 16:37:55 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:37:56 [INFO] turnos.email_notifier: [EMAIL] Redirección HTTP 302 hacia: https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnTzjv4wLKxq2uQxbQgis3WZ5WBmswrWEnmsn-tuI_Hx_pV4DVY3TJ9r9ZJatMyU7vsxESLtaVHQadChhYznTtEnuzk8PKL8EDEUiMmP294Biujkm5Eb-lZkOAI147u5RVDiE0-8XNGCSxODTD98lis2S2O0oLm9MMpuIZx3hD4JXoJf_WNZYXQ8vk5fraigCWHpw-BPW922wT-LQuLIyEJTfwkazRY6lQ1rbykx2Iw1t75O_04Rb6xn0v_qZKOGgaMUmA5gW9UoiZxWsQPYiOJTP9eKFA&lib=MEx9hkjj1RpQ7RnsEW369NozpTaZOijRF
+2026-09-22 16:37:57 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:37:57 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status":"ok","sent_to_count":1,"message":"Correo enviado exitosamente."}
+2026-09-22 16:37:57 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok', 'sent_to_count': 1, 'message': 'Correo enviado exitosamente.'}
+2026-09-22 16:37:57 [INFO] turnos.email_notifier: [EMAIL] ✓ Correo enviado exitosamente a todos los destinatarios.
+2026-09-22 16:42:10 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpywkcxahr\parity_test.xlsx
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: 
+2026-09-22 16:42:10 [ERROR] turnos.email_notifier: [EMAIL] La URL del Webhook de notificaciones no está configurada.
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://fake.url
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (0): []
+2026-09-22 16:42:10 [ERROR] turnos.email_notifier: [EMAIL] No hay destinatarios válidos con formato de correo correcto.
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "error", "message": "Cuota diaria excedida"}
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'error', 'message': 'Cuota diaria excedida'}
+2026-09-22 16:42:10 [ERROR] turnos.email_notifier: [EMAIL] Error devuelto por Google Apps Script: Cuota diaria excedida
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "ok"}
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok'}
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] ✓ Correo enviado exitosamente a todos los destinatarios.
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:42:10 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:42:10 [ERROR] turnos.email_notifier: [EMAIL] Tiempo de espera agotado al conectar con el servicio de notificaciones.
+2026-09-22 16:42:10 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:42:10 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmppayyg7dg\test_deleted_person_export.xlsx
+2026-09-22 16:42:10 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp8jnuaskv\test_legend.xlsx
+2026-09-22 16:42:10 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpogfnn7y2\test_title.xlsx
+2026-09-22 16:42:11 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpepdl2kri\backups\config.json.corrupted_20260922_164211
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpw2tzwy03\backups\config_20260922_164211_pre_advance_2026_10.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpifvpjv4e\backups\config_20260922_164211_pre_advance_2026_04.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpifvpjv4e\backups\config_20260922_164211_pre_advance_2026_04.json
+2026-09-22 16:42:11 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp5zv3o9p2\excel_test.xlsx
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmprg8rbpdu\backups\config_20260922_164211_pre_advance_2026_10.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp33vogois\backups\config_20260922_164211_pre_advance_2026_09.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp21g9k4h6\backups\config_20260922_164211_pre_advance_2026_07.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp21g9k4h6\backups\config_20260922_164211_pre_advance_2026_08.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp21g9k4h6\backups\config_20260922_164211_pre_advance_2026_06.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpjjzti7kq\backups\config_20260922_164211_pre_advance_2026_05.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpjjzti7kq\backups\config_20260922_164211_pre_advance_2026_06.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpxyvoputa\backups\config_20260922_164211_pre_reset.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpw8v2uovp\backups\config_20260922_164211_test_tag.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpolakys8i\backups\config_20260922_164211_pre_reset.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_onrhbbe\backups\config_20260922_164211_pre_reset.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpybjfso20\backups\config_20260922_164211_pre_advance_2024_04.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpybjfso20\backups\config_20260922_164211_pre_advance_2024_05.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpybjfso20\backups\config_20260922_164211_pre_advance_2024_03.json
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:42:11 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpewdbmc51\backups\corrupt_config.json.corrupted_20260922_164211
+2026-09-22 16:42:11 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmpfd0zkj1c\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:42:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-73\test_transicion_mes_y_snapshot0\backups\config_20260922_164211_pre_advance_2024_04.json
+2026-09-22 16:43:08 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpmwdyj7dt\parity_test.xlsx
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: 
+2026-09-22 16:43:08 [ERROR] turnos.email_notifier: [EMAIL] La URL del Webhook de notificaciones no está configurada.
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://fake.url
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (0): []
+2026-09-22 16:43:08 [ERROR] turnos.email_notifier: [EMAIL] No hay destinatarios válidos con formato de correo correcto.
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "error", "message": "Cuota diaria excedida"}
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'error', 'message': 'Cuota diaria excedida'}
+2026-09-22 16:43:08 [ERROR] turnos.email_notifier: [EMAIL] Error devuelto por Google Apps Script: Cuota diaria excedida
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "ok"}
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok'}
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] ✓ Correo enviado exitosamente a todos los destinatarios.
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:43:08 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:43:08 [ERROR] turnos.email_notifier: [EMAIL] Tiempo de espera agotado al conectar con el servicio de notificaciones.
+2026-09-22 16:43:08 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:43:08 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp8o4nzua4\test_deleted_person_export.xlsx
+2026-09-22 16:43:09 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp_wzan31a\test_legend.xlsx
+2026-09-22 16:43:09 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpt14ww4gx\test_title.xlsx
+2026-09-22 16:43:09 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpwl69w8q3\backups\config.json.corrupted_20260922_164309
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpsgtannea\backups\config_20260922_164309_pre_advance_2026_10.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpeey6fehq\backups\config_20260922_164309_pre_advance_2026_04.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpeey6fehq\backups\config_20260922_164309_pre_advance_2026_04.json
+2026-09-22 16:43:09 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp04flsz6y\excel_test.xlsx
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpnqa3645k\backups\config_20260922_164309_pre_advance_2026_10.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_tkoo877\backups\config_20260922_164309_pre_advance_2026_09.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpc0_5_shf\backups\config_20260922_164309_pre_advance_2026_07.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpc0_5_shf\backups\config_20260922_164309_pre_advance_2026_08.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpc0_5_shf\backups\config_20260922_164309_pre_advance_2026_06.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpjndw5ga_\backups\config_20260922_164309_pre_advance_2026_05.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpjndw5ga_\backups\config_20260922_164309_pre_advance_2026_06.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpxauah38z\backups\config_20260922_164309_pre_reset.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp31y2gc56\backups\config_20260922_164309_test_tag.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpyywq5t4u\backups\config_20260922_164309_pre_reset.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp42b10yoc\backups\config_20260922_164309_pre_reset.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpr40yz0kx\backups\config_20260922_164309_pre_advance_2024_04.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpr40yz0kx\backups\config_20260922_164309_pre_advance_2024_05.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpr40yz0kx\backups\config_20260922_164309_pre_advance_2024_03.json
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:43:09 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpxr5qpelr\backups\corrupt_config.json.corrupted_20260922_164309
+2026-09-22 16:43:09 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmpgdk_c4ev\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:43:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-74\test_transicion_mes_y_snapshot0\backups\config_20260922_164309_pre_advance_2024_04.json
+2026-09-22 16:45:05 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 16:46:22 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:46:22 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:46:22 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec
+2026-09-22 16:46:22 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:46:22 [INFO] turnos.email_notifier: [EMAIL] Asunto: '[Sistema de Turnos] Prueba de Notificación Exitosa'
+2026-09-22 16:46:22 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 177 caracteres
+2026-09-22 16:46:22 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:46:34 [ERROR] turnos.email_notifier: [EMAIL] Tiempo de espera agotado al conectar con el servicio de notificaciones.
+2026-09-22 16:46:56 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:46:56 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:46:56 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec
+2026-09-22 16:46:56 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:46:56 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Test Timeout Check'
+2026-09-22 16:46:56 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 23 caracteres
+2026-09-22 16:46:56 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:47:17 [INFO] turnos.email_notifier: [EMAIL] Redirección HTTP 302 hacia: https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnSEdcVExJH1ssZWvO6ojkxtgaiuJEdzvhw5aWf0eE2f3b_l7aQS32g44hqGhoLhXqcLqUt89s3X1SM9niKYr6zYFAPKheBFXc44rLrdCTIjaCH-AsN2T_AfV7qs0jOiYZZ97DUJohnObmGVBcj8vl0E4P0g6wFJEtgz_P7ZUDWfbaJNcVVDR-Cl1pBOtwmb4eNbhJ1tw6WyAyv0tRnKRSmXCfuUkxcsPzewpnmrRysej28K4kwrlpv82foAWFhthvRl-Q4PDLOCisKnkobzCHxRZmB0DQ&lib=MEx9hkjj1RpQ7RnsEW369NozpTaZOijRF
+2026-09-22 16:47:18 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:47:18 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status":"ok","method":"MailApp","sent_to_count":1,"recipients":["martinantulopez@gmail.com"],"message":"Correo enviado exitosamente vía MailApp a 1 destinatario(s)."}
+2026-09-22 16:47:18 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok', 'method': 'MailApp', 'sent_to_count': 1, 'recipients': ['martinantulopez@gmail.com'], 'message': 'Correo enviado exitosamente vía MailApp a 1 destinatario(s).'}
+2026-09-22 16:47:18 [INFO] turnos.email_notifier: [EMAIL] ✓ Correo enviado exitosamente a todos los destinatarios.
+2026-09-22 16:48:11 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpa4qpv751\parity_test.xlsx
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: 
+2026-09-22 16:48:11 [ERROR] turnos.email_notifier: [EMAIL] La URL del Webhook de notificaciones no está configurada.
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://fake.url
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (0): []
+2026-09-22 16:48:11 [ERROR] turnos.email_notifier: [EMAIL] No hay destinatarios válidos con formato de correo correcto.
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "error", "message": "Cuota diaria excedida"}
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'error', 'message': 'Cuota diaria excedida'}
+2026-09-22 16:48:11 [ERROR] turnos.email_notifier: [EMAIL] Error devuelto por Google Apps Script: Cuota diaria excedida
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status": "ok"}
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok'}
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] [OK] Correo enviado exitosamente a todos los destinatarios.
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/xyz/exec
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['test@correo.cl']
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Asunto'
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 6 caracteres
+2026-09-22 16:48:11 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:48:11 [ERROR] turnos.email_notifier: [EMAIL] Tiempo de espera agotado al conectar con el servicio de notificaciones.
+2026-09-22 16:48:11 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 16:48:11 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp4f3s8vny\test_deleted_person_export.xlsx
+2026-09-22 16:48:11 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpor43bfrg\test_legend.xlsx
+2026-09-22 16:48:11 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpgjz0k_s_\test_title.xlsx
+2026-09-22 16:48:11 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: El contenido de config.json no es un objeto JSON válido.. Creando respaldo y restaurando base limpia.
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpcob4jhb_\backups\config.json.corrupted_20260922_164811
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpojvd0bsr\backups\config_20260922_164811_pre_advance_2026_10.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpnk0b1pfz\backups\config_20260922_164811_pre_advance_2026_04.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpnk0b1pfz\backups\config_20260922_164811_pre_advance_2026_04.json
+2026-09-22 16:48:11 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpbx50akoq\excel_test.xlsx
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqo7yk431\backups\config_20260922_164811_pre_advance_2026_10.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4y0uwkn8\backups\config_20260922_164811_pre_advance_2026_09.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwj3nc4vc\backups\config_20260922_164811_pre_advance_2026_07.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwj3nc4vc\backups\config_20260922_164811_pre_advance_2026_08.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwj3nc4vc\backups\config_20260922_164811_pre_advance_2026_06.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpx9p5vxph\backups\config_20260922_164811_pre_advance_2026_05.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpx9p5vxph\backups\config_20260922_164811_pre_advance_2026_06.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp5f1tsk6l\backups\config_20260922_164811_pre_reset.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpy8rq1t_a\backups\config_20260922_164811_test_tag.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpote92bzz\backups\config_20260922_164811_pre_reset.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpoolqeohg\backups\config_20260922_164811_pre_reset.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpkdxhhqfx\backups\config_20260922_164811_pre_advance_2024_04.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpkdxhhqfx\backups\config_20260922_164811_pre_advance_2024_05.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpkdxhhqfx\backups\config_20260922_164811_pre_advance_2024_03.json
+2026-09-22 16:48:11 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 16:48:12 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 16:48:12 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmptu4ej4k0\backups\corrupt_config.json.corrupted_20260922_164812
+2026-09-22 16:48:12 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp53ph44kf\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 16:48:12 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-75\test_transicion_mes_y_snapshot0\backups\config_20260922_164812_pre_advance_2024_04.json
+2026-09-22 16:49:26 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 16:49:46 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:49:46 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:49:46 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec
+2026-09-22 16:49:46 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:49:46 [INFO] turnos.email_notifier: [EMAIL] Asunto: '[Sistema de Turnos] Prueba de Notificación Exitosa'
+2026-09-22 16:49:46 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 177 caracteres
+2026-09-22 16:49:46 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:49:47 [INFO] turnos.email_notifier: [EMAIL] Redirección HTTP 302 hacia: https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnTHjbBfVwNOQ6Xh1LaWgtK4QUFEios-PH8wXCFlb-LVxnesVaas4lzr7ybmZjeNSO4EtwqBXIIIbv0Bo6z7FUGc1bkKTNOYiQ4p3CcNwy9P_csfb0PJMc7-Dq3LKLFV7rKZWDdB0f8QLazRgRyLWkFqPUK4JMabssUDOo6fYqBXWjS6WkLhruVGS1hBD_p5Cv6Zn2Vm8tlbgHRZGBG7pTziAGmJcGg8X0Tr-uPNAiIvWYO17SQKIfgsi6KVVNkvvmF4d6oO1jMATMs8Il1P6a--RBl5GQ&lib=MEx9hkjj1RpQ7RnsEW369NozpTaZOijRF
+2026-09-22 16:50:15 [INFO] turnos.email_notifier: [EMAIL] Redirección HTTP 302 hacia: https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec
+2026-09-22 16:50:16 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:50:16 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+<!DOCTYPE html><html><head><script nonce="HLDNk1UyMloH0oFllwtnCw">window['ppConfig'] = {productName: '26981ed0d57bbad37e728ff58134270c', deleteIsEnforced:  false , sealIsEnforced:  false , heartbeatRate:  0.5 , periodicReportingRateMillis:  60000.0 , disableAllReporting:  false };(function(){'use strict';function k(a){var b=0;return function(){return b<a.length?{done:!1,value:a[b++]}:{done:!0}}}function l(a){var b=typeof Symbol!="undefined"&&Symbol.iterator&&a[Symbol.iterator];if(b)return b.call
+2026-09-22 16:50:16 [ERROR] turnos.email_notifier: [EMAIL] Google Apps Script devolvió una página HTML en lugar de JSON. Causa común: la aplicación web no tiene configurado 'Quién tiene acceso: Cualquier persona' en script.google.com o faltan autorizaciones.
+2026-09-22 16:51:07 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:51:07 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:51:07 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec
+2026-09-22 16:51:07 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:51:07 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Test Check Now'
+2026-09-22 16:51:07 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 33 caracteres
+2026-09-22 16:51:07 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:51:08 [INFO] turnos.email_notifier: [EMAIL] Redirección HTTP 302 hacia: https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnQiQdViKivITN8DqgLnka0QOJji9uD2q-oWPp5eg06qVe6W_OrDvctKlOk-OdtAe1cYASfin95dPd1gDJO8FEjCdzoZdhKOilF7Oto40UccpF0BRMii-LeW7T3McP8yOlMBeNqgjedpRhe-BSuIZrRS5lmu-045jtaBu6to5adJGjTrWK5dJuDZT32Z3gUys-QKwvryts35ZbjPgLS2GX7lO1bewqU39C-jqY_Yc3TrUTv4WCzW2aeFRyk7lVHVW-cw-XyP5ouPGl-kB9Zqhj2dT5NXfg&lib=MEx9hkjj1RpQ7RnsEW369NozpTaZOijRF
+2026-09-22 16:51:09 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:51:09 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status":"ok","method":"MailApp","sent_to_count":1,"recipients":["martinantulopez@gmail.com"],"message":"Correo enviado exitosamente vía MailApp a 1 destinatario(s)."}
+2026-09-22 16:51:09 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok', 'method': 'MailApp', 'sent_to_count': 1, 'recipients': ['martinantulopez@gmail.com'], 'message': 'Correo enviado exitosamente vía MailApp a 1 destinatario(s).'}
+2026-09-22 16:51:09 [INFO] turnos.email_notifier: [EMAIL] [OK] Correo enviado exitosamente a todos los destinatarios.
+2026-09-22 16:51:33 [INFO] turnos.email_notifier: ============================================================
+2026-09-22 16:51:33 [INFO] turnos.email_notifier: [EMAIL] Iniciando envío de notificación...
+2026-09-22 16:51:33 [INFO] turnos.email_notifier: [EMAIL] URL Webhook destino: https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec
+2026-09-22 16:51:33 [INFO] turnos.email_notifier: [EMAIL] Destinatarios válidos (1): ['martinantulopez@gmail.com']
+2026-09-22 16:51:33 [INFO] turnos.email_notifier: [EMAIL] Asunto: 'Test Confirmacion Operatividad'
+2026-09-22 16:51:33 [INFO] turnos.email_notifier: [EMAIL] Tamaño del cuerpo del correo: 35 caracteres
+2026-09-22 16:51:33 [INFO] turnos.email_notifier: [EMAIL] Despachando petición POST...
+2026-09-22 16:51:41 [INFO] turnos.email_notifier: [EMAIL] Redirección HTTP 302 hacia: https://script.googleusercontent.com/macros/echo?user_content_key=AUkAhnQRD1W4fO2CXIUDHZTxvXqaB9_LzEX9VaONNIUYLdcWSRXQGC5rt7JEnuIGD4QTClMUEC_AZsTBjLkgkeaWSBi1rp6wqHvKWbxfFwgkxXpZA2xxRkTNw7yA8BLxg6GOwV9mkZPTtbtHIfeTiZGGO9rfAJDUaopuBgq1P6wLu_TyNAGbZ1EuM9PgHlHVBFrF_M_g_uQII5nYy4vFNma0M5urIk6ISS5CjwV3UPFPbcQoVOJ9nMTFrLf75CjqmW_DCBWpJiv1fPX79pVy7JnD9D0hL-x6YQ&lib=MEx9hkjj1RpQ7RnsEW369NozpTaZOijRF
+2026-09-22 16:51:42 [INFO] turnos.email_notifier: [EMAIL] Respuesta recibida. Código HTTP: 200
+2026-09-22 16:51:42 [INFO] turnos.email_notifier: [EMAIL] Respuesta cruda del servidor (primeros 500 chars):
+{"status":"ok","method":"MailApp","sent_to_count":1,"recipients":["martinantulopez@gmail.com"],"message":"Correo enviado exitosamente vía MailApp a 1 destinatario(s)."}
+2026-09-22 16:51:42 [INFO] turnos.email_notifier: [EMAIL] JSON procesado correctamente: {'status': 'ok', 'method': 'MailApp', 'sent_to_count': 1, 'recipients': ['martinantulopez@gmail.com'], 'message': 'Correo enviado exitosamente vía MailApp a 1 destinatario(s).'}
+2026-09-22 16:51:42 [INFO] turnos.email_notifier: [EMAIL] [OK] Correo enviado exitosamente a todos los destinatarios.

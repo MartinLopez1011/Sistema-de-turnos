@@ -32,6 +32,9 @@ utils/
   logger.py                ← Logging rotativo en archivo (turnos.log) y consola
   excel_handler.py         ← Construye la plantilla Excel en memoria, escribe turnos y guarda reporte
   chilean_holidays.py      ← Obtiene feriados nacionales de Chile y normaliza sus nombres
+  email_notifier.py        ← Validación de internet, formateo de texto plano y webhook Apps Script
+scripts/
+  google_apps_script.js    ← Código fuente gratuito listo para desplegar en Google Apps Script
 assets/                    ← Íconos PNG (success, error, save)
 backups/                   ← Respaldos automáticos fechados de config.json
 config.json                ← Base de datos en JSON (ver sección 4)
@@ -85,6 +88,13 @@ main.py
   },
   "asignaciones_manuales": {                                    // Asignaciones forzadas/manuales por semana
     "2026-09": {"2026-09-07_2026-09-13": "COM PEREZ JUAN"}
+  },
+  "asignaciones_manuales_motivos": {                            // Motivos obligatorios de asignación manual
+    "2026-09": {"2026-09-07_2026-09-13": "Permuta acordada"}
+  },
+  "notificaciones": {                                           // Configuración del webhook serverless
+    "webhook_url": "https://script.google.com/macros/s/.../exec",
+    "activo": true
   }
 }
 ```

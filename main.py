@@ -5,6 +5,7 @@ from tkinter import messagebox
 from controllers.main_controller import MainController
 from views.gui import TurnosApp
 from utils.logger import get_logger
+from utils.env_helper import load_env_file
 
 logger = get_logger("main")
 
@@ -32,6 +33,7 @@ def main():
     else:
         root_path = os.path.dirname(os.path.abspath(__file__))
         
+    load_env_file(os.path.join(root_path, ".env"))
     controller = MainController(root_path)
     app = TurnosApp(controller)
 

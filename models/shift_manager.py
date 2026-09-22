@@ -7,8 +7,12 @@ from datetime import datetime, timedelta, date
 
 from utils.chilean_holidays import national_holidays, normalize_holiday_name
 from utils.logger import get_logger
+from utils.email_notifier import is_valid_email
+from utils.env_helper import get_env_var, set_env_var
 
 logger = get_logger("shift_manager")
+
+DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec"
 
 
 @functools.lru_cache(maxsize=2048)
@@ -74,11 +78,21 @@ class ShiftManager:
         self.snapshots = {}
         self.excepciones = {}
         self.asignaciones_manuales = {}
+        self.asignaciones_manuales_motivos = {}
+        self.notificaciones = {"webhook_url": DEFAULT_WEBHOOK_URL, "activo": True}
 
     def _parse_config_data(self, data):
         self.inicio = data.get('inicio', {})
         self.historial = data.get('historial', {})
-        self.personal = data.get('personal', [])
+        raw_personal = data.get('personal', [])
+        # Saneamiento retrocompatible: asegurar campo 'email' en todo funcionario
+        self.personal = []
+        for p in raw_personal:
+            if isinstance(p, dict):
+                p_copy = dict(p)
+                if 'email' not in p_copy:
+                    p_copy['email'] = ""
+                self.personal.append(p_copy)
         self.siguiente_id = data.get('siguiente_id', 1)
         self.pendientes = data.get('pendientes', [])
         self.snapshots = data.get('snapshots', {})
@@ -86,6 +100,15 @@ class ShiftManager:
         self.excepciones = saved_exceptions if isinstance(saved_exceptions, dict) else {}
         saved_manual = data.get('asignaciones_manuales', {})
         self.asignaciones_manuales = saved_manual if isinstance(saved_manual, dict) else {}
+        saved_motivos = data.get('asignaciones_manuales_motivos', {})
+        self.asignaciones_manuales_motivos = saved_motivos if isinstance(saved_motivos, dict) else {}
+        saved_notif = data.get('notificaciones', {})
+        if isinstance(saved_notif, dict):
+            self.notificaciones = dict(saved_notif)
+            if not self.notificaciones.get("webhook_url"):
+                self.notificaciones["webhook_url"] = DEFAULT_WEBHOOK_URL
+        else:
+            self.notificaciones = {"webhook_url": DEFAULT_WEBHOOK_URL, "activo": True}
 
         # Normalizar keys de snapshots al formato YYYY-MM (con cero)
         raw_snapshots = self.snapshots
@@ -102,19 +125,30 @@ class ShiftManager:
                 normalized[k] = v
         self.snapshots = normalized
 
+    def _serialize_personal(self):
+        serialized = []
+        for p in self.personal:
+            item = {"id": p["id"], "nombre": p["nombre"]}
+            if p.get("email"):
+                item["email"] = p["email"]
+            serialized.append(item)
+        return serialized
+
     def save_config(self):
         directory = os.path.dirname(os.path.abspath(self.config_path))
         os.makedirs(directory, exist_ok=True)
         temporary_path = self.config_path + '.tmp'
         payload = {
-            "personal": self.personal,
+            "personal": self._serialize_personal(),
             "inicio": self.inicio,
             "historial": self.historial,
             "siguiente_id": self.siguiente_id,
             "pendientes": self.pendientes,
             "snapshots": self.snapshots,
             "excepciones": self.excepciones,
-            "asignaciones_manuales": self.asignaciones_manuales
+            "asignaciones_manuales": self.asignaciones_manuales,
+            "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos,
+            "notificaciones": self.notificaciones
         }
         try:
             with open(temporary_path, 'w', encoding='utf-8') as f:
@@ -143,14 +177,16 @@ class ShiftManager:
             backup_path = os.path.join(backups_dir, backup_filename)
 
             payload = {
-                "personal": self.personal,
+                "personal": self._serialize_personal(),
                 "inicio": self.inicio,
                 "historial": self.historial,
                 "siguiente_id": self.siguiente_id,
                 "pendientes": self.pendientes,
                 "snapshots": self.snapshots,
                 "excepciones": self.excepciones,
-                "asignaciones_manuales": self.asignaciones_manuales
+                "asignaciones_manuales": self.asignaciones_manuales,
+                "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos,
+                "notificaciones": self.notificaciones
             }
             with open(backup_path, 'w', encoding='utf-8') as f:
                 json.dump(payload, f, indent=2, ensure_ascii=False)
@@ -194,18 +230,36 @@ class ShiftManager:
     def get_manual_assignments(self, period_key):
         return dict(self.asignaciones_manuales.get(period_key, {}))
 
-    def set_manual_assignment(self, period_key, week_key, person_name):
+    def set_manual_assignment(self, period_key, week_key, person_name, motivo=""):
         if period_key not in self.asignaciones_manuales:
             self.asignaciones_manuales[period_key] = {}
         self.asignaciones_manuales[period_key][week_key] = person_name
+
+        clean_motivo = str(motivo).strip() if motivo else ""
+        if clean_motivo:
+            if period_key not in self.asignaciones_manuales_motivos:
+                self.asignaciones_manuales_motivos[period_key] = {}
+            self.asignaciones_manuales_motivos[period_key][week_key] = clean_motivo
+        elif period_key in self.asignaciones_manuales_motivos and week_key in self.asignaciones_manuales_motivos[period_key]:
+            del self.asignaciones_manuales_motivos[period_key][week_key]
+            if not self.asignaciones_manuales_motivos[period_key]:
+                del self.asignaciones_manuales_motivos[period_key]
+
         self.save_config()
+
+    def get_manual_motive(self, period_key, week_key):
+        return self.asignaciones_manuales_motivos.get(period_key, {}).get(week_key, "")
 
     def remove_manual_assignment(self, period_key, week_key):
         if period_key in self.asignaciones_manuales and week_key in self.asignaciones_manuales[period_key]:
             del self.asignaciones_manuales[period_key][week_key]
             if not self.asignaciones_manuales[period_key]:
                 del self.asignaciones_manuales[period_key]
-            self.save_config()
+        if period_key in self.asignaciones_manuales_motivos and week_key in self.asignaciones_manuales_motivos[period_key]:
+            del self.asignaciones_manuales_motivos[period_key][week_key]
+            if not self.asignaciones_manuales_motivos[period_key]:
+                del self.asignaciones_manuales_motivos[period_key]
+        self.save_config()
 
     def get_person_by_id(self, p_id):
         for p in self.personal:
@@ -741,11 +795,13 @@ class ShiftManager:
 
         return shifts, current_siguiente_id, current_pendientes
 
-    def advance_month(self, year, month, exceptions, manual_assignments=None):
+    def advance_month(self, year, month, exceptions, manual_assignments=None, manual_motives=None):
         self.create_backup(f"pre_advance_{year}_{month:02d}")
         period_key = f"{year}-{month:02d}"
         if manual_assignments is None:
             manual_assignments = self.asignaciones_manuales.get(period_key, {})
+        if manual_motives is None:
+            manual_motives = self.asignaciones_manuales_motivos.get(period_key, {})
 
         # Determinar si este periodo es anterior al frente de rotación ya registrado en historial o snapshots
         latest_recorded_period = None
@@ -848,11 +904,17 @@ class ShiftManager:
             elif period_key in self.asignaciones_manuales:
                 del self.asignaciones_manuales[period_key]
         
+        if manual_motives is not None:
+            if manual_motives:
+                self.asignaciones_manuales_motivos[period_key] = dict(manual_motives)
+            elif period_key in self.asignaciones_manuales_motivos:
+                del self.asignaciones_manuales_motivos[period_key]
+        
         self.save_config()
         return True, "Turnos guardados y cola avanzada."
 
     # ── Person Management ──────────────────────────────────────
-    def add_person(self, name):
+    def add_person(self, name, email=""):
         """Add a new person with the next sequential ID and persist to config."""
         if not isinstance(name, str):
             return None
@@ -868,14 +930,16 @@ class ShiftManager:
         if normalized_name.casefold() in normalized_names:
             return None
 
+        clean_email = email.strip() if isinstance(email, str) else ""
+
         max_id = max((p['id'] for p in self.personal), default=0)
         new_id = max_id + 1
-        self.personal.append({"id": new_id, "nombre": normalized_name})
+        self.personal.append({"id": new_id, "nombre": normalized_name, "email": clean_email})
         self.save_config()
         return new_id
 
-    def edit_person(self, person_id, new_name):
-        """Edit the name of an existing person and update all historical records."""
+    def edit_person(self, person_id, new_name, new_email=None):
+        """Edit the name and optional email of an existing person and update all historical records."""
         if not isinstance(new_name, str):
             return False
 
@@ -889,14 +953,18 @@ class ShiftManager:
                 return False
 
         old_name = None
+        target_person = None
         for p in self.personal:
             if p['id'] == person_id:
+                target_person = p
                 old_name = p['nombre']
                 p['nombre'] = normalized_name
+                if new_email is not None:
+                    p['email'] = new_email.strip() if isinstance(new_email, str) else ""
                 break
 
-        if old_name:
-            if old_name != normalized_name:
+        if target_person:
+            if old_name and old_name != normalized_name:
                 # Update inicio
                 for k, v in self.inicio.items():
                     if v == old_name:
@@ -923,6 +991,42 @@ class ShiftManager:
             self.save_config()
             return True
         return False
+
+    def validate_all_emails_registered(self):
+        """
+        Valida que el 100% de los funcionarios activos tengan correo registrado y con formato válido.
+        Devuelve (es_valido, lista_nombres_sin_correo).
+        """
+        missing = []
+        for p in self.personal:
+            email = p.get('email', '')
+            if not email or not is_valid_email(email):
+                missing.append(p['nombre'])
+        return len(missing) == 0, missing
+
+    def get_notification_settings(self):
+        """Devuelve una copia de la configuración de notificaciones, priorizando variables en .env."""
+        cfg = dict(self.notificaciones)
+        env_url = get_env_var("WEBHOOK_URL")
+        if env_url:
+            cfg["webhook_url"] = env_url
+        if not cfg.get("webhook_url"):
+            cfg["webhook_url"] = DEFAULT_WEBHOOK_URL
+        env_activo = get_env_var("NOTIFICACIONES_ACTIVAS")
+        if env_activo:
+            cfg["activo"] = env_activo.lower() in ("true", "1", "yes", "si")
+        return cfg
+
+    def set_notification_settings(self, webhook_url, activo=True):
+        """Actualiza y persiste la configuración del Webhook tanto en config.json como en .env."""
+        clean_url = webhook_url.strip() if isinstance(webhook_url, str) else ""
+        self.notificaciones = {
+            "webhook_url": clean_url,
+            "activo": bool(activo)
+        }
+        self.save_config()
+        set_env_var("WEBHOOK_URL", clean_url)
+        set_env_var("NOTIFICACIONES_ACTIVAS", "true" if activo else "false")
 
     def remove_person(self, person_id):
         """Remove a person from future rotation while preserving past records."""
@@ -986,6 +1090,7 @@ class ShiftManager:
         self.pendientes = []
         self.excepciones = {}
         self.asignaciones_manuales = {}
+        self.asignaciones_manuales_motivos = {}
 
         # Recalcular siguiente_id a partir de la última asignación de inicio
         personal_ids = [p['id'] for p in self.personal]

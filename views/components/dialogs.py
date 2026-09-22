@@ -1,6 +1,7 @@
 import customtkinter as ctk
 from views.theme import P, EXC_COLORS
 from views.components.widgets import _short_name
+from utils.email_notifier import is_valid_email
 
 class CustomInputDialog:
     @classmethod
@@ -221,6 +222,222 @@ class SelectPersonDialog:
             btn_frame, text="Asignar Guardia",
             fg_color=P["green_d"], hover_color=P["green"],
             text_color=P["text"], command=submit, width=140, height=36,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+        ).pack(side="right")
+
+        dialog.bind("<Return>", lambda e: submit())
+        dialog.bind("<Escape>", lambda e: cancel())
+
+        parent.wait_window(dialog)
+        return result[0]
+
+
+class PersonFormDialog:
+    @classmethod
+    def show(cls, parent, title, initial_name="", initial_email=""):
+        dialog = ctk.CTkToplevel(parent)
+        dialog.title(title)
+        dialog.geometry("450x300")
+        dialog.configure(fg_color=P["bg_card"])
+        dialog.transient(parent)
+        dialog.grab_set()
+
+        dialog.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - dialog.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - dialog.winfo_height()) // 2
+        dialog.geometry(f"+{x}+{y}")
+
+        result = [None]
+
+        ctk.CTkLabel(
+            dialog, text=title,
+            font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
+            text_color=P["text"]
+        ).pack(pady=(16, 12))
+
+        # Nombre
+        ctk.CTkLabel(
+            dialog, text="Nombre completo del funcionario:",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w"
+        ).pack(fill="x", padx=30, pady=(0, 2))
+
+        name_entry = ctk.CTkEntry(
+            dialog, width=390, height=34,
+            fg_color=P["bg_input"], border_color=P["border"]
+        )
+        name_entry.pack(padx=30, pady=(0, 8))
+        if initial_name:
+            name_entry.insert(0, initial_name)
+
+        # Correo
+        ctk.CTkLabel(
+            dialog, text="Correo electrónico (obligatorio para notificaciones):",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w"
+        ).pack(fill="x", padx=30, pady=(0, 2))
+
+        email_entry = ctk.CTkEntry(
+            dialog, width=390, height=34,
+            placeholder_text="ejemplo: funcionario@correo.cl",
+            fg_color=P["bg_input"], border_color=P["border"]
+        )
+        email_entry.pack(padx=30, pady=(0, 4))
+        if initial_email:
+            email_entry.insert(0, initial_email)
+
+        error_lbl = ctk.CTkLabel(
+            dialog, text="",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color=P["red"], anchor="w"
+        )
+        error_lbl.pack(fill="x", padx=30, pady=(0, 8))
+
+        name_entry.focus()
+
+        def submit():
+            name_val = name_entry.get().strip()
+            email_val = email_entry.get().strip()
+
+            if not name_val:
+                error_lbl.configure(text="El nombre no puede estar vacío.")
+                return
+
+            if email_val and not is_valid_email(email_val):
+                error_lbl.configure(text="Formato de correo inválido (ej: nombre@dominio.cl).")
+                return
+
+            result[0] = (name_val, email_val)
+            dialog.destroy()
+
+        def cancel():
+            dialog.destroy()
+
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=30, pady=(0, 14))
+        ctk.CTkButton(
+            btn_frame, text="Cancelar",
+            fg_color=P["bg_card2"], hover_color=P["border_h"],
+            text_color=P["text"], command=cancel, width=150, height=36
+        ).pack(side="left")
+        ctk.CTkButton(
+            btn_frame, text="Guardar",
+            fg_color=P["green_d"], hover_color=P["green"],
+            text_color=P["text"], command=submit, width=150, height=36,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+        ).pack(side="right")
+
+        dialog.bind("<Return>", lambda e: submit())
+        dialog.bind("<Escape>", lambda e: cancel())
+
+        parent.wait_window(dialog)
+        return result[0]
+
+
+class ChangeShiftDialog:
+    @classmethod
+    def show(cls, parent, title, dates_prompt, persons, current_person=None):
+        dialog = ctk.CTkToplevel(parent)
+        dialog.title(title)
+        dialog.geometry("490x380")
+        dialog.configure(fg_color=P["bg_card"])
+        dialog.transient(parent)
+        dialog.grab_set()
+
+        dialog.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - dialog.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - dialog.winfo_height()) // 2
+        dialog.geometry(f"+{x}+{y}")
+
+        result = [None]
+
+        # Banner de advertencia obligatoria
+        warn_frame = ctk.CTkFrame(
+            dialog, fg_color=P["bg_card2"], corner_radius=8,
+            border_width=1, border_color=P["orange"]
+        )
+        warn_frame.pack(fill="x", padx=24, pady=(16, 10))
+
+        ctk.CTkLabel(
+            warn_frame,
+            text="⚠ AVISO OBLIGATORIO DE TRANSPARENCIA\n"
+                 "Al asignar manualmente este turno y guardar el mes, se enviará una "
+                 "notificación automática por correo a TODOS los funcionarios del equipo.",
+            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            text_color=P["orange"], wraplength=420, justify="center"
+        ).pack(padx=12, pady=10)
+
+        # Semana afectada
+        ctk.CTkLabel(
+            dialog, text=f"Semana de guardia: {dates_prompt}",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color=P["text"], anchor="w"
+        ).pack(fill="x", padx=24, pady=(4, 6))
+
+        # Selector de persona
+        ctk.CTkLabel(
+            dialog, text="Nuevo funcionario asignado a la guardia:",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w"
+        ).pack(fill="x", padx=24, pady=(0, 2))
+
+        initial_val = current_person if current_person in persons else (persons[0] if persons else "")
+        selected_var = ctk.StringVar(value=initial_val)
+        dropdown = ctk.CTkOptionMenu(
+            dialog, variable=selected_var, values=persons, width=440, height=34,
+            fg_color=P["bg_input"], button_color=P["accent_d"],
+            button_hover_color=P["accent"], dropdown_fg_color=P["bg_card2"],
+            font=ctk.CTkFont(family="Inter", size=12)
+        )
+        dropdown.pack(padx=24, pady=(0, 8))
+
+        # Motivo obligatorio
+        ctk.CTkLabel(
+            dialog, text="Motivo del cambio (Obligatorio para la notificación):",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w"
+        ).pack(fill="x", padx=24, pady=(0, 2))
+
+        motive_entry = ctk.CTkEntry(
+            dialog, width=440, height=34,
+            placeholder_text="Ej: Permuta con Juan Pérez / Solicitud por fuerza mayor",
+            fg_color=P["bg_input"], border_color=P["border"]
+        )
+        motive_entry.pack(padx=24, pady=(0, 4))
+        motive_entry.focus()
+
+        error_lbl = ctk.CTkLabel(
+            dialog, text="",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color=P["red"], anchor="w"
+        )
+        error_lbl.pack(fill="x", padx=24, pady=(0, 6))
+
+        def submit():
+            motive_val = motive_entry.get().strip()
+            if not motive_val:
+                error_lbl.configure(text="Debes ingresar obligatoriamente el motivo del cambio.")
+                motive_entry.focus()
+                return
+
+            chosen = selected_var.get()
+            result[0] = (chosen, motive_val)
+            dialog.destroy()
+
+        def cancel():
+            dialog.destroy()
+
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=24, pady=(0, 14))
+        ctk.CTkButton(
+            btn_frame, text="Cancelar",
+            fg_color=P["bg_card2"], hover_color=P["border_h"],
+            text_color=P["text"], command=cancel, width=170, height=36
+        ).pack(side="left")
+        ctk.CTkButton(
+            btn_frame, text="Aceptar y Registrar",
+            fg_color=P["green_d"], hover_color=P["green"],
+            text_color=P["text"], command=submit, width=170, height=36,
             font=ctk.CTkFont(family="Inter", size=12, weight="bold")
         ).pack(side="right")
 

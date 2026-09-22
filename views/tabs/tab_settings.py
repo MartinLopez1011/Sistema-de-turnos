@@ -2,7 +2,8 @@ import customtkinter as ctk
 
 from views.theme import P
 from views.components.widgets import _short_name, _make_row_hover
-from views.components.dialogs import CustomInputDialog, CustomConfirmDialog
+from views.components.dialogs import CustomInputDialog, CustomConfirmDialog, PersonFormDialog
+from utils.email_notifier import send_notification_webhook
 
 class TabSettings:
     def __init__(self, parent_tab, app):
@@ -139,12 +140,75 @@ class TabSettings:
 
         self.refresh_person_list()
 
-        # ── Card 3: Zona de peligro — Reset historial ────────────────────────
+        # ── Card 3: Configuración de Notificaciones por Correo ────────────────
+        notif_card = ctk.CTkFrame(
+            wrapper, fg_color=P["bg_card"], corner_radius=12,
+            border_width=1, border_color=P["border"]
+        )
+        notif_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
+        notif_card.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            notif_card, text="📧  Notificaciones por Correo (Webhook Serverless)",
+            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            text_color=P["text"], anchor="w"
+        ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
+
+        ctk.CTkLabel(
+            notif_card,
+            text="Cuando se realicen cambios manuales en un turno y se guarde el mes, el sistema avisará\n"
+                 "automáticamente a todos los funcionarios vía Google Apps Script (Gmail).",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w", justify="left"
+        ).grid(row=1, column=0, padx=20, pady=(0, 12), sticky="w")
+
+        notif_cfg = self.controller.get_notification_settings()
+        self.webhook_url_var = ctk.StringVar(value=notif_cfg.get("webhook_url", ""))
+
+        url_box = ctk.CTkFrame(notif_card, fg_color="transparent")
+        url_box.grid(row=2, column=0, padx=20, pady=(0, 14), sticky="ew")
+        url_box.grid_columnconfigure(0, weight=1)
+
+        self.webhook_entry = ctk.CTkEntry(
+            url_box, textvariable=self.webhook_url_var,
+            placeholder_text="https://script.google.com/macros/s/.../exec",
+            height=36, fg_color=P["bg_input"], border_color=P["border"]
+        )
+        self.webhook_entry.grid(row=0, column=0, sticky="ew", padx=(0, 10))
+
+        btn_save_webhook = ctk.CTkButton(
+            url_box, text="Guardar Webhook", command=self._save_webhook_url,
+            height=36, width=150, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            fg_color=P["accent_d"], hover_color=P["accent"]
+        )
+        btn_save_webhook.grid(row=0, column=1)
+
+        test_bar = ctk.CTkFrame(notif_card, fg_color="transparent")
+        test_bar.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
+
+        self.btn_test_webhook = ctk.CTkButton(
+            test_bar, text="✉  Probar Envío de Prueba", command=self._test_webhook,
+            height=34, width=200, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=12),
+            fg_color=P["bg_card2"], hover_color=P["border_h"],
+            text_color=P["text"]
+        )
+        self.btn_test_webhook.pack(side="left")
+
+        self.notif_status_label = ctk.CTkLabel(
+            test_bar, text="",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"]
+        )
+        self.notif_status_label.pack(side="left", padx=14)
+
+        # ── Card 4: Zona de peligro — Reset historial ────────────────────────
         danger_card = ctk.CTkFrame(
             wrapper, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["red_d"]
         )
-        danger_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
+        danger_card.grid(row=6, column=0, sticky="ew", pady=(20, 0))
         danger_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -199,10 +263,25 @@ class TabSettings:
             row_f = ctk.CTkFrame(self.person_list_frame, fg_color=P["bg_row_e"] if i % 2 == 0 else P["bg_row_o"])
             row_f.pack(fill="x", pady=2)
 
+            info_f = ctk.CTkFrame(row_f, fg_color="transparent")
+            info_f.pack(side="left", padx=10, pady=8, fill="x", expand=True)
+
             ctk.CTkLabel(
-                row_f, text=f"ID {p['id']}: {p['nombre']}", text_color=P["text"],
-                font=ctk.CTkFont(family="Inter", size=13)
-            ).pack(side="left", padx=10, pady=8)
+                info_f, text=f"ID {p['id']}: {p['nombre']}", text_color=P["text"],
+                font=ctk.CTkFont(family="Inter", size=13, weight="bold" if i == 0 else "normal")
+            ).pack(side="left", padx=(0, 10))
+
+            p_email = p.get('email', '')
+            if p_email:
+                ctk.CTkLabel(
+                    info_f, text=f"✉ {p_email}", text_color=P["text_s"],
+                    font=ctk.CTkFont(family="Inter", size=12)
+                ).pack(side="left")
+            else:
+                ctk.CTkLabel(
+                    info_f, text="⚠ Sin correo registrado", text_color=P["orange"],
+                    font=ctk.CTkFont(family="Inter", size=11, weight="bold")
+                ).pack(side="left")
 
             btn_del = ctk.CTkButton(
                 row_f, text="Eliminar", width=60, height=24,
@@ -259,10 +338,56 @@ class TabSettings:
             self.refresh_person_list()
             self.app.load_personal()
 
+    def _save_webhook_url(self):
+        url = self.webhook_url_var.get().strip()
+        self.controller.set_notification_settings(url)
+        self.notif_status_label.configure(
+            text="✓ Webhook guardado correctamente",
+            text_color=P["text_ok"]
+        )
+
+    def _test_webhook(self):
+        url = self.webhook_url_var.get().strip()
+        if not url:
+            self.notif_status_label.configure(
+                text="Primero ingresa y guarda una URL de Webhook.",
+                text_color=P["text_e"]
+            )
+            return
+
+        test_email = CustomInputDialog.show(
+            self.app, "Prueba de Notificación",
+            "Ingresa el correo al que se enviará la prueba:"
+        )
+        if not test_email or not test_email.strip():
+            return
+
+        import threading
+        self.btn_test_webhook.configure(state="disabled", text="⏳  Enviando...")
+        self.notif_status_label.configure(text="Enviando correo de prueba...", text_color=P["text_w"])
+
+        def run_test():
+            ok, msg = send_notification_webhook(
+                url,
+                recipients=[test_email.strip()],
+                subject="[Sistema de Turnos] Prueba de Notificación Exitosa",
+                body_text="Hola,\n\nEste es un correo de prueba enviado desde el Sistema de Turnos para verificar la correcta integración con Google Apps Script.\n\nEl servicio está funcionando correctamente."
+            )
+            def update_ui():
+                self.btn_test_webhook.configure(state="normal", text="✉  Probar Envío de Prueba")
+                if ok:
+                    self.notif_status_label.configure(text="✓ Prueba enviada con éxito.", text_color=P["text_ok"])
+                else:
+                    self.notif_status_label.configure(text=f"Error: {msg}", text_color=P["text_e"])
+            self.app.after(0, update_ui)
+
+        threading.Thread(target=run_test, daemon=True).start()
+
     def _on_add_person(self):
-        name = CustomInputDialog.show(self.app, "Añadir Persona", "Nombre de la persona:")
-        if name and name.strip():
-            success, msg = self.controller.add_person(name.strip())
+        res = PersonFormDialog.show(self.app, "Añadir Funcionario")
+        if res:
+            name, email = res
+            success, msg = self.controller.add_person(name, email=email)
             if success:
                 self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
                 self.refresh_person_list()
@@ -271,13 +396,14 @@ class TabSettings:
                 self.settings_status_label.configure(text=msg, text_color=P["text_e"])
 
     def _on_edit_person(self, person_id, current_name):
-        new_name = CustomInputDialog.show(
-            self.app, "Editar Persona",
-            f"Nuevo nombre para {current_name}:",
-            initialvalue=current_name
+        current_email = next((p.get('email', '') for p in self.controller.get_all_persons() if p['id'] == person_id), '')
+        res = PersonFormDialog.show(
+            self.app, "Editar Funcionario",
+            initial_name=current_name, initial_email=current_email
         )
-        if new_name and new_name.strip() and new_name.strip() != current_name:
-            success, msg = self.controller.edit_person(person_id, new_name.strip())
+        if res:
+            new_name, new_email = res
+            success, msg = self.controller.edit_person(person_id, new_name, new_email=new_email)
             if success:
                 self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
                 self.refresh_person_list()

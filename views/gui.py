@@ -10,6 +10,7 @@ from views.tabs.tab_plan import TabPlan
 from views.tabs.tab_calendar import TabCalendar
 from views.tabs.tab_settings import TabSettings
 from utils.logger import get_logger
+from utils.email_notifier import check_internet_connection, format_plain_text_message, send_notification_webhook
 
 logger = get_logger("gui")
 
@@ -36,6 +37,8 @@ class TurnosApp(ctk.CTk):
         self.exceptions_by_period = {}
         self.manual_assignments = {}
         self.manual_assignments_by_period = {}
+        self.manual_motives = {}
+        self.manual_motives_by_period = {}
         self.active_period_key = None
         self.is_exporting = False
         self.plan_period_dirty = False
@@ -110,9 +113,11 @@ class TurnosApp(ctk.CTk):
         if self.active_period_key is not None:
             self.exceptions_by_period[self.active_period_key] = self.exceptions
             self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
+            self.manual_motives_by_period[self.active_period_key] = self.manual_motives
         self.active_period_key = self.get_selected_period_key()
         self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
         self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
+        self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
         self.plan_period_dirty = True
         self.tab_plan.refresh_exceptions(self.exceptions)
         self.refresh_plan_views()
@@ -121,8 +126,10 @@ class TurnosApp(ctk.CTk):
         self.exceptions_by_period = self.controller.get_saved_exceptions()
         self.manual_assignments_by_period = self.controller.get_saved_manual_assignments()
         self.active_period_key = self.get_selected_period_key()
+        self.manual_motives_by_period[self.active_period_key] = self.controller.get_all_manual_motives(self.active_period_key)
         self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
         self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
+        self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
 
         personal = self.controller.get_personal_list()
         self.tab_plan.refresh_personal(personal)
@@ -145,20 +152,29 @@ class TurnosApp(ctk.CTk):
             self.mark_dirty()
             self.set_status(f"Excepción eliminada: {removed['fecha'].strftime('%d/%m/%Y')}", "warn")
 
-    def set_manual_assignment(self, week_key, person_name):
+    def set_manual_assignment(self, week_key, person_name, motivo=""):
         self.manual_assignments[week_key] = person_name
         self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
+        if motivo and str(motivo).strip():
+            self.manual_motives[week_key] = str(motivo).strip()
+            self.manual_motives_by_period[self.active_period_key] = self.manual_motives
         self.refresh_plan_views()
         self.mark_dirty()
         self.set_status(f"Guardia asignada manualmente: {person_name}", "ok")
+
+    def get_manual_motive(self, week_key):
+        return self.manual_motives.get(week_key, "")
 
     def clear_manual_assignment(self, week_key):
         if week_key in self.manual_assignments:
             del self.manual_assignments[week_key]
             self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
-            self.refresh_plan_views()
-            self.mark_dirty()
-            self.set_status("Asignación manual revertida a rotación automática.", "info")
+        if week_key in self.manual_motives:
+            del self.manual_motives[week_key]
+            self.manual_motives_by_period[self.active_period_key] = self.manual_motives
+        self.refresh_plan_views()
+        self.mark_dirty()
+        self.set_status("Asignación manual revertida a rotación automática.", "info")
 
     def refresh_plan_views(self):
         year, month = self.get_selected_period()
@@ -223,11 +239,57 @@ class TurnosApp(ctk.CTk):
         year, month = self.get_selected_period()
         exceptions_snapshot = list(self.exceptions)
         manual_snapshot = dict(self.manual_assignments)
+        motives_snapshot = dict(self.manual_motives)
+
+        has_manual = len(manual_snapshot) > 0
+        webhook_url = ""
+
+        if has_manual:
+            # 1. Validar Webhook configurado
+            notif_cfg = self.controller.get_notification_settings()
+            webhook_url = notif_cfg.get("webhook_url", "").strip()
+            if not webhook_url:
+                messagebox.showerror(
+                    "Configuración Requerida",
+                    "Existen asignaciones manuales en este mes.\n\n"
+                    "Para guardar un cambio manual de turno es obligatorio notificar a todos los funcionarios, "
+                    "pero no hay ninguna URL de Webhook configurada en la pestaña 'Ajustes'.\n\n"
+                    "Por favor configura el Webhook en Ajustes antes de guardar.",
+                    parent=self
+                )
+                return
+
+            # 2. Validar que el 100% de los funcionarios activos tengan correo
+            all_emails_ok, missing_emails = self.controller.validate_all_emails_registered()
+            if not all_emails_ok:
+                nombres_str = "\n".join(f"  • {nom}" for nom in missing_emails)
+                messagebox.showerror(
+                    "Correos Incompletos",
+                    "Existen asignaciones manuales en este mes y la notificación es obligatoria para todo el equipo.\n\n"
+                    f"Los siguientes funcionarios no tienen correo registrado o es inválido:\n{nombres_str}\n\n"
+                    "Ingresa a la pestaña 'Ajustes > Gestión de Personal' y completa los correos antes de guardar.",
+                    parent=self
+                )
+                return
+
+            # 3. Validar conexión a Internet
+            if not check_internet_connection():
+                messagebox.showerror(
+                    "Sin Conexión a Internet",
+                    "No se puede guardar el mes con cambios manuales sin conexión a Internet.\n\n"
+                    "Es obligatorio enviar la notificación de aviso a los funcionarios. "
+                    "Verifica tu conexión a Internet e inténtalo nuevamente.",
+                    parent=self
+                )
+                return
+
+        aviso_correo = "\n\n⚠ Se enviará una notificación por correo a TODOS los funcionarios." if has_manual else ""
         confirmed = messagebox.askyesno(
             "Guardar mes",
             f"¿Guardar {MESES[month-1]} {year} en el historial?\n\n"
             f"  • {len(exceptions_snapshot)} excepción{'es' if len(exceptions_snapshot) != 1 else ''} registrada{'s' if len(exceptions_snapshot) != 1 else ''}.\n"
-            f"  • {len(manual_snapshot)} asignación{'es' if len(manual_snapshot) != 1 else ''} manual{'es' if len(manual_snapshot) != 1 else ''}.\n\n"
+            f"  • {len(manual_snapshot)} asignación{'es' if len(manual_snapshot) != 1 else ''} manual{'es' if len(manual_snapshot) != 1 else ''}."
+            f"{aviso_correo}\n\n"
             "La cola avanzará al siguiente mes.",
             parent=self
         )
@@ -236,35 +298,89 @@ class TurnosApp(ctk.CTk):
 
         self.is_exporting = True
         self.tab_plan.save_btn.configure(state="disabled", text="⏳  Guardando...")
-        self.set_status("Guardando el mes en el historial...", "warn")
 
-        ok, msg = self.controller.advance_queue(
-            year, month, exceptions_snapshot, manual_assignments=manual_snapshot)
-        self.is_exporting = False
-        if not ok:
+        def _commit_and_advance():
+            ok, msg = self.controller.advance_queue(
+                year, month, exceptions_snapshot,
+                manual_assignments=manual_snapshot,
+                manual_motives=motives_snapshot
+            )
+            self.is_exporting = False
+            if not ok:
+                self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
+                self.set_status(f"Error: {msg}", "error")
+                return
+
+            self.exceptions_by_period[self.active_period_key] = exceptions_snapshot
+            self.manual_assignments_by_period[self.active_period_key] = manual_snapshot
+            self.manual_motives_by_period[self.active_period_key] = motives_snapshot
+            self.calendar_period_override = (year, month)
+            self.mark_clean()
+
+            # Avanzar el selector al siguiente mes
+            next_year, next_month = year, month % 12 + 1
+            if next_month == 1:
+                next_year += 1
+            self.month_var.set(MESES[next_month - 1])
+            self.year_var.set(str(next_year))
+            self.active_period_key = self.get_selected_period_key()
+            self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+            self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
+            self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
+
+            self.tab_plan.refresh_exceptions(self.exceptions)
+            self.refresh_plan_views()
             self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
-            self.set_status(f"Error: {msg}", "error")
+            self.set_status("Mes guardado en el historial y cola avanzada.", "ok")
+
+        if not has_manual:
+            self.set_status("Guardando el mes en el historial...", "warn")
+            _commit_and_advance()
             return
 
-        self.exceptions_by_period[self.active_period_key] = exceptions_snapshot
-        self.manual_assignments_by_period[self.active_period_key] = manual_snapshot
-        self.calendar_period_override = (year, month)
-        self.mark_clean()
+        # Notificación por correo en segundo plano
+        self.set_status("Enviando notificación por correo a todos los funcionarios...", "warn")
+        self.tab_plan.save_btn.configure(text="⏳  Enviando correos...")
 
-        # Avanzar el selector al siguiente mes
-        next_year, next_month = year, month % 12 + 1
-        if next_month == 1:
-            next_year += 1
-        self.month_var.set(MESES[next_month - 1])
-        self.year_var.set(str(next_year))
-        self.active_period_key = self.get_selected_period_key()
-        self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
-        self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
+        shifts_auto = self.controller.preview_shifts(year, month, exceptions_snapshot, manual_assignments={})
+        cambios_detalle = []
+        for sh in shifts_auto:
+            s_d, e_d = sh['semana']
+            wk = f"{s_d.isoformat()}_{e_d.isoformat()}"
+            if wk in manual_snapshot:
+                cambios_detalle.append({
+                    "semana_texto": f"{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}",
+                    "anterior": sh.get('persona', 'Sin asignar'),
+                    "nuevo": manual_snapshot[wk],
+                    "motivo": motives_snapshot.get(wk, "No especificado"),
+                    "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M")
+                })
 
-        self.tab_plan.refresh_exceptions(self.exceptions)
-        self.refresh_plan_views()
-        self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
-        self.set_status("Mes guardado en el historial. La cola avanzó al siguiente mes.", "ok")
+        recipients = [p['email'].strip() for p in self.controller.get_all_persons() if p.get('email')]
+        subject = f"[Sistema de Turnos] Modificación de Guardia - {MESES[month - 1]} {year}"
+        body_text = format_plain_text_message(MESES[month - 1], year, cambios_detalle)
+
+        def _worker():
+            success_send, send_msg = send_notification_webhook(webhook_url, recipients, subject, body_text)
+            def _on_finish():
+                if not success_send:
+                    self.is_exporting = False
+                    self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
+                    self.set_status(f"Error al enviar correo: {send_msg}", "error")
+                    messagebox.showerror(
+                        "Error al Enviar Notificación",
+                        f"No se pudo guardar el mes porque falló el envío de correos:\n\n{send_msg}\n\n"
+                        "El historial NO ha sido modificado.",
+                        parent=self
+                    )
+                    return
+
+                _commit_and_advance()
+                self.set_status("Mes guardado y notificación enviada a todos los funcionarios.", "ok")
+
+            self.after(0, _on_finish)
+
+        threading.Thread(target=_worker, daemon=True).start()
 
     def export_calendar_excel(self):
         if self.is_exporting:

@@ -11,6 +11,7 @@ __pycache__/
 # Archivos de configuración locales
 config.json
 temp_config.json
+.env
 
 # Builds de PyInstaller
 build/

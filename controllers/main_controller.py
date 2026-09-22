@@ -3,6 +3,7 @@ from datetime import date
 from models.shift_manager import ShiftManager
 from utils.excel_handler import ExcelHandler
 from utils.logger import get_logger
+from utils.email_notifier import is_valid_email
 from views.theme import MESES
 
 logger = get_logger("controller")
@@ -38,25 +39,53 @@ class MainController:
     def set_starting_person(self, person_name):
         return self.shift_manager.set_starting_person(person_name)
 
-    def add_person(self, name):
+    def add_person(self, name, email=""):
         if not isinstance(name, str) or not " ".join(name.split()):
             return False, "El nombre no puede estar vacío"
         clean_name = " ".join(name.split())
         for p in self.shift_manager.personal:
             if " ".join(p['nombre'].split()).casefold() == clean_name.casefold():
                 return False, f"Ya existe un funcionario con el nombre '{clean_name}'"
-        new_id = self.shift_manager.add_person(clean_name)
+        
+        clean_email = email.strip() if isinstance(email, str) else ""
+        if clean_email and not is_valid_email(clean_email):
+            return False, "El formato del correo electrónico no es válido (ej: usuario@dominio.cl)"
+
+        new_id = self.shift_manager.add_person(clean_name, email=clean_email)
         return new_id is not None, f"Persona añadida con ID {new_id}" if new_id else "Error al añadir persona"
 
-    def edit_person(self, person_id, new_name):
+    def edit_person(self, person_id, new_name, new_email=None):
         if not isinstance(new_name, str) or not " ".join(new_name.split()):
             return False, "El nombre no puede estar vacío"
         clean_name = " ".join(new_name.split())
         for p in self.shift_manager.personal:
             if p['id'] != person_id and " ".join(p['nombre'].split()).casefold() == clean_name.casefold():
                 return False, f"Ya existe un funcionario con el nombre '{clean_name}'"
-        success = self.shift_manager.edit_person(person_id, clean_name)
+
+        clean_email = None
+        if new_email is not None:
+            clean_email = new_email.strip() if isinstance(new_email, str) else ""
+            if clean_email and not is_valid_email(clean_email):
+                return False, "El formato del correo electrónico no es válido (ej: usuario@dominio.cl)"
+
+        success = self.shift_manager.edit_person(person_id, clean_name, new_email=clean_email)
         return success, f"Funcionario editado: {clean_name}" if success else "Funcionario no encontrado"
+
+    def validate_all_emails_registered(self):
+        return self.shift_manager.validate_all_emails_registered()
+
+    def get_notification_settings(self):
+        return self.shift_manager.get_notification_settings()
+
+    def set_notification_settings(self, webhook_url, activo=True):
+        self.shift_manager.set_notification_settings(webhook_url, activo)
+        return True, "Configuración de notificaciones guardada"
+
+    def get_manual_motive(self, period_key, week_key):
+        return self.shift_manager.get_manual_motive(period_key, week_key)
+
+    def get_all_manual_motives(self, period_key):
+        return dict(self.shift_manager.asignaciones_manuales_motivos.get(period_key, {}))
 
     def remove_person(self, person_id):
         success = self.shift_manager.remove_person(person_id)
@@ -214,9 +243,13 @@ class MainController:
             logger.error("Error en process_generation: %s", e, exc_info=True)
             return False, f"Error: {str(e)}"
 
-    def advance_queue(self, year, month, exceptions, manual_assignments=None):
+    def advance_queue(self, year, month, exceptions, manual_assignments=None, manual_motives=None):
         try:
-            self.shift_manager.advance_month(year, month, exceptions, manual_assignments=manual_assignments)
+            self.shift_manager.advance_month(
+                year, month, exceptions,
+                manual_assignments=manual_assignments,
+                manual_motives=manual_motives
+            )
             warnings = self.shift_manager.last_warnings
             if warnings:
                 return True, (
