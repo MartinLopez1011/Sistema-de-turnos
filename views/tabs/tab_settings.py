@@ -145,7 +145,7 @@ class TabSettings:
             wrapper, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        notif_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
+        notif_card.grid(row=5, column=0, sticky="ew", pady=(20, 20))
         notif_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -226,36 +226,6 @@ class TabSettings:
             text_color=P["text_s"], anchor="w"
         )
         self.notif_status_label.grid(row=2, column=0, columnspan=2, padx=14, pady=(0, 10), sticky="w")
-
-        # ── Card 4: Zona de peligro — Reset historial ────────────────────────
-        danger_card = ctk.CTkFrame(
-            wrapper, fg_color=P["bg_card"], corner_radius=12,
-            border_width=1, border_color=P["red_d"]
-        )
-        danger_card.grid(row=6, column=0, sticky="ew", pady=(20, 0))
-        danger_card.grid_columnconfigure(0, weight=1)
-
-        ctk.CTkLabel(
-            danger_card, text="⚠  Zona de peligro",
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
-            text_color=P["red"], anchor="w"
-        ).grid(row=0, column=0, padx=20, pady=(16, 4), sticky="w")
-
-        ctk.CTkLabel(
-            danger_card,
-            text="Resetear el historial elimina las semanas cerradas, snapshots y excepciones guardadas.\n"
-                 "Las semanas base ('inicio') y la lista de personal se conservan automáticamente. Se crea un respaldo previo.",
-            font=ctk.CTkFont(family="Inter", size=12),
-            text_color=P["text_s"], anchor="w", wraplength=580, justify="left"
-        ).grid(row=1, column=0, padx=20, pady=(0, 12), sticky="w")
-
-        ctk.CTkButton(
-            danger_card, text="🗑  Resetear historial",
-            command=self._reset_historial,
-            height=36, width=200, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
-            fg_color=P["red_d"], hover_color=P["red"]
-        ).grid(row=2, column=0, padx=20, pady=(0, 20), sticky="w")
 
     def save_starting_person(self):
         person = self.starting_person_var.get()
@@ -460,25 +430,3 @@ class TabSettings:
             else:
                 self.settings_status_label.configure(text=msg, text_color=P["text_e"])
 
-    def _reset_historial(self):
-        confirmed = CustomConfirmDialog.show(
-            self.app, "Confirmar reseteo",
-            "Estás a punto de resetear el historial y excepciones.\n"
-            "Se creará una copia de respaldo automática y se preservarán las semanas base ('inicio').\n\n"
-            "¿Deseas continuar?",
-            is_danger=True
-        )
-        if not confirmed:
-            self.settings_status_label.configure(text="Reseteo cancelado.", text_color=P["text_w"])
-            return
-
-        success, msg = self.controller.reset_historial(preserve_inicio=True)
-        if success:
-            self.settings_status_label.configure(text=msg, text_color=P["text_ok"])
-            self.starting_person_var.set(self.controller.get_starting_person())
-            self.app.load_personal()
-            self.app.mark_clean()
-            self.app.set_status("Historial reseteado correctamente.", "ok")
-        else:
-            self.settings_status_label.configure(text=msg, text_color=P["text_e"])
-            self.app.set_status(f"Error al resetear: {msg}", "error")
