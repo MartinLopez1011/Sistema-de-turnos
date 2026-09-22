@@ -41,6 +41,12 @@ class ExcelHandler:
             cell.alignment = Alignment(horizontal="center", vertical="center")
             cell.border = border
 
+            cell3 = self.sheet.cell(row=3, column=day + 1)
+            cell3.font = Font(bold=True)
+            cell3.fill = header_fill
+            cell3.alignment = Alignment(horizontal="center", vertical="center")
+            cell3.border = border
+
         for row_idx, person in enumerate(self.personal, 4):
             name = person.get("nombre", "") if isinstance(person, dict) else str(person)
             cell = self.sheet.cell(row=row_idx, column=1, value=name)
@@ -53,7 +59,13 @@ class ExcelHandler:
             self.sheet.column_dimensions[openpyxl.utils.get_column_letter(column_idx)].width = 5
         self.sheet.freeze_panes = "B4"
         self.sheet.row_dimensions[1].height = 24
-        
+
+        # Configuración de impresión: apaisado y ajustado a 1 página de ancho
+        self.sheet.page_setup.orientation = self.sheet.ORIENTATION_LANDSCAPE
+        self.sheet.page_setup.paperSize = self.sheet.PAPERSIZE_LETTER
+        self.sheet.sheet_properties.pageSetUpPr.fitToPage = True
+        self.sheet.page_setup.fitToWidth = 1
+        self.sheet.page_setup.fitToHeight = 0
 
     def save_report(self):
         self.wb.save(self.output_path)
@@ -122,7 +134,9 @@ class ExcelHandler:
         for row_idx in range(days_row_index + 1, self.sheet.max_row + 1):
             name = self.sheet.cell(row=row_idx, column=names_col_idx).value
             if name:
-                person_rows[str(name).strip()] = row_idx
+                clean_name = str(name).strip()
+                if clean_name.upper() not in ("FUNCIONARIO", "DIA", "DIAS"):
+                    person_rows[clean_name] = row_idx
 
         # 1. LIMPIAR LA GRILLA Y DIBUJAR FINES DE SEMANA DINAMICOS
         gray_fill = openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
@@ -132,6 +146,7 @@ class ExcelHandler:
         import calendar
         
         _, days_in_month = calendar.monthrange(year, month)
+        dias_letras = ["L", "M", "X", "J", "V", "S", "D"]
 
         for day_val, col_idx in day_columns.items():
             if day_val > days_in_month:
@@ -139,6 +154,10 @@ class ExcelHandler:
                 header_cell = self.sheet.cell(row=days_row_index, column=col_idx)
                 header_cell.fill = invalid_day_fill
                 header_cell.value = "-"
+                weekday_cell = self.sheet.cell(row=days_row_index + 1, column=col_idx)
+                weekday_cell.fill = invalid_day_fill
+                weekday_cell.value = "-"
+                weekday_cell.alignment = center_align
                 for row_idx in person_rows.values():
                     cell = self.sheet.cell(row=row_idx, column=col_idx)
                     cell.value = None
@@ -147,19 +166,28 @@ class ExcelHandler:
 
             # Determinar si es fin de semana
             is_weekend = False
+            weekday_letter = ""
             try:
                 date_obj = datetime.date(year, month, day_val)
-                if date_obj.weekday() >= 5: # 5=Sat, 6=Sun
+                weekday_idx = date_obj.weekday()
+                weekday_letter = dias_letras[weekday_idx]
+                if weekday_idx >= 5: # 5=Sat, 6=Sun
                     is_weekend = True
             except ValueError:
                 pass
                 
             fill_to_apply = gray_fill if is_weekend else white_fill
             
-            # Pintar el encabezado
+            # Pintar el encabezado de día y de letra de semana (fila 2 y 3)
             header_cell = self.sheet.cell(row=days_row_index, column=col_idx)
             header_cell.fill = fill_to_apply
             header_cell.value = day_val
+
+            weekday_cell = self.sheet.cell(row=days_row_index + 1, column=col_idx)
+            weekday_cell.fill = fill_to_apply
+            weekday_cell.value = weekday_letter
+            weekday_cell.alignment = center_align
+            weekday_cell.font = bold_font
             
             # Pintar las filas del personal y vaciar texto
             for row_idx in person_rows.values():

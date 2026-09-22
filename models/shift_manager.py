@@ -201,46 +201,12 @@ class ShiftManager:
         pendiente o al arrancar el siguiente mes.
         """
         cutoff = before_date - timedelta(weeks=min_gap_weeks)
+        last_date = self._last_shift_date(
+            nombre, before_date, shifts_so_far, ignored_period=ignored_period
+        )
+        return last_date >= cutoff
 
-        # Revisar historial guardado
-        for week_key, person in self.historial.items():
-            if person != nombre:
-                continue
-            try:
-                parts = week_key.split('_')
-                week_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
-                week_end   = datetime.strptime(parts[1], '%Y-%m-%d').date()
-            except (ValueError, IndexError):
-                continue
-            if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
-                continue
-            if week_end >= cutoff and week_start < before_date:
-                return True
-
-        # Revisar inicio inmutable
-        for week_key, person in self.inicio.items():
-            if person != nombre:
-                continue
-            try:
-                parts = week_key.split('_')
-                week_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
-                week_end   = datetime.strptime(parts[1], '%Y-%m-%d').date()
-            except (ValueError, IndexError):
-                continue
-            if week_end >= cutoff and week_start < before_date:
-                return True
-
-        # Revisar turnos ya calculados en esta sesión
-        for sh in shifts_so_far:
-            if sh.get('persona') != nombre:
-                continue
-            sh_start, sh_end = sh['semana']
-            if sh_end >= cutoff and sh_start < before_date:
-                return True
-
-        return False
-
-    def _last_shift_date(self, nombre, before_date, shifts_so_far):
+    def _last_shift_date(self, nombre, before_date, shifts_so_far, ignored_period=None):
         """
         Devuelve la fecha de fin del turno más reciente de 'nombre' antes de before_date,
         o date.min si no tiene turnos previos registrados.
@@ -253,7 +219,10 @@ class ShiftManager:
                 continue
             try:
                 parts = week_key.split('_')
+                week_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
                 week_end = datetime.strptime(parts[1], '%Y-%m-%d').date()
+                if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
+                    continue
                 if week_end < before_date and week_end > latest:
                     latest = week_end
             except (ValueError, IndexError):
@@ -265,7 +234,10 @@ class ShiftManager:
                 continue
             try:
                 parts = week_key.split('_')
+                week_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
                 week_end = datetime.strptime(parts[1], '%Y-%m-%d').date()
+                if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
+                    continue
                 if week_end < before_date and week_end > latest:
                     latest = week_end
             except (ValueError, IndexError):
@@ -274,7 +246,9 @@ class ShiftManager:
         # Revisar turnos ya calculados en esta sesión
         for sh in shifts_so_far:
             if sh.get('persona') == nombre:
-                sh_end = sh['semana'][1]
+                sh_start, sh_end = sh['semana']
+                if ignored_period and sh_start <= ignored_period[1] and sh_end >= ignored_period[0]:
+                    continue
                 if sh_end < before_date and sh_end > latest:
                     latest = sh_end
 
@@ -285,7 +259,10 @@ class ShiftManager:
         
         for exc in current_exceptions:
             if exc.get('persona') == nombre and exc.get('tipo') == "FOR":
-                if cutoff <= exc['fecha'] < before_date:
+                fecha = exc.get('fecha')
+                if isinstance(fecha, str):
+                    fecha = datetime.strptime(fecha, '%Y-%m-%d').date()
+                if fecha and cutoff <= fecha < before_date:
                     return True
                     
         for period_key, exc_list in self.excepciones.items():
@@ -297,8 +274,20 @@ class ShiftManager:
                     else:
                         fecha = fecha_str
                         
-                    if cutoff <= fecha < before_date:
+                    if fecha and cutoff <= fecha < before_date:
                         return True
+
+        # Revisar asignaciones manuales guardadas (sucesor de FOR)
+        for period_key, week_dict in self.asignaciones_manuales.items():
+            for week_key, person in week_dict.items():
+                if person == nombre:
+                    try:
+                        parts = week_key.split('_')
+                        w_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
+                        if cutoff <= w_start < before_date:
+                            return True
+                    except (ValueError, IndexError):
+                        continue
                         
         return False
 
@@ -371,6 +360,23 @@ class ShiftManager:
     def generate_shifts(self, year, month, exceptions, state=None,
                         recalculate_history=False, manual_assignments=None):
         self.last_warnings = []
+
+        # Normalizar excepciones asegurando que fecha sea date
+        normalized_exceptions = []
+        for exc in exceptions:
+            f = exc.get('fecha')
+            if isinstance(f, str):
+                try:
+                    f = datetime.strptime(f, '%Y-%m-%d').date()
+                except ValueError:
+                    continue
+            normalized_exceptions.append({
+                'persona': exc['persona'],
+                'fecha': f,
+                'tipo': exc['tipo']
+            })
+        exceptions = normalized_exceptions
+
         cal = calendar.Calendar().monthdatescalendar(year, month)
         weeks = []
         for week in cal:

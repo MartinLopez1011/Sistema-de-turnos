@@ -658,4 +658,3 @@ class TabCalendar:
         date_obj = date(year, month, day)
         new_exc = [{'persona': persona, 'fecha': date_obj, 'tipo': tipo}]
         self.app.add_exceptions(new_exc)
-        self.render_turnos_view()

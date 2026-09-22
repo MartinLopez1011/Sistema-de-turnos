@@ -10,8 +10,6 @@ class MainController:
     def __init__(self, root_path):
         self.root_path = root_path
         self.config_path = os.path.join(root_path, 'config.json')
-        self.output_path = os.path.join(root_path, 'turnos_generados.xlsx')
-        
         self.shift_manager = ShiftManager(self.config_path)
 
     def get_personal_list(self):
@@ -108,11 +106,32 @@ class MainController:
                 year, month, exceptions, manual_assignments=active_manual)
             return shifts
 
-        state = {
-            "siguiente_id": self.shift_manager.siguiente_id,
-            "pendientes": self.shift_manager.pendientes.copy()
-        }
-        preview_year, preview_month = today.year, today.month
+        # Buscar el snapshot más cercano previo a (year, month) para optimizar la cadena
+        best_snapshot_key = None
+        best_snapshot_period = None
+        for snap_k in self.shift_manager.snapshots.keys():
+            try:
+                parts = snap_k.split('-')
+                p_tuple = (int(parts[0]), int(parts[1]))
+                if p_tuple <= (year, month):
+                    if best_snapshot_period is None or p_tuple > best_snapshot_period:
+                        best_snapshot_period = p_tuple
+                        best_snapshot_key = snap_k
+            except (ValueError, IndexError):
+                continue
+
+        if best_snapshot_key is not None and best_snapshot_period >= (today.year, today.month):
+            state = {
+                "siguiente_id": self.shift_manager.snapshots[best_snapshot_key]["siguiente_id"],
+                "pendientes": self.shift_manager.snapshots[best_snapshot_key]["pendientes"].copy()
+            }
+            preview_year, preview_month = best_snapshot_period
+        else:
+            state = {
+                "siguiente_id": self.shift_manager.siguiente_id,
+                "pendientes": self.shift_manager.pendientes.copy()
+            }
+            preview_year, preview_month = today.year, today.month
 
         while (preview_year, preview_month) <= (year, month):
             preview_key = f"{preview_year}-{preview_month:02d}"

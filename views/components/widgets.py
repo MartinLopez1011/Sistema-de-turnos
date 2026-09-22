@@ -74,9 +74,12 @@ def _make_row_hover(ref_widget, row_widgets):
             if orig not in hoverable_colors:
                 continue
             try:
-                w.configure(bg=HOVER)
+                w.configure(fg_color=HOVER)
             except Exception:
-                pass
+                try:
+                    w.configure(bg=HOVER)
+                except Exception:
+                    pass
 
     def _do_off():
         state['job'] = None
@@ -85,9 +88,12 @@ def _make_row_hover(ref_widget, row_widgets):
             if orig not in hoverable_colors:
                 continue
             try:
-                w.configure(bg=orig)
+                w.configure(fg_color=orig)
             except Exception:
-                pass
+                try:
+                    w.configure(bg=orig)
+                except Exception:
+                    pass
 
     def on_enter(e):
         if state['job'] is not None:

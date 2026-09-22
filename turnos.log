@@ -375,3 +375,167 @@ TypeError: ControllerExportParityTests.test_process_generation_matches_preview_s
 2026-09-22 09:59:23 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmplr8wpd88\backups\corrupt_config.json.corrupted_20260922_095923
 2026-09-22 09:59:23 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp4vk94jr6\subdir\new_config.json no encontrado. Creando configuración base limpia.
 2026-09-22 09:59:23 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-44\test_transicion_mes_y_snapshot0\backups\config_20260922_095923_pre_advance_2024_04.json
+2026-09-22 14:22:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpxgko1g59\parity_test.xlsx
+2026-09-22 14:22:39 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 14:22:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmphgd_s1sh\test_deleted_person_export.xlsx
+2026-09-22 14:22:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpzaxhzhou\test_legend.xlsx
+2026-09-22 14:22:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpo9lt20lp\test_title.xlsx
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6lcmfruo\backups\config_20260922_142239_pre_advance_2026_10.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpa0slt2lr\backups\config_20260922_142239_pre_advance_2026_04.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpa0slt2lr\backups\config_20260922_142239_pre_advance_2026_04.json
+2026-09-22 14:22:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpsovsoogf\excel_test.xlsx
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpn34yhjdi\backups\config_20260922_142239_pre_advance_2026_10.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpjpd6zfyt\backups\config_20260922_142239_pre_advance_2026_09.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe3r1edfl\backups\config_20260922_142239_pre_advance_2026_07.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe3r1edfl\backups\config_20260922_142239_pre_advance_2026_08.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe3r1edfl\backups\config_20260922_142239_pre_advance_2026_06.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4j_8j5g4\backups\config_20260922_142239_pre_advance_2026_05.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4j_8j5g4\backups\config_20260922_142239_pre_advance_2026_06.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmph4tk5z6n\backups\config_20260922_142239_pre_reset.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1ubevdgs\backups\config_20260922_142239_test_tag.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmptul1zlg0\backups\config_20260922_142239_pre_reset.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp5dcjhoad\backups\config_20260922_142239_pre_reset.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpu4bgge85\backups\config_20260922_142239_pre_advance_2024_04.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpu4bgge85\backups\config_20260922_142239_pre_advance_2024_05.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpu4bgge85\backups\config_20260922_142239_pre_advance_2024_03.json
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:22:39 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpimkpx1es\backups\corrupt_config.json.corrupted_20260922_142239
+2026-09-22 14:22:39 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp79jltimk\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 14:22:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-45\test_transicion_mes_y_snapshot0\backups\config_20260922_142239_pre_advance_2024_04.json
+2026-09-22 14:34:08 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmppa8cctsc\parity_test.xlsx
+2026-09-22 14:34:08 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 14:34:08 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpdkjf6qd0\test_deleted_person_export.xlsx
+2026-09-22 14:34:08 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp3s822qkk\test_legend.xlsx
+2026-09-22 14:34:08 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp5wt7r33g\test_title.xlsx
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpc5084f__\backups\config_20260922_143408_pre_advance_2026_10.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpk_6ilrum\backups\config_20260922_143408_pre_advance_2026_04.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpk_6ilrum\backups\config_20260922_143408_pre_advance_2026_04.json
+2026-09-22 14:34:08 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmph6trlbl7\excel_test.xlsx
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpyha5scgn\backups\config_20260922_143408_pre_advance_2026_10.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp615zkf5h\backups\config_20260922_143408_pre_advance_2026_09.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_tvfgyqz\backups\config_20260922_143408_pre_advance_2026_07.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_tvfgyqz\backups\config_20260922_143408_pre_advance_2026_08.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_tvfgyqz\backups\config_20260922_143408_pre_advance_2026_06.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmppc3ailk6\backups\config_20260922_143408_pre_advance_2026_05.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmppc3ailk6\backups\config_20260922_143408_pre_advance_2026_06.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmphkuzgvx9\backups\config_20260922_143408_pre_reset.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpccdlpr9v\backups\config_20260922_143408_test_tag.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpgrbo3hou\backups\config_20260922_143408_pre_reset.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe5cumgu0\backups\config_20260922_143408_pre_reset.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmplcrddtvo\backups\config_20260922_143408_pre_advance_2024_04.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmplcrddtvo\backups\config_20260922_143408_pre_advance_2024_05.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmplcrddtvo\backups\config_20260922_143408_pre_advance_2024_03.json
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=2).
+2026-09-22 14:34:08 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 14:34:08 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpan1kv4k1\backups\corrupt_config.json.corrupted_20260922_143408
+2026-09-22 14:34:08 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp__8yue3y\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 14:34:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-46\test_transicion_mes_y_snapshot0\backups\config_20260922_143409_pre_advance_2024_04.json
+2026-09-22 14:34:53 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpl9_v4dly\parity_test.xlsx
+2026-09-22 14:34:53 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 14:34:53 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpl17284zd\test_deleted_person_export.xlsx
+2026-09-22 14:34:53 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp7ezsw9wc\test_legend.xlsx
+2026-09-22 14:34:54 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpsb3nl2ln\test_title.xlsx
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmplw_54p36\backups\config_20260922_143454_pre_advance_2026_10.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpahl_kf3a\backups\config_20260922_143454_pre_advance_2026_04.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpahl_kf3a\backups\config_20260922_143454_pre_advance_2026_04.json
+2026-09-22 14:34:54 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp8nlymvhb\excel_test.xlsx
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmplgziigno\backups\config_20260922_143454_pre_advance_2026_10.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpirfxlfjb\backups\config_20260922_143454_pre_advance_2026_09.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpupg0zmbx\backups\config_20260922_143454_pre_advance_2026_07.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpupg0zmbx\backups\config_20260922_143454_pre_advance_2026_08.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpupg0zmbx\backups\config_20260922_143454_pre_advance_2026_06.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe57ud4ym\backups\config_20260922_143454_pre_advance_2026_05.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe57ud4ym\backups\config_20260922_143454_pre_advance_2026_06.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpeta7chb4\backups\config_20260922_143454_pre_reset.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpz1sujs6q\backups\config_20260922_143454_test_tag.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpq89f3k6d\backups\config_20260922_143454_pre_reset.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpmr4gaepr\backups\config_20260922_143454_pre_reset.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmptz6e2dgx\backups\config_20260922_143454_pre_advance_2024_04.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmptz6e2dgx\backups\config_20260922_143454_pre_advance_2024_05.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmptz6e2dgx\backups\config_20260922_143454_pre_advance_2024_03.json
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:34:54 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpauoemiah\backups\corrupt_config.json.corrupted_20260922_143454
+2026-09-22 14:34:54 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp8puuiq7f\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 14:34:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-47\test_transicion_mes_y_snapshot0\backups\config_20260922_143454_pre_advance_2024_04.json
+2026-09-22 14:35:20 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpqa2u0gzc\parity_test.xlsx
+2026-09-22 14:35:20 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 14:35:20 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpmwtq6i0k\test_deleted_person_export.xlsx
+2026-09-22 14:35:20 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpanp_4mls\test_legend.xlsx
+2026-09-22 14:35:20 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmph3_ta68r\test_title.xlsx
+2026-09-22 14:35:20 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpwr8ejsu1\backups\config_20260922_143520_pre_advance_2026_10.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpg4zlxk6a\backups\config_20260922_143521_pre_advance_2026_04.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpg4zlxk6a\backups\config_20260922_143521_pre_advance_2026_04.json
+2026-09-22 14:35:21 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp515mkk5u\excel_test.xlsx
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp31o1fm7l\backups\config_20260922_143521_pre_advance_2026_10.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_cxplwic\backups\config_20260922_143521_pre_advance_2026_09.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpbjuqvruj\backups\config_20260922_143521_pre_advance_2026_07.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpbjuqvruj\backups\config_20260922_143521_pre_advance_2026_08.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpbjuqvruj\backups\config_20260922_143521_pre_advance_2026_06.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpbn4e4qfy\backups\config_20260922_143521_pre_advance_2026_05.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpbn4e4qfy\backups\config_20260922_143521_pre_advance_2026_06.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp6jmz2jhc\backups\config_20260922_143521_pre_reset.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqd14hmy1\backups\config_20260922_143521_test_tag.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp11jcv54t\backups\config_20260922_143521_pre_reset.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp8eame30o\backups\config_20260922_143521_pre_reset.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp9aat2zp3\backups\config_20260922_143521_pre_advance_2024_04.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp9aat2zp3\backups\config_20260922_143521_pre_advance_2024_05.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp9aat2zp3\backups\config_20260922_143521_pre_advance_2024_03.json
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:35:21 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpydfadaqd\backups\corrupt_config.json.corrupted_20260922_143521
+2026-09-22 14:35:21 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp8kce2nsz\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 14:35:21 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-48\test_transicion_mes_y_snapshot0\backups\config_20260922_143521_pre_advance_2024_04.json
+2026-09-22 14:35:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp2ubodedx\parity_test.xlsx
+2026-09-22 14:35:39 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 14:35:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpgty8pgyo\test_deleted_person_export.xlsx
+2026-09-22 14:35:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp_n9v2nkp\test_legend.xlsx
+2026-09-22 14:35:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpbtoooj9j\test_title.xlsx
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_u4ajw6x\backups\config_20260922_143539_pre_advance_2026_10.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1t4vmx_6\backups\config_20260922_143539_pre_advance_2026_04.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp1t4vmx_6\backups\config_20260922_143539_pre_advance_2026_04.json
+2026-09-22 14:35:39 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpckvlwxh8\excel_test.xlsx
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp901bvyh0\backups\config_20260922_143539_pre_advance_2026_10.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpyiabc29n\backups\config_20260922_143539_pre_advance_2026_09.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp0intu0fu\backups\config_20260922_143539_pre_advance_2026_07.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp0intu0fu\backups\config_20260922_143539_pre_advance_2026_08.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp0intu0fu\backups\config_20260922_143539_pre_advance_2026_06.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Mes pasado (2026-06) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpymnxzlqm\backups\config_20260922_143539_pre_advance_2026_05.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpymnxzlqm\backups\config_20260922_143539_pre_advance_2026_06.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpja9o4mxa\backups\config_20260922_143539_pre_reset.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpe19_zjvs\backups\config_20260922_143539_test_tag.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpjtftgk0u\backups\config_20260922_143539_pre_reset.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpxnh5j126\backups\config_20260922_143539_pre_reset.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpz0fjtt5v\backups\config_20260922_143539_pre_advance_2024_04.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpz0fjtt5v\backups\config_20260922_143539_pre_advance_2024_05.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpz0fjtt5v\backups\config_20260922_143539_pre_advance_2024_03.json
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Mes pasado (2024-03) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=3).
+2026-09-22 14:35:39 [ERROR] turnos.shift_manager: Archivo config.json corrupto o ilegible: Expecting property name enclosed in double quotes: line 1 column 3 (char 2). Creando respaldo y restaurando base limpia.
+2026-09-22 14:35:39 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpqr3r_3x0\backups\corrupt_config.json.corrupted_20260922_143539
+2026-09-22 14:35:39 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmpshc81qwn\subdir\new_config.json no encontrado. Creando configuración base limpia.
+2026-09-22 14:35:40 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-49\test_transicion_mes_y_snapshot0\backups\config_20260922_143540_pre_advance_2024_04.json
+2026-09-22 14:36:37 [INFO] turnos.gui: Aplicación Sistema de Turnos iniciada correctamente.
+2026-09-22 14:38:59 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\Documents\Sistema de turnos\backups\config_20260922_143859_pre_advance_2026_09.json
+2026-09-22 14:39:15 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\Documents\Sistema de turnos\backups\config_20260922_143915_pre_reset.json
+2026-09-22 14:39:15 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4

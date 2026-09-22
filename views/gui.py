@@ -21,10 +21,16 @@ class TurnosApp(ctk.CTk):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
-        self.title("Sistema de Turnos")
-        self.geometry("1400x780")
-        self.minsize(1280, 620)
+        self.geometry("1280x700")
+        self.minsize(1100, 580)
         self.configure(fg_color=P["bg_app"])
+
+        # Maximizar automáticamente en pantallas pequeñas (ej: laptops 1366x768)
+        try:
+            if self.winfo_screenwidth() <= 1366 or self.winfo_screenheight() <= 768:
+                self.after(150, lambda: self.state('zoomed'))
+        except Exception:
+            pass
 
         self.exceptions = []
         self.exceptions_by_period = {}
