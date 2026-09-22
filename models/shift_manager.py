@@ -12,7 +12,7 @@ from utils.env_helper import get_env_var, set_env_var
 
 logger = get_logger("shift_manager")
 
-DEFAULT_WEBHOOK_URL = "https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec"
+DEFAULT_WEBHOOK_URL = ""
 
 
 @functools.lru_cache(maxsize=2048)
@@ -139,6 +139,7 @@ class ShiftManager:
         os.makedirs(directory, exist_ok=True)
         temporary_path = self.config_path + '.tmp'
         payload = {
+            "notificaciones": self.notificaciones,
             "personal": self._serialize_personal(),
             "inicio": self.inicio,
             "historial": self.historial,
@@ -147,8 +148,7 @@ class ShiftManager:
             "snapshots": self.snapshots,
             "excepciones": self.excepciones,
             "asignaciones_manuales": self.asignaciones_manuales,
-            "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos,
-            "notificaciones": self.notificaciones
+            "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos
         }
         try:
             with open(temporary_path, 'w', encoding='utf-8') as f:
@@ -177,6 +177,7 @@ class ShiftManager:
             backup_path = os.path.join(backups_dir, backup_filename)
 
             payload = {
+                "notificaciones": self.notificaciones,
                 "personal": self._serialize_personal(),
                 "inicio": self.inicio,
                 "historial": self.historial,
@@ -185,8 +186,7 @@ class ShiftManager:
                 "snapshots": self.snapshots,
                 "excepciones": self.excepciones,
                 "asignaciones_manuales": self.asignaciones_manuales,
-                "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos,
-                "notificaciones": self.notificaciones
+                "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos
             }
             with open(backup_path, 'w', encoding='utf-8') as f:
                 json.dump(payload, f, indent=2, ensure_ascii=False)

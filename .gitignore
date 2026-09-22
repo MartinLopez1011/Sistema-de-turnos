@@ -13,6 +13,10 @@ config.json
 temp_config.json
 .env
 
+# Archivos de logs
+*.log
+turnos.log
+
 # Builds de PyInstaller
 build/
 dist/

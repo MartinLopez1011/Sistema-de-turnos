@@ -94,7 +94,8 @@ class TestEmailNotificationFeature(unittest.TestCase):
             self.assertEqual(new_settings["webhook_url"], "https://new.webhook.url")
             mock_set_env.assert_any_call("WEBHOOK_URL", "https://new.webhook.url")
 
-        # Verificar persistencia en JSON
+        # Verificar persistencia en JSON y que 'notificaciones' sea la primera clave
         with open(self.config_path, "r", encoding="utf-8") as f:
             data = json.load(f)
         self.assertEqual(data["notificaciones"]["webhook_url"], "https://new.webhook.url")
+        self.assertEqual(list(data.keys())[0], "notificaciones")

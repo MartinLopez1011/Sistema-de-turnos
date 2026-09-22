@@ -3,7 +3,7 @@ import customtkinter as ctk
 from views.theme import P
 from views.components.widgets import _short_name, _make_row_hover
 from views.components.dialogs import CustomInputDialog, CustomConfirmDialog, PersonFormDialog
-from utils.email_notifier import send_notification_webhook
+from utils.email_notifier import send_notification_webhook, is_valid_email
 
 class TabSettings:
     def __init__(self, parent_tab, app):
@@ -163,45 +163,69 @@ class TabSettings:
         ).grid(row=1, column=0, padx=20, pady=(0, 12), sticky="w")
 
         notif_cfg = self.controller.get_notification_settings()
-        self.webhook_url_var = ctk.StringVar(value=notif_cfg.get("webhook_url", ""))
+        has_webhook = bool(notif_cfg.get("webhook_url", "").strip()) and notif_cfg.get("activo", True)
 
-        url_box = ctk.CTkFrame(notif_card, fg_color="transparent")
-        url_box.grid(row=2, column=0, padx=20, pady=(0, 14), sticky="ew")
-        url_box.grid_columnconfigure(0, weight=1)
+        # Indicador de estado de conexión
+        status_box = ctk.CTkFrame(notif_card, fg_color="transparent")
+        status_box.grid(row=2, column=0, padx=20, pady=(0, 14), sticky="w")
 
-        self.webhook_entry = ctk.CTkEntry(
-            url_box, textvariable=self.webhook_url_var,
-            placeholder_text="https://script.google.com/macros/s/.../exec",
+        dot_text = "● Conectado" if has_webhook else "○ No configurado"
+        dot_color = P["text_ok"] if has_webhook else P["text_w"]
+        desc_text = (
+            "Servicio de Google Apps Script vinculado en config.json."
+            if has_webhook
+            else "Falta configurar webhook_url en config.json para habilitar envíos."
+        )
+
+        self.notif_badge_label = ctk.CTkLabel(
+            status_box, text=dot_text,
+            font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
+            text_color=dot_color
+        )
+        self.notif_badge_label.pack(side="left")
+
+        ctk.CTkLabel(
+            status_box, text=f"  —  {desc_text}",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"]
+        ).pack(side="left")
+
+        # Caja interactiva para probar con un correo
+        test_box = ctk.CTkFrame(
+            notif_card, fg_color=P["bg_card2"], corner_radius=8,
+            border_width=1, border_color=P["border"]
+        )
+        test_box.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
+        test_box.grid_columnconfigure(0, weight=1)
+
+        test_title = ctk.CTkLabel(
+            test_box, text="Enviar un correo de prueba:",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color=P["text"], anchor="w"
+        )
+        test_title.grid(row=0, column=0, columnspan=2, padx=14, pady=(12, 6), sticky="w")
+
+        self.test_email_entry = ctk.CTkEntry(
+            test_box,
+            placeholder_text="Ingresa un correo para probar (ej: tu_correo@gmail.com)",
             height=36, fg_color=P["bg_input"], border_color=P["border"]
         )
-        self.webhook_entry.grid(row=0, column=0, sticky="ew", padx=(0, 10))
+        self.test_email_entry.grid(row=1, column=0, sticky="ew", padx=(14, 10), pady=(0, 10))
 
-        btn_save_webhook = ctk.CTkButton(
-            url_box, text="Guardar Webhook", command=self._save_webhook_url,
-            height=36, width=150, corner_radius=8,
+        self.btn_test_webhook = ctk.CTkButton(
+            test_box, text="✉  Probar Envío", command=self._test_webhook,
+            height=36, width=140, corner_radius=8,
             font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
             fg_color=P["accent_d"], hover_color=P["accent"]
         )
-        btn_save_webhook.grid(row=0, column=1)
-
-        test_bar = ctk.CTkFrame(notif_card, fg_color="transparent")
-        test_bar.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
-
-        self.btn_test_webhook = ctk.CTkButton(
-            test_bar, text="✉  Probar Envío de Prueba", command=self._test_webhook,
-            height=34, width=200, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12),
-            fg_color=P["bg_card2"], hover_color=P["border_h"],
-            text_color=P["text"]
-        )
-        self.btn_test_webhook.pack(side="left")
+        self.btn_test_webhook.grid(row=1, column=1, padx=(0, 14), pady=(0, 10))
 
         self.notif_status_label = ctk.CTkLabel(
-            test_bar, text="",
+            test_box, text="",
             font=ctk.CTkFont(family="Inter", size=12),
-            text_color=P["text_s"]
+            text_color=P["text_s"], anchor="w"
         )
-        self.notif_status_label.pack(side="left", padx=14)
+        self.notif_status_label.grid(row=2, column=0, columnspan=2, padx=14, pady=(0, 10), sticky="w")
 
         # ── Card 4: Zona de peligro — Reset historial ────────────────────────
         danger_card = ctk.CTkFrame(
@@ -338,47 +362,57 @@ class TabSettings:
             self.refresh_person_list()
             self.app.load_personal()
 
-    def _save_webhook_url(self):
-        url = self.webhook_url_var.get().strip()
-        self.controller.set_notification_settings(url)
-        self.notif_status_label.configure(
-            text="✓ Webhook guardado correctamente",
-            text_color=P["text_ok"]
-        )
-
     def _test_webhook(self):
-        url = self.webhook_url_var.get().strip()
+        notif_cfg = self.controller.get_notification_settings()
+        url = notif_cfg.get("webhook_url", "").strip()
         if not url:
             self.notif_status_label.configure(
-                text="Primero ingresa y guarda una URL de Webhook.",
+                text="⚠ El Webhook no está configurado en config.json.",
                 text_color=P["text_e"]
             )
             return
 
-        test_email = CustomInputDialog.show(
-            self.app, "Prueba de Notificación",
-            "Ingresa el correo al que se enviará la prueba:"
-        )
-        if not test_email or not test_email.strip():
+        test_email = self.test_email_entry.get().strip()
+        if not test_email:
+            self.notif_status_label.configure(
+                text="⚠ Ingresa un correo de destino para realizar la prueba.",
+                text_color=P["text_w"]
+            )
+            return
+
+        if not is_valid_email(test_email):
+            self.notif_status_label.configure(
+                text="⚠ El formato del correo electrónico ingresado no es válido.",
+                text_color=P["text_e"]
+            )
             return
 
         import threading
         self.btn_test_webhook.configure(state="disabled", text="⏳  Enviando...")
-        self.notif_status_label.configure(text="Enviando correo de prueba...", text_color=P["text_w"])
+        self.notif_status_label.configure(
+            text=f"Enviando correo de prueba a {test_email}...",
+            text_color=P["text_w"]
+        )
 
         def run_test():
             ok, msg = send_notification_webhook(
                 url,
-                recipients=[test_email.strip()],
+                recipients=[test_email],
                 subject="[Sistema de Turnos] Prueba de Notificación Exitosa",
                 body_text="Hola,\n\nEste es un correo de prueba enviado desde el Sistema de Turnos para verificar la correcta integración con Google Apps Script.\n\nEl servicio está funcionando correctamente."
             )
             def update_ui():
-                self.btn_test_webhook.configure(state="normal", text="✉  Probar Envío de Prueba")
+                self.btn_test_webhook.configure(state="normal", text="✉  Probar Envío")
                 if ok:
-                    self.notif_status_label.configure(text="✓ Prueba enviada con éxito.", text_color=P["text_ok"])
+                    self.notif_status_label.configure(
+                        text=f"✓ Correo de prueba enviado con éxito a {test_email}.",
+                        text_color=P["text_ok"]
+                    )
                 else:
-                    self.notif_status_label.configure(text=f"Error: {msg}", text_color=P["text_e"])
+                    self.notif_status_label.configure(
+                        text=f"Error: {msg}",
+                        text_color=P["text_e"]
+                    )
             self.app.after(0, update_ui)
 
         threading.Thread(target=run_test, daemon=True).start()

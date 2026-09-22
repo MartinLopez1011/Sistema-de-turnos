@@ -86,13 +86,21 @@ from utils.logger import get_logger
 
 logger = get_logger("email_notifier")
 
+def mask_url(url: str) -> str:
+    """Enmascara la URL para evitar registrar IDs o tokens sensibles en archivos de log."""
+    if not url:
+        return ""
+    if len(url) <= 35:
+        return url
+    return url[:30] + "..." + url[-8:]
+
 class _GoogleAppsScriptRedirectHandler(urllib.request.HTTPRedirectHandler):
     """
     Maneja la redirección 302 típica de Google Apps Script convirtiendo la redirección a GET
     para recibir la respuesta final JSON.
     """
     def redirect_request(self, req, fp, code, msg, headers, newurl):
-        logger.info("[EMAIL] Redirección HTTP %s hacia: %s", code, newurl)
+        logger.info("[EMAIL] Redirección HTTP %s hacia: %s", code, mask_url(newurl))
         return urllib.request.Request(
             newurl,
             headers={"User-Agent": "SistemaDeTurnos/1.0", "Accept": "application/json"},
@@ -115,7 +123,7 @@ def send_notification_webhook(
     logger.info("=" * 60)
     logger.info("[EMAIL] Iniciando envío de notificación...")
     clean_url = webhook_url.strip() if webhook_url else ""
-    logger.info("[EMAIL] URL Webhook destino: %s", clean_url)
+    logger.info("[EMAIL] URL Webhook destino: %s", mask_url(clean_url))
 
     if not clean_url:
         msg = "La URL del Webhook de notificaciones no está configurada."
