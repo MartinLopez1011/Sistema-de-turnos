@@ -1031,3 +1031,6 @@ TypeError: ControllerExportParityTests.test_process_generation_matches_preview_s
 2026-09-22 15:16:54 [INFO] turnos.shift_manager: Respaldo de archivo corrupto guardado en C:\Users\Soporte\AppData\Local\Temp\tmpwhwzxppa\backups\corrupt_config.json.corrupted_20260922_151654
 2026-09-22 15:16:54 [WARNING] turnos.shift_manager: Archivo de configuración C:\Users\Soporte\AppData\Local\Temp\tmp4p2jexwb\subdir\new_config.json no encontrado. Creando configuración base limpia.
 2026-09-22 15:16:54 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-63\test_transicion_mes_y_snapshot0\backups\config_20260922_151654_pre_advance_2024_04.json
+2026-09-22 15:42:44 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpg0ipc7yu\backups\config_20260922_154244_pre_advance_2026_10.json
+2026-09-22 15:42:44 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqykex2gb\backups\config_20260922_154244_pre_advance_2026_04.json
+2026-09-22 15:42:45 [WARNING] turnos.shift_manager: Error creando backup de config: 
