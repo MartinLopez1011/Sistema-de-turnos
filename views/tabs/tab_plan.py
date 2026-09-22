@@ -87,8 +87,11 @@ class TabPlan:
         self.person_dropdown.grid(row=4, column=0, padx=16, pady=(0, 4), sticky="ew")
 
         # Tarjeta Próximo Turno
-        self.next_turno_frame = ctk.CTkFrame(sidebar, fg_color=P["bg_input"], corner_radius=8)
-        self.next_turno_frame.grid(row=5, column=0, padx=16, pady=(4, 4), sticky="ew")
+        self.next_turno_frame = ctk.CTkFrame(
+            sidebar, fg_color=P["bg_card2"], corner_radius=10,
+            border_width=1, border_color=P["border"]
+        )
+        self.next_turno_frame.grid(row=5, column=0, padx=16, pady=(4, 6), sticky="ew")
         self.next_turno_frame.grid_columnconfigure(0, weight=1)
         self.next_turno_lbl = ctk.CTkLabel(
             self.next_turno_frame,
@@ -274,11 +277,23 @@ class TabPlan:
         self.exc_count_label.configure(text=ct)
 
         if not exceptions:
+            empty_box = ctk.CTkFrame(
+                self.exception_list, fg_color=P["bg_card2"], corner_radius=10,
+                border_width=1, border_color=P["border"]
+            )
+            empty_box.pack(fill="x", padx=6, pady=16)
             ctk.CTkLabel(
-                self.exception_list, text="Sin excepciones para este periodo.",
-                text_color=P["text_s"], font=ctk.CTkFont(family="Inter", size=12),
-                wraplength=220
-            ).pack(padx=8, pady=12)
+                empty_box, text="📋", font=ctk.CTkFont(size=22)
+            ).pack(pady=(12, 2))
+            ctk.CTkLabel(
+                empty_box, text="Sin excepciones registradas",
+                text_color=P["text"], font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+            ).pack()
+            ctk.CTkLabel(
+                empty_box, text="Usa el formulario lateral para añadir días de permiso o feriado legal.",
+                text_color=P["text_s"], font=ctk.CTkFont(family="Inter", size=11),
+                wraplength=200, justify="center"
+            ).pack(padx=10, pady=(2, 12))
             return
 
         for index, exc in enumerate(exceptions):
@@ -418,17 +433,30 @@ class TabPlan:
         for w in self.preview_scroll.winfo_children():
             w.destroy()
 
-        if not shifts:
-            ctk.CTkLabel(
-                self.preview_scroll, text="Sin turnos calculados para este periodo.",
-                font=ctk.CTkFont(family="Inter", size=13),
-                text_color=P["text_s"]
-            ).pack(pady=24)
-            self.next_turno_lbl.configure(text="Sin turnos en este periodo")
-            return
-
         today = date.today()
         personal = self.controller.get_personal_list()
+
+        if not shifts:
+            empty_box = ctk.CTkFrame(
+                self.preview_scroll, fg_color=P["bg_card2"], corner_radius=10,
+                border_width=1, border_color=P["border"]
+            )
+            empty_box.pack(fill="x", padx=10, pady=24)
+            ctk.CTkLabel(
+                empty_box, text="🗓", font=ctk.CTkFont(size=24)
+            ).pack(pady=(16, 4))
+            ctk.CTkLabel(
+                empty_box, text="Sin turnos calculados",
+                font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+                text_color=P["text"]
+            ).pack()
+            ctk.CTkLabel(
+                empty_box, text="Selecciona un periodo válido o verifica el personal activo en Ajustes.",
+                font=ctk.CTkFont(family="Inter", size=12),
+                text_color=P["text_s"], justify="center"
+            ).pack(padx=16, pady=(4, 16))
+            self._render_next_turno_card(None, today, personal)
+            return
 
         for idx, sh in enumerate(shifts):
             s, e = sh['semana']
@@ -586,14 +614,59 @@ class TabPlan:
         if not first_shift:
             first_shift = next((sh for sh in shifts if sh.get('persona')), None)
 
-        if first_shift:
-            p_name = _short_name(first_shift['persona'], 3)
-            s_date = first_shift['semana'][0].strftime('%d/%m')
-            e_date = first_shift['semana'][1].strftime('%d/%m')
-            prefix = "Actual" if first_shift['semana'][0] <= today <= first_shift['semana'][1] else "Próximo"
-            self.next_turno_lbl.configure(text=f"{prefix}: {p_name}\nSemana: {s_date} - {e_date}")
-        else:
-            self.next_turno_lbl.configure(text="Sin turnos en este periodo")
+        self._render_next_turno_card(first_shift, today, personal)
+
+    def _render_next_turno_card(self, first_shift, today, personal):
+        for w in self.next_turno_frame.winfo_children():
+            w.destroy()
+
+        if not first_shift or not first_shift.get('persona') or first_shift.get('persona') == "NADIE DISPONIBLE":
+            self.next_turno_lbl = ctk.CTkLabel(
+                self.next_turno_frame,
+                text="Sin turnos en este periodo",
+                font=ctk.CTkFont(family="Inter", size=12),
+                text_color=P["text_s"]
+            )
+            self.next_turno_lbl.pack(padx=10, pady=12)
+            return
+
+        person = first_shift['persona']
+        s_date = first_shift['semana'][0].strftime('%d/%m')
+        e_date = first_shift['semana'][1].strftime('%d/%m')
+        is_current = first_shift['semana'][0] <= today <= first_shift['semana'][1]
+
+        badge_bg = P["today_bg"] if is_current else "#1E293B"
+        badge_fg = P["accent"] if is_current else P["text_a"]
+        badge_text = "● GUARDIA EN CURSO" if is_current else "⏳ PRÓXIMO TURNO"
+
+        badge_f = ctk.CTkFrame(self.next_turno_frame, fg_color=badge_bg, corner_radius=5)
+        badge_f.pack(anchor="w", padx=10, pady=(8, 4))
+        ctk.CTkLabel(
+            badge_f, text=f" {badge_text} ",
+            font=ctk.CTkFont(family="Inter", size=9, weight="bold"),
+            text_color=badge_fg
+        ).pack(padx=4, pady=2)
+
+        mid_f = ctk.CTkFrame(self.next_turno_frame, fg_color="transparent")
+        mid_f.pack(fill="x", padx=10, pady=(2, 4))
+        av_idx = personal.index(person) if person in personal else 0
+        av_color = AVATAR_PAL[av_idx % len(AVATAR_PAL)]
+        av = _avatar_ctk(mid_f, _initials(person), av_color, size=30)
+        av.pack(side="left", padx=(0, 8))
+
+        self.next_turno_lbl = ctk.CTkLabel(
+            mid_f, text=_short_name(person, 3),
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color=P["text"], anchor="w"
+        )
+        self.next_turno_lbl.pack(side="left", fill="x", expand=True)
+
+        ctk.CTkLabel(
+            self.next_turno_frame,
+            text=f"📅  Semana: {s_date} → {e_date}",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color=P["text_s"], anchor="w"
+        ).pack(anchor="w", padx=10, pady=(0, 8))
 
     def save_month(self):
         self.app.save_month()

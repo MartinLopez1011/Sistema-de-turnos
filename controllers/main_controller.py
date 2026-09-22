@@ -3,6 +3,7 @@ from datetime import date
 from models.shift_manager import ShiftManager
 from utils.excel_handler import ExcelHandler
 from utils.logger import get_logger
+from views.theme import MESES
 
 logger = get_logger("controller")
 
@@ -168,8 +169,7 @@ class MainController:
             warnings = self.shift_manager.last_warnings
             
             # 2. Inicializar manejador de Excel garantizando paridad con personal histórico
-            meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
-            nombre_mes = meses[month - 1]
+            nombre_mes = MESES[month - 1]
             dynamic_output = target_path or os.path.join(self.root_path, f"turnos_{nombre_mes}_{year}.xlsx")
             
             # Combinar personal activo con personas presentes en turnos o excepciones históricas

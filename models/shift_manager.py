@@ -2,12 +2,29 @@ import json
 import os
 import collections
 import calendar
+import functools
 from datetime import datetime, timedelta, date
 
 from utils.chilean_holidays import national_holidays, normalize_holiday_name
 from utils.logger import get_logger
 
 logger = get_logger("shift_manager")
+
+
+@functools.lru_cache(maxsize=2048)
+def _parse_week_range(week_key):
+    """
+    Convierte 'YYYY-MM-DD_YYYY-MM-DD' en tupla (date_start, date_end).
+    Usa caché LRU para evitar llamadas repetidas a datetime.strptime.
+    """
+    try:
+        parts = week_key.split('_')
+        return (
+            datetime.strptime(parts[0], '%Y-%m-%d').date(),
+            datetime.strptime(parts[1], '%Y-%m-%d').date()
+        )
+    except (ValueError, IndexError, AttributeError):
+        return (None, None)
 
 class ShiftManager:
     def __init__(self, config_path):
@@ -25,7 +42,9 @@ class ShiftManager:
         try:
             with open(self.config_path, 'r', encoding='utf-8') as f:
                 data = json.load(f)
-        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            if not isinstance(data, dict):
+                raise ValueError("El contenido de config.json no es un objeto JSON válido.")
+        except (json.JSONDecodeError, UnicodeDecodeError, ValueError) as e:
             logger.error("Archivo config.json corrupto o ilegible: %s. Creando respaldo y restaurando base limpia.", e)
             try:
                 config_dir = os.path.dirname(os.path.abspath(self.config_path))
@@ -106,7 +125,10 @@ class ShiftManager:
             logger.debug("Configuración guardada en %s", self.config_path)
         finally:
             if os.path.exists(temporary_path):
-                os.remove(temporary_path)
+                try:
+                    os.remove(temporary_path)
+                except OSError:
+                    pass
 
     def create_backup(self, tag=None):
         """Crea una copia de seguridad fechada de config.json en la carpeta backups/."""
@@ -217,31 +239,25 @@ class ShiftManager:
         for week_key, person in self.historial.items():
             if person != nombre:
                 continue
-            try:
-                parts = week_key.split('_')
-                week_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
-                week_end = datetime.strptime(parts[1], '%Y-%m-%d').date()
-                if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
-                    continue
-                if week_end < before_date and week_end > latest:
-                    latest = week_end
-            except (ValueError, IndexError):
+            week_start, week_end = _parse_week_range(week_key)
+            if not week_start:
                 continue
+            if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
+                continue
+            if week_end < before_date and week_end > latest:
+                latest = week_end
 
         # Revisar inicio inmutable
         for week_key, person in self.inicio.items():
             if person != nombre:
                 continue
-            try:
-                parts = week_key.split('_')
-                week_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
-                week_end = datetime.strptime(parts[1], '%Y-%m-%d').date()
-                if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
-                    continue
-                if week_end < before_date and week_end > latest:
-                    latest = week_end
-            except (ValueError, IndexError):
+            week_start, week_end = _parse_week_range(week_key)
+            if not week_start:
                 continue
+            if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
+                continue
+            if week_end < before_date and week_end > latest:
+                latest = week_end
 
         # Revisar turnos ya calculados en esta sesión
         for sh in shifts_so_far:
@@ -281,13 +297,9 @@ class ShiftManager:
         for period_key, week_dict in self.asignaciones_manuales.items():
             for week_key, person in week_dict.items():
                 if person == nombre:
-                    try:
-                        parts = week_key.split('_')
-                        w_start = datetime.strptime(parts[0], '%Y-%m-%d').date()
-                        if cutoff <= w_start < before_date:
-                            return True
-                    except (ValueError, IndexError):
-                        continue
+                    w_start, _ = _parse_week_range(week_key)
+                    if w_start and cutoff <= w_start < before_date:
+                        return True
                         
         return False
 
@@ -738,13 +750,11 @@ class ShiftManager:
         # Determinar si este periodo es anterior al frente de rotación ya registrado en historial o snapshots
         latest_recorded_period = None
         for wk in self.historial.keys():
-            try:
-                w_start = datetime.strptime(wk.split('_')[0], '%Y-%m-%d').date()
+            w_start, _ = _parse_week_range(wk)
+            if w_start:
                 p_tuple = (w_start.year, w_start.month)
                 if latest_recorded_period is None or p_tuple > latest_recorded_period:
                     latest_recorded_period = p_tuple
-            except Exception:
-                pass
 
         for snap_k in self.snapshots.keys():
             try:
@@ -902,6 +912,13 @@ class ShiftManager:
                     for exc in exc_list:
                         if exc.get('persona') == old_name:
                             exc['persona'] = normalized_name
+
+                # Update asignaciones_manuales
+                for period, week_dict in self.asignaciones_manuales.items():
+                    if isinstance(week_dict, dict):
+                        for week_key, assigned_p in week_dict.items():
+                            if assigned_p == old_name:
+                                week_dict[week_key] = normalized_name
                             
             self.save_config()
             return True

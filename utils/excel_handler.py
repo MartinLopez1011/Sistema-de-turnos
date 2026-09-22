@@ -1,6 +1,8 @@
+import calendar
+import datetime
+from datetime import timedelta
 import openpyxl
 from openpyxl.styles import PatternFill, Alignment, Border, Side, Font
-from datetime import timedelta
 
 class ExcelHandler:
     def __init__(self, output_path, personal):
@@ -47,14 +49,46 @@ class ExcelHandler:
             cell3.alignment = Alignment(horizontal="center", vertical="center")
             cell3.border = border
 
+        # Encabezados de columnas de resumen / totales
+        summary_headers = [
+            (33, "AG", "TURNOS", 10),
+            (34, "AH", "DA", 6),
+            (35, "AI", "FL", 6),
+            (36, "AJ", "LIC", 6),
+            (37, "AK", "OTR", 6),
+        ]
+        self.sheet.merge_cells("AG2:AK2")
+        sum_title = self.sheet.cell(row=2, column=33, value="TOTALES")
+        sum_title.font = Font(bold=True)
+        sum_title.fill = header_fill
+        sum_title.alignment = Alignment(horizontal="center", vertical="center")
+        for col in range(33, 38):
+            self.sheet.cell(row=2, column=col).border = border
+            self.sheet.cell(row=2, column=col).fill = header_fill
+
+        for col_idx, col_letter, label, col_w in summary_headers:
+            cell_sub = self.sheet.cell(row=3, column=col_idx, value=label)
+            cell_sub.font = Font(bold=True, size=9)
+            cell_sub.fill = header_fill
+            cell_sub.alignment = Alignment(horizontal="center", vertical="center")
+            cell_sub.border = border
+            self.sheet.column_dimensions[col_letter].width = col_w
+
         for row_idx, person in enumerate(self.personal, 4):
             name = person.get("nombre", "") if isinstance(person, dict) else str(person)
             cell = self.sheet.cell(row=row_idx, column=1, value=name)
             cell.border = border
-            for column_idx in range(2, 33):
+            for column_idx in range(2, 38):
                 self.sheet.cell(row=row_idx, column=column_idx).border = border
 
-        self.sheet.column_dimensions["A"].width = 38
+        # Ancho dinámico para la columna A (nombres de funcionarios)
+        max_name_len = 0
+        for p in self.personal:
+            p_name = p.get("nombre", "") if isinstance(p, dict) else str(p)
+            if len(p_name) > max_name_len:
+                max_name_len = len(p_name)
+        self.sheet.column_dimensions["A"].width = max(38, max_name_len + 4)
+
         for column_idx in range(2, 33):
             self.sheet.column_dimensions[openpyxl.utils.get_column_letter(column_idx)].width = 5
         self.sheet.freeze_panes = "B4"
@@ -142,8 +176,7 @@ class ExcelHandler:
         gray_fill = openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
         white_fill = openpyxl.styles.PatternFill(fill_type=None)
         invalid_day_fill = openpyxl.styles.PatternFill(start_color="595959", end_color="595959", fill_type="solid")
-        import datetime
-        import calendar
+        invalid_font = Font(bold=True, color="FFFFFF")
         
         _, days_in_month = calendar.monthrange(year, month)
         dias_letras = ["L", "M", "X", "J", "V", "S", "D"]
@@ -154,9 +187,12 @@ class ExcelHandler:
                 header_cell = self.sheet.cell(row=days_row_index, column=col_idx)
                 header_cell.fill = invalid_day_fill
                 header_cell.value = "-"
+                header_cell.font = invalid_font
+                header_cell.alignment = center_align
                 weekday_cell = self.sheet.cell(row=days_row_index + 1, column=col_idx)
                 weekday_cell.fill = invalid_day_fill
                 weekday_cell.value = "-"
+                weekday_cell.font = invalid_font
                 weekday_cell.alignment = center_align
                 for row_idx in person_rows.values():
                     cell = self.sheet.cell(row=row_idx, column=col_idx)
@@ -232,6 +268,50 @@ class ExcelHandler:
                     cell.alignment = center_align
                     cell.font = bold_font
                     cell.border = thin_border
+
+        # 3. ESCRIBIR TOTALES POR FUNCIONARIO (COLUMNAS 33 a 37: AG, AH, AI, AJ, AK)
+        summary_fill = PatternFill(start_color="F2F5F9", end_color="F2F5F9", fill_type="solid")
+        summary_font = Font(bold=True, size=10)
+
+        for person, row_idx in person_rows.items():
+            turnos_cnt = 0
+            for sh in shifts:
+                if sh.get('persona') == person:
+                    s_d, e_d = sh['semana']
+                    if (s_d.year == year and s_d.month == month) or (e_d.year == year and e_d.month == month):
+                        turnos_cnt += 1
+
+            da_cnt = 0
+            fl_cnt = 0
+            lic_cnt = 0
+            otr_cnt = 0
+            for exc in exceptions:
+                if exc.get('persona') == person:
+                    f = exc.get('fecha')
+                    if f and f.year == year and f.month == month:
+                        tipo = exc.get('tipo')
+                        if tipo == 'DA':
+                            da_cnt += 1
+                        elif tipo == 'FL':
+                            fl_cnt += 1
+                        elif tipo == 'LIC':
+                            lic_cnt += 1
+                        elif tipo in ('OTR', 'FOR'):
+                            otr_cnt += 1
+
+            totals = [
+                (33, turnos_cnt),
+                (34, da_cnt),
+                (35, fl_cnt),
+                (36, lic_cnt),
+                (37, otr_cnt),
+            ]
+            for col_idx, val in totals:
+                tot_cell = self.sheet.cell(row=row_idx, column=col_idx, value=val)
+                tot_cell.alignment = center_align
+                tot_cell.font = summary_font
+                tot_cell.fill = summary_fill
+                tot_cell.border = thin_border
 
         # 4. DIBUJAR LEYENDA EXPLICATIVA DE COLORES
         max_person_row = max(person_rows.values()) if person_rows else (days_row_index + len(self.personal))

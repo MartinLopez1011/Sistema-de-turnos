@@ -12,8 +12,10 @@ class TabSettings:
 
         self.starting_person_var = None
         self.starting_person_dropdown = None
+        self.btn_save_start = None
         self.settings_status_label = None
         self.person_list_frame = None
+        self.person_count_badge = None
 
         self._build_ui()
 
@@ -69,12 +71,13 @@ class TabSettings:
         )
         self.starting_person_dropdown.grid(row=2, column=0, padx=20, pady=(0, 16), sticky="w")
 
-        ctk.CTkButton(
+        self.btn_save_start = ctk.CTkButton(
             card1, text="Guardar punto de inicio", command=self.save_starting_person,
             height=38, width=220, corner_radius=8,
             font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
             fg_color=P["green_d"], hover_color=P["green"]
-        ).grid(row=3, column=0, padx=20, pady=(0, 20), sticky="w")
+        )
+        self.btn_save_start.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="w")
 
         self.settings_status_label = ctk.CTkLabel(
             card1, text="Los cambios se guardan en config.json.",
@@ -99,26 +102,40 @@ class TabSettings:
         person_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
         person_card.grid_columnconfigure(0, weight=1)
 
+        header_p = ctk.CTkFrame(person_card, fg_color="transparent")
+        header_p.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 4))
+        header_p.grid_columnconfigure(0, weight=1)
+
+        title_box = ctk.CTkFrame(header_p, fg_color="transparent")
+        title_box.pack(side="left")
+
         ctk.CTkLabel(
-            person_card, text="Gestión de Personal",
+            title_box, text="Gestión de Personal",
             font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
             text_color=P["text"], anchor="w"
-        ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
+        ).pack(side="left")
+
+        self.person_count_badge = ctk.CTkLabel(
+            title_box, text="",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color=P["text_a"], anchor="w"
+        )
+        self.person_count_badge.pack(side="left", padx=(12, 0))
 
         btn_add = ctk.CTkButton(
-            person_card, text="＋  Añadir Persona",
+            header_p, text="＋  Añadir Persona",
             command=self._on_add_person,
             height=32, corner_radius=8,
             font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
             fg_color=P["green_d"], hover_color=P["green"]
         )
-        btn_add.grid(row=0, column=1, padx=20, pady=(20, 4), sticky="e")
+        btn_add.pack(side="right")
 
         self.person_list_frame = ctk.CTkScrollableFrame(
-            person_card, fg_color="transparent", height=180,
+            person_card, fg_color="transparent", height=340,
             scrollbar_button_color=P["border_h"]
         )
-        self.person_list_frame.grid(row=1, column=0, columnspan=2, padx=10, pady=(10, 20), sticky="nsew")
+        self.person_list_frame.grid(row=1, column=0, padx=10, pady=(10, 20), sticky="nsew")
 
         self.refresh_person_list()
 
@@ -161,6 +178,9 @@ class TabSettings:
             )
             self.app.set_status(f"Punto de inicio guardado: {_short_name(person, 3)}", "ok")
             self.app.refresh_plan_views()
+            if self.btn_save_start:
+                self.btn_save_start.configure(text="✓  ¡Guardado!", fg_color=P["green"])
+                self.app.after(2000, lambda: self.btn_save_start.configure(text="Guardar punto de inicio", fg_color=P["green_d"]) if self.btn_save_start else None)
         else:
             self.settings_status_label.configure(
                 text="No se pudo guardar la persona inicial.",
@@ -172,6 +192,9 @@ class TabSettings:
             w.destroy()
 
         persons = self.controller.get_all_persons()
+        if hasattr(self, "person_count_badge") and self.person_count_badge:
+            count = len(persons)
+            self.person_count_badge.configure(text=f"·  👥 {count} funcionario{'s' if count != 1 else ''} activo{'s' if count != 1 else ''}")
         for i, p in enumerate(persons):
             row_f = ctk.CTkFrame(self.person_list_frame, fg_color=P["bg_row_e"] if i % 2 == 0 else P["bg_row_o"])
             row_f.pack(fill="x", pady=2)
@@ -216,9 +239,13 @@ class TabSettings:
             _make_row_hover(row_f, [(row_f, row_f.cget("fg_color"))])
 
         personal_names = self.controller.get_personal_list()
-        self.starting_person_dropdown.configure(values=personal_names)
-        if personal_names and self.starting_person_var.get() not in personal_names:
-            self.starting_person_var.set(personal_names[0])
+        if personal_names:
+            self.starting_person_dropdown.configure(values=personal_names)
+            if self.starting_person_var.get() not in personal_names:
+                self.starting_person_var.set(personal_names[0])
+        else:
+            self.starting_person_dropdown.configure(values=["Sin personal disponible"])
+            self.starting_person_var.set("Sin personal disponible")
 
     def _on_move_up(self, person_id):
         success, _ = self.controller.move_person_up(person_id)

@@ -32,7 +32,7 @@ class TabCalendar:
             border_width=1, border_color=P["border"]
         )
         nav.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 8))
-        nav.grid_columnconfigure(3, weight=1)
+        nav.grid_columnconfigure(5, weight=1)
 
         now = datetime.now()
         self.v_month_var = ctk.StringVar(value=MESES[now.month - 1])
@@ -62,22 +62,14 @@ class TabCalendar:
             dropdown_fg_color=P["bg_card2"],
             font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
             command=lambda _: self.render_turnos_view()
-        ).grid(row=0, column=2, padx=(4, 4), pady=12)
+        ).grid(row=0, column=2, padx=4, pady=12)
 
-        legend = ctk.CTkFrame(nav, fg_color=P["bg_card"], corner_radius=8)
-        legend.grid(row=0, column=3, padx=12, sticky="e", pady=10)
-        items = [
-            ("■ Turno", P["turno"]), ("DA", P["da"]),
-            ("FL", P["fl"]), ("Finde", P["weekend"]),
-            ("Actual", P["today_bg"])
-        ]
-        for i, (lbl, col) in enumerate(items):
-            cf = ctk.CTkFrame(legend, fg_color=col, corner_radius=6)
-            cf.grid(row=0, column=i, padx=4, pady=6, ipadx=6, ipady=2)
-            ctk.CTkLabel(
-                cf, text=lbl, text_color="#FFF",
-                font=ctk.CTkFont(family="Inter", size=10, weight="bold")
-            ).pack(padx=2)
+        ctk.CTkButton(
+            nav, text="Siguiente  ›", width=92, height=36, corner_radius=8,
+            fg_color=P["bg_card"], hover_color=P["border_h"],
+            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            command=self._next_month
+        ).grid(row=0, column=3, padx=4, pady=12)
 
         self.btn_hoy = ctk.CTkButton(
             nav, text="Hoy", width=54, height=36, corner_radius=8,
@@ -85,21 +77,33 @@ class TabCalendar:
             font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
             command=self._go_to_today
         )
-        self.btn_hoy.grid(row=0, column=4, padx=(4, 4), pady=12)
+        self.btn_hoy.grid(row=0, column=4, padx=(4, 8), pady=12)
 
-        ctk.CTkButton(
-            nav, text="Siguiente  ›", width=92, height=36, corner_radius=8,
-            fg_color=P["bg_card"], hover_color=P["border_h"],
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
-            command=self._next_month
-        ).grid(row=0, column=5, padx=(4, 4), pady=12)
+        legend = ctk.CTkFrame(nav, fg_color=P["bg_card"], corner_radius=8)
+        legend.grid(row=0, column=6, padx=(8, 6), sticky="e", pady=10)
+        items = [
+            ("■ Turno", P["turno"]),
+            ("DA", P["da"]),
+            ("FL", P["fl"]),
+            ("LIC", P["lic"]),
+            ("OTR", P["otr"]),
+            ("Finde", P["weekend"]),
+            ("Actual", P["today_bg"])
+        ]
+        for i, (lbl, col) in enumerate(items):
+            cf = ctk.CTkFrame(legend, fg_color=col, corner_radius=6)
+            cf.grid(row=0, column=i, padx=3, pady=5, ipadx=5, ipady=2)
+            ctk.CTkLabel(
+                cf, text=lbl, text_color="#FFF",
+                font=ctk.CTkFont(family="Inter", size=10, weight="bold")
+            ).pack(padx=2)
 
         ctk.CTkButton(
             nav, text="Actualizar", width=86, height=36, corner_radius=8,
             fg_color=P["accent_d"], hover_color=P["accent"],
             font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
             command=self.render_turnos_view
-        ).grid(row=0, column=6, padx=(4, 4), pady=12)
+        ).grid(row=0, column=7, padx=4, pady=12)
 
         self.btn_exportar = ctk.CTkButton(
             nav, text="📊  Exportar Excel", width=125, height=36, corner_radius=8,
@@ -107,7 +111,7 @@ class TabCalendar:
             font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
             command=self.app.export_calendar_excel
         )
-        self.btn_exportar.grid(row=0, column=7, padx=(4, 14), pady=12)
+        self.btn_exportar.grid(row=0, column=8, padx=(4, 14), pady=12)
 
         self.vista_scroll = ctk.CTkScrollableFrame(
             self.parent, fg_color=P["bg_app"], corner_radius=0,
