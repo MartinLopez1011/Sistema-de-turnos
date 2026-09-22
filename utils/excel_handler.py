@@ -127,9 +127,24 @@ class ExcelHandler:
         # 1. LIMPIAR LA GRILLA Y DIBUJAR FINES DE SEMANA DINAMICOS
         gray_fill = openpyxl.styles.PatternFill(start_color="D9D9D9", end_color="D9D9D9", fill_type="solid")
         white_fill = openpyxl.styles.PatternFill(fill_type=None)
+        invalid_day_fill = openpyxl.styles.PatternFill(start_color="595959", end_color="595959", fill_type="solid")
         import datetime
+        import calendar
         
+        _, days_in_month = calendar.monthrange(year, month)
+
         for day_val, col_idx in day_columns.items():
+            if day_val > days_in_month:
+                # Día no perteneciente al mes (ej: 29-31 en Feb, o 31 en Sep)
+                header_cell = self.sheet.cell(row=days_row_index, column=col_idx)
+                header_cell.fill = invalid_day_fill
+                header_cell.value = "-"
+                for row_idx in person_rows.values():
+                    cell = self.sheet.cell(row=row_idx, column=col_idx)
+                    cell.value = None
+                    cell.fill = invalid_day_fill
+                continue
+
             # Determinar si es fin de semana
             is_weekend = False
             try:
@@ -144,6 +159,7 @@ class ExcelHandler:
             # Pintar el encabezado
             header_cell = self.sheet.cell(row=days_row_index, column=col_idx)
             header_cell.fill = fill_to_apply
+            header_cell.value = day_val
             
             # Pintar las filas del personal y vaciar texto
             for row_idx in person_rows.values():

@@ -85,6 +85,23 @@ class ExcelHandlerTests(unittest.TestCase):
             self.assertFalse(ok)
             self.assertIn("está abierto en Microsoft Excel", msg)
 
+    def test_days_exceeding_month_are_shaded_and_marked(self):
+        self.handler.load_template()
+        # Septiembre tiene 30 días, por lo que el día 31 (columna 32) debe marcarse con '-' y relleno gris oscuro
+        self.handler.write_shifts([], [], year=2026, month=9)
+        self.handler.save_report()
+
+        wb = openpyxl.load_workbook(self.output_path)
+        sheet = wb["Turnos"]
+
+        # Fila 2 es la fila de días. Columna 32 es el día 31 (col 1=funcionario, col 2=día 1 ... col 32=día 31)
+        day_31_header = sheet.cell(row=2, column=32)
+        self.assertEqual(day_31_header.value, "-")
+        self.assertIsNotNone(day_31_header.fill.start_color.rgb)
+        # Verificar que es 595959 o tiene componente gris
+        self.assertIn("595959", day_31_header.fill.start_color.rgb)
+
 
 if __name__ == "__main__":
     unittest.main()
+

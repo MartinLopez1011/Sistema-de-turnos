@@ -1,51 +1,21 @@
-import json
 import os
+import sys
+from models.shift_manager import ShiftManager
 
 def resetear_historial():
     config_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "config.json")
-    
-    with open(config_path, "r", encoding="utf-8") as f:
-        data = json.load(f)
+    if not os.path.exists(config_path):
+        print(f"Error: No se encontró el archivo de configuración en {config_path}")
+        return False
         
-    # 1. Vaciar el historial
-    data["historial"] = {}
-    
-    # 2. Vaciar las copias de seguridad (snapshots)
-    data["snapshots"] = {}
-    
-    # 3. Vaciar los pendientes
-    data["pendientes"] = []
-
-    # 4. Vaciar las excepciones
-    data["excepciones"] = {}
-    
-    # 4. Calcular el siguiente_id en base a la última persona del "inicio"
-    inicio = data.get("inicio", {})
-    if inicio:
-        # Obtener el último nombre asignado en inicio
-        ultima_llave = sorted(inicio.keys())[-1]
-        ultimo_nombre = inicio[ultima_llave]
-        
-        # Buscar su ID en la lista de personal
-        personal = data.get("personal", [])
-        ultimo_id = 1
-        for p in personal:
-            if p["nombre"] == ultimo_nombre:
-                ultimo_id = p["id"]
-                break
-                
-        siguiente = ultimo_id + 1
-        if siguiente > len(personal):
-            siguiente = 1
-            
-        data["siguiente_id"] = siguiente
+    manager = ShiftManager(config_path)
+    success = manager.reset_historial(preserve_inicio=True)
+    if success:
+        print("El historial ha sido reseteado exitosamente (con backup automático). El sistema ha vuelto a los datos de inicio.")
     else:
-        data["siguiente_id"] = 1
-        
-    with open(config_path, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2, ensure_ascii=False)
-        
-    print("El historial ha sido reseteado. El sistema ha vuelto a los datos de inicio.")
+        print("Error al resetear el historial.")
+    return success
 
 if __name__ == "__main__":
     resetear_historial()
+

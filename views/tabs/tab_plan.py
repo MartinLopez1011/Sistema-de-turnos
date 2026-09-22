@@ -106,13 +106,13 @@ class TabPlan:
         exc_form.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
-            exc_form, text="Días del mes (ej: 5, 12, 19)",
+            exc_form, text="Días del mes (ej: 1-5, 12, 19)",
             font=ctk.CTkFont(family="Inter", size=12),
             text_color=P["text_s"]
         ).grid(row=0, column=0, padx=12, pady=(10, 3), sticky="w")
 
         self.days_entry = ctk.CTkEntry(
-            exc_form, placeholder_text="Separados por coma",
+            exc_form, placeholder_text="Ej: 1-5, 12 o 15, 20-25",
             fg_color=P["bg_input"], border_color=P["border"], border_width=1,
             height=36
         )
@@ -342,7 +342,26 @@ class TabPlan:
                 return
 
         try:
-            raw_days = [int(d.strip()) for d in days_str.split(",") if d.strip()]
+            tokens = [t.strip() for t in days_str.replace(";", ",").split(",") if t.strip()]
+            if not tokens:
+                raise ValueError("Sin días")
+
+            days_set = set()
+            for token in tokens:
+                if "-" in token:
+                    parts = token.split("-")
+                    if len(parts) != 2:
+                        raise ValueError(f"Rango inválido: {token}")
+                    start_d = int(parts[0].strip())
+                    end_d = int(parts[1].strip())
+                    if start_d > end_d:
+                        start_d, end_d = end_d, start_d
+                    for d in range(start_d, end_d + 1):
+                        days_set.add(d)
+                else:
+                    days_set.add(int(token))
+
+            raw_days = sorted(days_set)
             if not raw_days:
                 raise ValueError("Sin días")
 
@@ -354,21 +373,27 @@ class TabPlan:
                 self.app.set_status(f"Días fuera del rango 1–{last_day}: {inv_str}", "error")
                 return
 
+            existing_dates = {
+                exc['fecha'] for exc in self.app.exceptions if exc['persona'] == person
+            }
+
             new_exc = []
+            skipped_existing = []
+
             for day in raw_days:
                 date_obj = datetime(year, month, day).date()
-                candidate = {'persona': person, 'fecha': date_obj, 'tipo': exc_type}
-                existing_dates = {
-                    (exc['persona'], exc['fecha']) for exc in self.app.exceptions + new_exc
-                }
-                if (person, date_obj) in existing_dates:
-                    self.days_entry.configure(border_color=P["orange"])
-                    self.app.set_status(
-                        f"Ya existe excepción para {_short_name(person)} el {date_obj.strftime('%d/%m/%Y')}.",
-                        "warn"
-                    )
-                    return
-                new_exc.append(candidate)
+                if date_obj in existing_dates:
+                    skipped_existing.append(date_obj)
+                    continue
+                new_exc.append({'persona': person, 'fecha': date_obj, 'tipo': exc_type})
+
+            if not new_exc:
+                self.days_entry.configure(border_color=P["orange"])
+                self.app.set_status(
+                    f"Todos los días ingresados ya tenían excepción registrada para {_short_name(person)}.",
+                    "warn"
+                )
+                return
 
             self.app.add_exceptions(new_exc)
             self.days_entry.delete(0, 'end')
@@ -376,13 +401,18 @@ class TabPlan:
 
             n = len(new_exc)
             dias_str = ", ".join(e['fecha'].strftime('%d/%m') for e in new_exc)
+            skip_msg = ""
+            if skipped_existing:
+                skip_str = ", ".join(d.strftime('%d/%m') for d in skipped_existing)
+                skip_msg = f" (omitidos por ya existir: {skip_str})"
+
             self.app.set_status(
-                f"✓ {n} excepción{'es' if n > 1 else ''} {exc_type} para {_short_name(person)}: {dias_str}",
+                f"✓ {n} excepción{'es' if n > 1 else ''} {exc_type} para {_short_name(person)}: {dias_str}{skip_msg}",
                 "ok"
             )
 
         except ValueError:
-            self.app.set_status("Ingresa números de día válidos, ej: 1, 15, 22.", "error")
+            self.app.set_status("Ingresa días o rangos válidos, ej: 1-5, 12 o 15, 20-25.", "error")
         except Exception as ex:
             self.app.set_status(f"Error inesperado: {str(ex)}", "error")
 

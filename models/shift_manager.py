@@ -2,7 +2,7 @@ import json
 import os
 import collections
 import calendar
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 
 from utils.chilean_holidays import national_holidays, normalize_holiday_name
 from utils.logger import get_logger
@@ -180,6 +180,46 @@ class ShiftManager:
 
         return False
 
+    def _last_shift_date(self, nombre, before_date, shifts_so_far):
+        """
+        Devuelve la fecha de fin del turno más reciente de 'nombre' antes de before_date,
+        o date.min si no tiene turnos previos registrados.
+        """
+        latest = date.min
+
+        # Revisar historial guardado
+        for week_key, person in self.historial.items():
+            if person != nombre:
+                continue
+            try:
+                parts = week_key.split('_')
+                week_end = datetime.strptime(parts[1], '%Y-%m-%d').date()
+                if week_end < before_date and week_end > latest:
+                    latest = week_end
+            except (ValueError, IndexError):
+                continue
+
+        # Revisar inicio inmutable
+        for week_key, person in self.inicio.items():
+            if person != nombre:
+                continue
+            try:
+                parts = week_key.split('_')
+                week_end = datetime.strptime(parts[1], '%Y-%m-%d').date()
+                if week_end < before_date and week_end > latest:
+                    latest = week_end
+            except (ValueError, IndexError):
+                continue
+
+        # Revisar turnos ya calculados en esta sesión
+        for sh in shifts_so_far:
+            if sh.get('persona') == nombre:
+                sh_end = sh['semana'][1]
+                if sh_end < before_date and sh_end > latest:
+                    latest = sh_end
+
+        return latest
+
     def _was_forced_recently(self, nombre, before_date, current_exceptions, min_gap_weeks=4):
         cutoff = before_date - timedelta(weeks=min_gap_weeks)
         
@@ -296,6 +336,7 @@ class ShiftManager:
             
         personal_ids = [p['id'] for p in self.personal]
         personal_id_set = set(personal_ids)
+        effective_gap = 4
         if personal_ids:
             try:
                 current_person_index = personal_ids.index(current_siguiente_id)
@@ -375,18 +416,18 @@ class ShiftManager:
                     })
 
                 if personal_ids and historical_exception:
-                        historical_index = next(
-                            (index for index, person in enumerate(self.personal)
-                             if person['nombre'] == historical_person),
-                            current_person_index
-                        )
-                        historical_id = personal_ids[historical_index]
-                        # BUG FIX: agregar la persona histórica a pendientes para que
-                        # recupere su turno en la próxima semana disponible.
-                        if historical_id not in current_pendientes:
-                            current_pendientes.append(historical_id)
-                        current_person_index = (historical_index + 1) % len(personal_ids)
-                        history_recalculated = True
+                    historical_index = next(
+                        (index for index, person in enumerate(self.personal)
+                         if person['nombre'] == historical_person),
+                        current_person_index
+                    )
+                    historical_id = personal_ids[historical_index]
+                    # BUG FIX: agregar la persona histórica a pendientes para que
+                    # recupere su turno en la próxima semana disponible.
+                    if historical_id not in current_pendientes:
+                        current_pendientes.append(historical_id)
+                    current_person_index = (historical_index + 1) % len(personal_ids)
+                    history_recalculated = True
                 
             assigned = False
             skipped_this_week = historical_skipped.copy()
@@ -483,6 +524,7 @@ class ShiftManager:
                     not has_exception and
                     self._did_recently(
                         nombre, start_date, shifts,
+                        min_gap_weeks=effective_gap,
                         ignored_period=recalculated_period)
                 )
                         
@@ -492,7 +534,7 @@ class ShiftManager:
                 elif did_recently:
                     # Mandarlo al fondo de pendientes para que recupere su lugar
                     # más adelante sin duplicar turno, a menos que haya sido forzado
-                    if not self._was_forced_recently(nombre, start_date, exceptions, min_gap_weeks=4):
+                    if not self._was_forced_recently(nombre, start_date, exceptions, min_gap_weeks=effective_gap):
                         current_pendientes.append(p_id)
                 else:
                     shifts.append({
@@ -527,6 +569,42 @@ class ShiftManager:
                     p_id for p_id in current_pendientes if p_id != fallback_id
                 ]
                 assigned = True
+
+            if not assigned and self.personal:
+                # Fallback: asignar a quien lleve más tiempo de descanso acumulado y no tenga excepción
+                available_candidates = []
+                for p in self.personal:
+                    p_nombre = p['nombre']
+                    has_exc = any(
+                        exc['persona'] == p_nombre and start_date <= exc['fecha'] <= end_date
+                        for exc in exceptions
+                    )
+                    if not has_exc and p_nombre not in restricted_people:
+                        available_candidates.append(p)
+
+                if available_candidates:
+                    best_person = min(
+                        available_candidates,
+                        key=lambda p: self._last_shift_date(p['nombre'], start_date, shifts)
+                    )
+                    best_id = best_person['id']
+                    best_name = best_person['nombre']
+                    shifts.append({
+                        'semana': (start_date, end_date),
+                        'persona': best_name,
+                        'saltados': skipped_this_week.copy(),
+                    })
+                    current_pendientes = [
+                        p_id for p_id in current_pendientes if p_id != best_id
+                    ]
+                    if personal_ids:
+                        try:
+                            best_idx = personal_ids.index(best_id)
+                            current_person_index = (best_idx + 1) % len(personal_ids)
+                            current_siguiente_id = personal_ids[current_person_index]
+                        except ValueError:
+                            pass
+                    assigned = True
                 
             if not assigned:
                 shifts.append({

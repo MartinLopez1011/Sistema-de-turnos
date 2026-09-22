@@ -179,3 +179,23 @@ def test_transicion_mes_y_snapshots(manager):
     # Verificaciones finales de Mayo
     assert len(pendientes_mayo) == 0
     assert final_id_mayo == 4  # Después de Luis (id 3) le toca a Maria (id 4) para Junio
+
+
+def test_rotacion_equipo_reducido_sin_semanas_vacias(manager):
+    """
+    Verifica que en un equipo reducido (ej: 3 personas), el sistema rote
+    continuamente sin asignar None en semanas ordinarias por la regla de descanso.
+    """
+    # Reducir personal a 3 personas
+    manager.personal = manager.personal[:3]
+    manager.siguiente_id = 1
+    manager.pendientes = []
+    manager.historial = {}
+    manager.inicio = {}
+
+    shifts, _, _ = manager.generate_shifts(2024, 1, [])
+    # Enero 2024 tiene 5 semanas
+    assert len(shifts) == 5
+    for s in shifts:
+        assert s["persona"] is not None, f"Semana {s['semana']} quedó en None"
+

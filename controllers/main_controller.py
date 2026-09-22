@@ -117,8 +117,8 @@ class MainController:
 
     def process_generation(self, year, month, exceptions, target_path=None):
         try:
-            # 1. Generar los turnos basados en el mes y excepciones (forma pura)
-            shifts, _, _ = self.shift_manager.generate_shifts(year, month, exceptions)
+            # 1. Generar los turnos usando preview_shifts para garantizar paridad exacta con la UI
+            shifts = self.preview_shifts(year, month, exceptions)
             warnings = self.shift_manager.last_warnings
             
             # 2. Inicializar manejador de Excel

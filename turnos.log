@@ -17,3 +17,63 @@
 2026-09-21 16:48:53 [INFO] shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmptjlyb5m8\backups\config_20260921_164853_pre_reset.json
 2026-09-21 16:48:53 [INFO] shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
 2026-09-21 16:48:53 [INFO] shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-25\test_transicion_mes_y_snapshot0\backups\config_20260921_164853_pre_advance_2024_04.json
+2026-09-22 08:29:04 [INFO] shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpz8vnqqty\backups\config_20260922_082904_test_tag.json
+2026-09-22 08:29:04 [INFO] shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp4x8k5o4h\backups\config_20260922_082904_pre_reset.json
+2026-09-22 08:29:04 [INFO] shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 08:29:04 [INFO] shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpnva62f0k\backups\config_20260922_082904_pre_reset.json
+2026-09-22 08:29:04 [INFO] shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 08:29:04 [INFO] shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-26\test_transicion_mes_y_snapshot0\backups\config_20260922_082904_pre_advance_2024_04.json
+2026-09-22 08:45:22 [INFO] turnos.controller: Test controller log
+2026-09-22 08:45:22 [INFO] turnos.shift_manager: Test shift_manager log
+2026-09-22 08:48:08 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 08:48:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpclb66a4w\backups\config_20260922_084809_test_tag.json
+2026-09-22 08:48:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpqz576ymg\backups\config_20260922_084809_pre_reset.json
+2026-09-22 08:48:09 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 08:48:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmprzzrgw6u\backups\config_20260922_084809_pre_reset.json
+2026-09-22 08:48:09 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 08:48:09 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-27\test_transicion_mes_y_snapshot0\backups\config_20260922_084809_pre_advance_2024_04.json
+2026-09-22 08:48:45 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 08:48:46 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpgg443xs5\backups\config_20260922_084846_test_tag.json
+2026-09-22 08:48:46 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpr7tpd3b1\backups\config_20260922_084846_pre_reset.json
+2026-09-22 08:48:46 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 08:48:46 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpzzjya5vm\backups\config_20260922_084846_pre_reset.json
+2026-09-22 08:48:46 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 08:48:46 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-28\test_transicion_mes_y_snapshot0\backups\config_20260922_084846_pre_advance_2024_04.json
+2026-09-22 08:49:07 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 08:51:15 [ERROR] turnos.controller: Error en process_generation: ControllerExportParityTests.test_process_generation_matches_preview_shifts_for_future_month.<locals>.spy_write_shifts() missing 1 required positional argument: 'month'
+Traceback (most recent call last):
+  File "C:\Users\Soporte\Documents\Sistema de turnos\controllers\main_controller.py", line 133, in process_generation
+    excel_handler.write_shifts(shifts, exceptions, year, month)
+    ~~~~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "C:\Users\Soporte\AppData\Local\Python\pythoncore-3.14-64\Lib\unittest\mock.py", line 1176, in __call__
+    return self._mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Soporte\AppData\Local\Python\pythoncore-3.14-64\Lib\unittest\mock.py", line 1180, in _mock_call
+    return self._execute_mock_call(*args, **kwargs)
+           ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^
+  File "C:\Users\Soporte\AppData\Local\Python\pythoncore-3.14-64\Lib\unittest\mock.py", line 1247, in _execute_mock_call
+    result = effect(*args, **kwargs)
+TypeError: ControllerExportParityTests.test_process_generation_matches_preview_shifts_for_future_month.<locals>.spy_write_shifts() missing 1 required positional argument: 'month'
+2026-09-22 08:51:15 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 08:51:16 [INFO] turnos.controller: Mensaje desde controller
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Mensaje desde shift_manager
+2026-09-22 08:51:16 [INFO] turnos.gui: Mensaje desde gui
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpcciac3zh\backups\config_20260922_085116_pre_reset.json
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpra4_772v\backups\config_20260922_085116_test_tag.json
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_228rigm\backups\config_20260922_085116_pre_reset.json
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp9c5nirtn\backups\config_20260922_085116_pre_reset.json
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 08:51:16 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-29\test_transicion_mes_y_snapshot0\backups\config_20260922_085116_pre_advance_2024_04.json
+2026-09-22 08:51:40 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmpmx608_g5\parity_test.xlsx
+2026-09-22 08:52:25 [INFO] turnos.controller: Excel exportado exitosamente a C:\Users\Soporte\AppData\Local\Temp\tmp2y8eu86l\parity_test.xlsx
+2026-09-22 08:52:25 [ERROR] turnos.controller: Error de permisos al escribir Excel turnos_Septiembre_2026.xlsx
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp87onq06n\backups\config_20260922_085226_pre_reset.json
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 4
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp_do_m7oq\backups\config_20260922_085226_test_tag.json
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmp732vrvet\backups\config_20260922_085226_pre_reset.json
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=False). Siguiente ID: 1
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\tmpjip2mbfb\backups\config_20260922_085226_pre_reset.json
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Historial reseteado (preserve_inicio=True). Siguiente ID: 3
+2026-09-22 08:52:26 [INFO] turnos.shift_manager: Backup creado: C:\Users\Soporte\AppData\Local\Temp\pytest-of-Soporte\pytest-30\test_transicion_mes_y_snapshot0\backups\config_20260922_085226_pre_advance_2024_04.json
