@@ -13,7 +13,6 @@ class TabSettings:
         self.starting_person_var = None
         self.starting_person_dropdown = None
         self.settings_status_label = None
-        self.calendar_export_btn = None
         self.person_list_frame = None
 
         self._build_ui()
@@ -92,41 +91,12 @@ class TabSettings:
             text_color=P["text_s"], justify="left", anchor="w"
         ).grid(row=3, column=0, pady=(14, 0), sticky="w")
 
-        # ── Card 2: Exportar a Excel ──────────────────────────────────────────
-        export_card = ctk.CTkFrame(
-            wrapper, fg_color=P["bg_card"], corner_radius=12,
-            border_width=1, border_color=P["border"]
-        )
-        export_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
-        export_card.grid_columnconfigure(0, weight=1)
-
-        ctk.CTkLabel(
-            export_card, text="Exportar Calendario",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
-            text_color=P["text"], anchor="w"
-        ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
-
-        ctk.CTkLabel(
-            export_card,
-            text="Genera un archivo Excel oficial del periodo seleccionado en el menú.",
-            font=ctk.CTkFont(family="Inter", size=12),
-            text_color=P["text_s"], anchor="w"
-        ).grid(row=1, column=0, padx=20, pady=(0, 14), sticky="w")
-
-        self.calendar_export_btn = ctk.CTkButton(
-            export_card, text="📊  Exportar a Excel", command=self.app.export_calendar_excel,
-            height=38, width=220, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
-            fg_color=P["green_d"], hover_color=P["green"]
-        )
-        self.calendar_export_btn.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="w")
-
-        # ── Card 3: Gestión de Personal ───────────────────────────────────────
+        # ── Card 2: Gestión de Personal ───────────────────────────────────────
         person_card = ctk.CTkFrame(
             wrapper, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        person_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
+        person_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
         person_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -152,12 +122,12 @@ class TabSettings:
 
         self.refresh_person_list()
 
-        # ── Card 4: Zona de peligro — Reset historial ────────────────────────
+        # ── Card 3: Zona de peligro — Reset historial ────────────────────────
         danger_card = ctk.CTkFrame(
             wrapper, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["red_d"]
         )
-        danger_card.grid(row=6, column=0, sticky="ew", pady=(20, 0))
+        danger_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
         danger_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(

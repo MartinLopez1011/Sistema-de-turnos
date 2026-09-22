@@ -33,12 +33,13 @@ Abre la pestaña **Ver Turnos del Mes**.
 
 ## 4. Exportar a Excel
 
-1. Abre la pestaña **Ajustes**.
-2. Busca la sección **Exportar Calendario**.
-3. Pulsa **Exportar a Excel**.
-4. Confirma la operación.
+1. Abre la pestaña **Ver Turnos del Mes**.
+2. Selecciona el mes y año que deseas exportar (o navega con **Anterior** / **Siguiente** / **Hoy**).
+3. Pulsa el botón verde **📊 Exportar Excel** ubicado en la barra superior de navegación.
+4. Elige la carpeta y nombre con el que deseas guardar el archivo.
 
-El archivo se guardará en la misma carpeta del programa con un nombre parecido a:
+El archivo Excel oficial incluye título combinado y una sección de leyenda explicativa de convenciones de colores.
+El nombre sugerido es:
 
 ```text
 turnos_Septiembre_2026.xlsx

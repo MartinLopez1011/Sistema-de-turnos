@@ -17,6 +17,7 @@ class TabCalendar:
         self.v_month_var = None
         self.v_year_var = None
         self.btn_hoy = None
+        self.btn_exportar = None
         self.vista_scroll = None
 
         self._build_ui()
@@ -98,7 +99,15 @@ class TabCalendar:
             fg_color=P["accent_d"], hover_color=P["accent"],
             font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
             command=self.render_turnos_view
-        ).grid(row=0, column=6, padx=(4, 14), pady=12)
+        ).grid(row=0, column=6, padx=(4, 4), pady=12)
+
+        self.btn_exportar = ctk.CTkButton(
+            nav, text="📊  Exportar Excel", width=125, height=36, corner_radius=8,
+            fg_color=P["green_d"], hover_color=P["green"],
+            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            command=self.app.export_calendar_excel
+        )
+        self.btn_exportar.grid(row=0, column=7, padx=(4, 14), pady=12)
 
         self.vista_scroll = ctk.CTkScrollableFrame(
             self.parent, fg_color=P["bg_app"], corner_radius=0,

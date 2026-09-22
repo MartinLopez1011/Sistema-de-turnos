@@ -34,6 +34,10 @@ class TurnosApp(ctk.CTk):
         self.calendar_period_override = None
         self._status_fade_job = None
 
+        now = datetime.now()
+        self.month_var = ctk.StringVar(value=MESES[now.month - 1])
+        self.year_var = ctk.StringVar(value=str(now.year))
+
         self._setup_ui()
         self.load_personal()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
@@ -254,12 +258,14 @@ class TurnosApp(ctk.CTk):
             return
 
         self.is_exporting = True
-        self.tab_settings.calendar_export_btn.configure(state="disabled", text="Exportando...")
+        if hasattr(self.tab_calendar, "btn_exportar") and self.tab_calendar.btn_exportar:
+            self.tab_calendar.btn_exportar.configure(state="disabled", text="Exportando...")
         self.set_status("Generando archivo Excel...", "warn")
 
         def _on_export_done(ok, msg):
             self.is_exporting = False
-            self.tab_settings.calendar_export_btn.configure(state="normal", text="📊  Exportar a Excel")
+            if hasattr(self.tab_calendar, "btn_exportar") and self.tab_calendar.btn_exportar:
+                self.tab_calendar.btn_exportar.configure(state="normal", text="📊  Exportar Excel")
             if ok:
                 self.set_status(f"✓ {msg}", "ok")
                 messagebox.showinfo("Exportación exitosa", f"Archivo generado:\n{target_file}", parent=self)

@@ -146,11 +146,13 @@ La regla anual de feriados usa solo asignaciones confiables de `historial` o `in
 
 ## 7. `ExcelHandler` — Lógica del reporte
 
-1. Construye en memoria la plantilla base con la grilla de 31 días y las personas configuradas
-2. **Auto-detecta** la fila de días buscando la fila con valores 1, 2, 3...
-3. Limpia toda la grilla, pinta fines de semana en gris `#D9D9D9`
-4. Por cada turno: pinta en **rojo** (`#FF3B30`) todos los días de esa semana que pertenezcan al mes
-5. Por cada excepción: sobreescribe la celda con el tipo (`DA`, `FL`, `LIC` u `OTR`) y el color correspondiente
+1. Construye en memoria la plantilla base con la grilla de 31 días y el personal (incluyendo funcionarios históricos con turnos o excepciones en el periodo)
+2. Combina y centra el título principal en el rango `A1:AF1` (`PLANIFICACIÓN DE TURNOS — [MES] [AÑO]`)
+3. **Auto-detecta** la fila de días buscando la fila con valores 1, 2, 3...
+4. Limpia toda la grilla, pinta fines de semana en gris `#D9D9D9`
+5. Por cada turno: pinta en **rojo** (`#FF3B30`) todos los días de esa semana que pertenezcan al mes
+6. Por cada excepción: sobreescribe la celda con el tipo (`DA`, `FL`, `LIC`, `OTR` o `FOR`) y el color correspondiente
+7. Al pie de la tabla, genera un bloque de **Leyenda de Convenciones** con muestras de color y nombres descriptivos (Turno, DA, FL, LIC, OTR, FOR, Fin de semana)
 
 ---
 

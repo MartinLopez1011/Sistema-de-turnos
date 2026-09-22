@@ -56,8 +56,6 @@ class TabPlan:
         pf.grid_columnconfigure(1, weight=2)
 
         now = datetime.now()
-        self.app.month_var = ctk.StringVar(value=MESES[now.month - 1])
-        self.app.year_var = ctk.StringVar(value=str(now.year))
 
         ctk.CTkOptionMenu(
             pf, variable=self.app.month_var, values=MESES,

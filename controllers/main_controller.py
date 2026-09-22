@@ -133,12 +133,26 @@ class MainController:
             shifts = self.preview_shifts(year, month, exceptions)
             warnings = self.shift_manager.last_warnings
             
-            # 2. Inicializar manejador de Excel
+            # 2. Inicializar manejador de Excel garantizando paridad con personal histórico
             meses = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"]
             nombre_mes = meses[month - 1]
             dynamic_output = target_path or os.path.join(self.root_path, f"turnos_{nombre_mes}_{year}.xlsx")
             
-            excel_handler = ExcelHandler(dynamic_output, self.shift_manager.personal)
+            # Combinar personal activo con personas presentes en turnos o excepciones históricas
+            export_personal = [dict(p) for p in self.shift_manager.personal]
+            existing_names = {p['nombre'] for p in export_personal}
+            for sh in shifts:
+                p_name = sh.get('persona')
+                if p_name and p_name != "NADIE DISPONIBLE" and p_name not in existing_names:
+                    export_personal.append({"id": None, "nombre": p_name})
+                    existing_names.add(p_name)
+            for exc in exceptions:
+                p_name = exc.get('persona')
+                if p_name and p_name not in existing_names:
+                    export_personal.append({"id": None, "nombre": p_name})
+                    existing_names.add(p_name)
+
+            excel_handler = ExcelHandler(dynamic_output, export_personal)
             excel_handler.load_template()
             
             # 3. Escribir los datos

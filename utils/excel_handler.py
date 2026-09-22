@@ -68,6 +68,7 @@ class ExcelHandler:
         fl_fill = PatternFill(start_color="5B21B6", end_color="5B21B6", fill_type="solid")
         lic_fill = PatternFill(start_color="0E7490", end_color="0E7490", fill_type="solid")
         otr_fill = PatternFill(start_color="374151", end_color="374151", fill_type="solid")
+        for_fill = PatternFill(start_color="059669", end_color="059669", fill_type="solid")
         center_align = Alignment(horizontal="center", vertical="center")
         thin_border = Border(
             left=Side(style='thin', color="000000"),
@@ -103,15 +104,14 @@ class ExcelHandler:
                 except ValueError:
                     pass
 
-        # Escribir el nombre del mes en la primera fila visible de los días
-        if 1 in day_columns:
-            # Ponemos el nombre del mes un poco arriba de los días
-            first_day_col = day_columns[1]
-            if days_row_index > 1:
-                mes_cell = self.sheet.cell(row=days_row_index - 1, column=first_day_col)
-                mes_cell.value = f"{nombre_mes} {year}"
-                mes_cell.font = Font(bold=True, size=14)
-                mes_cell.alignment = center_align
+        # 0. Combinar y formatear título principal
+        self.sheet.merge_cells("A1:AF1")
+        title_cell = self.sheet["A1"]
+        title_cell.value = f"PLANIFICACIÓN DE TURNOS — {nombre_mes} {year}"
+        title_cell.font = Font(bold=True, size=13, color="1F2937")
+        title_cell.alignment = Alignment(horizontal="center", vertical="center")
+        title_cell.fill = PatternFill(start_color="D9E2F3", end_color="D9E2F3", fill_type="solid")
+        self.sheet.row_dimensions[1].height = 28
 
         # Encontrar en qué fila está cada persona.
         names_col_idx = min(day_columns.values()) - 1
@@ -199,8 +199,57 @@ class ExcelHandler:
                     col_idx = day_columns[day_val]
                     cell = self.sheet.cell(row=row_idx, column=col_idx)
                     cell.value = exc['tipo']
-                    _exc_fills = {'DA': da_fill, 'FL': fl_fill, 'LIC': lic_fill, 'OTR': otr_fill}
+                    _exc_fills = {'DA': da_fill, 'FL': fl_fill, 'LIC': lic_fill, 'OTR': otr_fill, 'FOR': for_fill}
                     cell.fill = _exc_fills.get(exc['tipo'], otr_fill)
                     cell.alignment = center_align
                     cell.font = bold_font
                     cell.border = thin_border
+
+        # 4. DIBUJAR LEYENDA EXPLICATIVA DE COLORES
+        max_person_row = max(person_rows.values()) if person_rows else (days_row_index + len(self.personal))
+        legend_title_row = max_person_row + 3
+
+        title_lbl = self.sheet.cell(row=legend_title_row, column=1, value="CONVENCIONES Y LEYENDA")
+        title_lbl.font = Font(bold=True, size=10, color="1F2937")
+        self.sheet.row_dimensions[legend_title_row].height = 22
+
+        left_items = [
+            ("Turno de Guardia", red_fill, "■", "FFFFFF"),
+            ("DA: Día Administrativo", da_fill, "DA", "FFFFFF"),
+            ("FL: Feriado Legal", fl_fill, "FL", "FFFFFF"),
+            ("LIC: Licencia Médica", lic_fill, "LIC", "FFFFFF"),
+        ]
+        right_items = [
+            ("OTR: Otro Permiso", otr_fill, "OTR", "FFFFFF"),
+            ("FOR: Asignación Forzada", for_fill, "FOR", "FFFFFF"),
+            ("Fin de Semana", gray_fill, " ", "000000"),
+        ]
+
+        for idx, (label, fill_style, mark, text_color) in enumerate(left_items):
+            r = legend_title_row + 1 + idx
+            self.sheet.row_dimensions[r].height = 20
+            # Muestra de color
+            chip = self.sheet.cell(row=r, column=2, value=mark)
+            chip.fill = fill_style
+            chip.alignment = center_align
+            chip.font = Font(bold=True, size=9, color=text_color)
+            chip.border = thin_border
+            # Texto explicativo
+            self.sheet.merge_cells(start_row=r, start_column=3, end_row=r, end_column=8)
+            desc = self.sheet.cell(row=r, column=3, value=label)
+            desc.font = Font(size=9.5, color="374151")
+            desc.alignment = Alignment(horizontal="left", vertical="center")
+
+        for idx, (label, fill_style, mark, text_color) in enumerate(right_items):
+            r = legend_title_row + 1 + idx
+            # Muestra de color
+            chip = self.sheet.cell(row=r, column=10, value=mark)
+            chip.fill = fill_style
+            chip.alignment = center_align
+            chip.font = Font(bold=True, size=9, color=text_color)
+            chip.border = thin_border
+            # Texto explicativo
+            self.sheet.merge_cells(start_row=r, start_column=11, end_row=r, end_column=17)
+            desc = self.sheet.cell(row=r, column=11, value=label)
+            desc.font = Font(size=9.5, color="374151")
+            desc.alignment = Alignment(horizontal="left", vertical="center")
