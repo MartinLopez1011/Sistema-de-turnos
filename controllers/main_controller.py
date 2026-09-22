@@ -34,12 +34,24 @@ class MainController:
         return self.shift_manager.set_starting_person(person_name)
 
     def add_person(self, name):
-        new_id = self.shift_manager.add_person(name)
+        if not isinstance(name, str) or not " ".join(name.split()):
+            return False, "El nombre no puede estar vacío"
+        clean_name = " ".join(name.split())
+        for p in self.shift_manager.personal:
+            if " ".join(p['nombre'].split()).casefold() == clean_name.casefold():
+                return False, f"Ya existe un funcionario con el nombre '{clean_name}'"
+        new_id = self.shift_manager.add_person(clean_name)
         return new_id is not None, f"Persona añadida con ID {new_id}" if new_id else "Error al añadir persona"
 
     def edit_person(self, person_id, new_name):
-        success = self.shift_manager.edit_person(person_id, new_name)
-        return success, "Persona editada" if success else "Persona no encontrada"
+        if not isinstance(new_name, str) or not " ".join(new_name.split()):
+            return False, "El nombre no puede estar vacío"
+        clean_name = " ".join(new_name.split())
+        for p in self.shift_manager.personal:
+            if p['id'] != person_id and " ".join(p['nombre'].split()).casefold() == clean_name.casefold():
+                return False, f"Ya existe un funcionario con el nombre '{clean_name}'"
+        success = self.shift_manager.edit_person(person_id, clean_name)
+        return success, f"Funcionario editado: {clean_name}" if success else "Funcionario no encontrado"
 
     def remove_person(self, person_id):
         success = self.shift_manager.remove_person(person_id)

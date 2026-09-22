@@ -16,34 +16,73 @@ class ShiftManager:
         self.load_config()
 
     def load_config(self):
-        with open(self.config_path, 'r', encoding='utf-8') as f:
-            data = json.load(f)
-            self.inicio = data.get('inicio', {})
-            self.historial = data.get('historial', {})
-            self.personal = data.get('personal', [])
-            self.siguiente_id = data.get('siguiente_id', 1)
-            self.pendientes = data.get('pendientes', [])
-            self.snapshots = data.get('snapshots', {})
-            saved_exceptions = data.get('excepciones', {})
-            self.excepciones = saved_exceptions if isinstance(saved_exceptions, dict) else {}
+        if not os.path.exists(self.config_path):
+            logger.warning("Archivo de configuración %s no encontrado. Creando configuración base limpia.", self.config_path)
+            self._init_defaults()
+            self.save_config()
+            return
 
-            # ITER 2 bug fix: normalizar keys de snapshots al formato YYYY-MM (con cero)
-            raw_snapshots = self.snapshots
-            normalized = {}
-            for k, v in raw_snapshots.items():
-                parts = k.split('-')
-                if len(parts) == 2:
-                    try:
-                        norm_k = f"{int(parts[0])}-{int(parts[1]):02d}"
-                        normalized[norm_k] = v
-                    except ValueError:
-                        normalized[k] = v
-                else:
+        try:
+            with open(self.config_path, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+        except (json.JSONDecodeError, UnicodeDecodeError) as e:
+            logger.error("Archivo config.json corrupto o ilegible: %s. Creando respaldo y restaurando base limpia.", e)
+            try:
+                config_dir = os.path.dirname(os.path.abspath(self.config_path))
+                backups_dir = os.path.join(config_dir, "backups")
+                os.makedirs(backups_dir, exist_ok=True)
+                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+                base_name = os.path.basename(self.config_path)
+                corrupt_path = os.path.join(backups_dir, f"{base_name}.corrupted_{timestamp}")
+                with open(self.config_path, 'rb') as src, open(corrupt_path, 'wb') as dst:
+                    dst.write(src.read())
+                logger.info("Respaldo de archivo corrupto guardado en %s", corrupt_path)
+            except Exception as be:
+                logger.warning("No se pudo respaldar el archivo corrupto: %s", be)
+
+            self._init_defaults()
+            self.save_config()
+            return
+
+        self._parse_config_data(data)
+
+    def _init_defaults(self):
+        self.inicio = {}
+        self.historial = {}
+        self.personal = []
+        self.siguiente_id = 1
+        self.pendientes = []
+        self.snapshots = {}
+        self.excepciones = {}
+
+    def _parse_config_data(self, data):
+        self.inicio = data.get('inicio', {})
+        self.historial = data.get('historial', {})
+        self.personal = data.get('personal', [])
+        self.siguiente_id = data.get('siguiente_id', 1)
+        self.pendientes = data.get('pendientes', [])
+        self.snapshots = data.get('snapshots', {})
+        saved_exceptions = data.get('excepciones', {})
+        self.excepciones = saved_exceptions if isinstance(saved_exceptions, dict) else {}
+
+        # Normalizar keys de snapshots al formato YYYY-MM (con cero)
+        raw_snapshots = self.snapshots
+        normalized = {}
+        for k, v in raw_snapshots.items():
+            parts = k.split('-')
+            if len(parts) == 2:
+                try:
+                    norm_k = f"{int(parts[0])}-{int(parts[1]):02d}"
+                    normalized[norm_k] = v
+                except ValueError:
                     normalized[k] = v
-            self.snapshots = normalized
+            else:
+                normalized[k] = v
+        self.snapshots = normalized
 
     def save_config(self):
         directory = os.path.dirname(os.path.abspath(self.config_path))
+        os.makedirs(directory, exist_ok=True)
         temporary_path = self.config_path + '.tmp'
         payload = {
             "personal": self.personal,
@@ -632,6 +671,37 @@ class ShiftManager:
     def advance_month(self, year, month, exceptions):
         self.create_backup(f"pre_advance_{year}_{month:02d}")
         period_key = f"{year}-{month:02d}"
+
+        # Determinar si este periodo es anterior al frente de rotación ya registrado en historial o snapshots
+        latest_recorded_period = None
+        for wk in self.historial.keys():
+            try:
+                w_start = datetime.strptime(wk.split('_')[0], '%Y-%m-%d').date()
+                p_tuple = (w_start.year, w_start.month)
+                if latest_recorded_period is None or p_tuple > latest_recorded_period:
+                    latest_recorded_period = p_tuple
+            except Exception:
+                pass
+
+        for snap_k in self.snapshots.keys():
+            try:
+                parts = snap_k.split('-')
+                p_tuple = (int(parts[0]), int(parts[1]))
+                prev_month = p_tuple[1] - 1
+                prev_year = p_tuple[0]
+                if prev_month == 0:
+                    prev_month = 12
+                    prev_year -= 1
+                closed_p = (prev_year, prev_month)
+                if latest_recorded_period is None or closed_p > latest_recorded_period:
+                    latest_recorded_period = closed_p
+            except Exception:
+                pass
+
+        is_past_period = False
+        if latest_recorded_period is not None and (year, month) < latest_recorded_period:
+            is_past_period = True
+
         previous_exceptions = self.get_exceptions(period_key)
         exception_signature = lambda items: sorted(
             (item['persona'], item['fecha'].isoformat(), item['tipo'])
@@ -676,9 +746,15 @@ class ShiftManager:
             "pendientes": final_pendientes.copy()
         }
         
-        # Actualizar estado global
-        self.siguiente_id = final_id
-        self.pendientes = final_pendientes
+        # Solo actualizar el puntero global (siguiente_id y pendientes) si NO es un mes pasado
+        if not is_past_period:
+            self.siguiente_id = final_id
+            self.pendientes = final_pendientes
+        else:
+            logger.info(
+                "Mes pasado (%s) guardado como historial sin alterar la cola de turnos del presente (siguiente_id=%s).",
+                period_key, self.siguiente_id
+            )
 
         self.excepciones[period_key] = [
             {
@@ -717,30 +793,43 @@ class ShiftManager:
 
     def edit_person(self, person_id, new_name):
         """Edit the name of an existing person and update all historical records."""
+        if not isinstance(new_name, str):
+            return False
+
+        normalized_name = " ".join(new_name.split())
+        if not normalized_name:
+            return False
+
+        # Rechazar si el nombre normalizado ya pertenece a otra persona distinta
+        for p in self.personal:
+            if p['id'] != person_id and " ".join(p['nombre'].split()).casefold() == normalized_name.casefold():
+                return False
+
         old_name = None
         for p in self.personal:
             if p['id'] == person_id:
                 old_name = p['nombre']
-                p['nombre'] = new_name
+                p['nombre'] = normalized_name
                 break
 
         if old_name:
-            # Update inicio
-            for k, v in self.inicio.items():
-                if v == old_name:
-                    self.inicio[k] = new_name
-                    
-            # Update historial
-            for k, v in self.historial.items():
-                if v == old_name:
-                    self.historial[k] = new_name
-                    
-            # Update excepciones
-            for period, exc_list in self.excepciones.items():
-                for exc in exc_list:
-                    if exc.get('persona') == old_name:
-                        exc['persona'] = new_name
+            if old_name != normalized_name:
+                # Update inicio
+                for k, v in self.inicio.items():
+                    if v == old_name:
+                        self.inicio[k] = normalized_name
                         
+                # Update historial
+                for k, v in self.historial.items():
+                    if v == old_name:
+                        self.historial[k] = normalized_name
+                        
+                # Update excepciones
+                for period, exc_list in self.excepciones.items():
+                    for exc in exc_list:
+                        if exc.get('persona') == old_name:
+                            exc['persona'] = normalized_name
+                            
             self.save_config()
             return True
         return False

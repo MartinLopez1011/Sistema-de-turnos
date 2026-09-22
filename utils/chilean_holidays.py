@@ -1,5 +1,6 @@
 """Calendario de feriados nacionales de Chile."""
 
+import functools
 import unicodedata
 
 import holidays
@@ -12,6 +13,7 @@ def normalize_holiday_name(name):
     return " ".join(normalized.lower().split())
 
 
+@functools.lru_cache(maxsize=16)
 def national_holidays(year):
     """Devuelve feriados nacionales de Chile agrupados por clave de nombre."""
     calendar = holidays.country_holidays("CL", years=year, subdiv=None, language="es")

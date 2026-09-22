@@ -4,7 +4,6 @@ from datetime import datetime, date
 import tkinter as tk
 from tkinter import messagebox, filedialog
 import customtkinter as ctk
-from PIL import Image
 
 from views.theme import P, MESES
 from views.tabs.tab_plan import TabPlan
@@ -13,11 +12,6 @@ from views.tabs.tab_settings import TabSettings
 from utils.logger import get_logger
 
 logger = get_logger("gui")
-
-ASSETS_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), "..", "assets")
-SUCCESS_ICON = os.path.join(ASSETS_DIR, "success.png")
-ERROR_ICON = os.path.join(ASSETS_DIR, "error.png")
-SAVE_ICON = os.path.join(ASSETS_DIR, "save.png")
 
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
@@ -39,13 +33,6 @@ class TurnosApp(ctk.CTk):
         self.plan_period_dirty = False
         self.calendar_period_override = None
         self._status_fade_job = None
-
-        def _load_icon(path, size=(18, 18)):
-            return ctk.CTkImage(light_image=Image.open(path), size=size) if os.path.exists(path) else None
-
-        self.img_success = _load_icon(SUCCESS_ICON)
-        self.img_error = _load_icon(ERROR_ICON)
-        self.img_save = _load_icon(SAVE_ICON)
 
         self._setup_ui()
         self.load_personal()

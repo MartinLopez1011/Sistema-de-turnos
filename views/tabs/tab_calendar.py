@@ -4,7 +4,7 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import messagebox
 
-from views.theme import P, AVATAR_PAL, MESES, DIAS
+from views.theme import P, AVATAR_PAL, MESES, DIAS, EXC_COLORS, EXC_ICONS
 from views.components.widgets import _short_name, _initials, _avatar_ctk, _make_row_hover
 from views.components.dialogs import AddExceptionDialog
 
@@ -592,10 +592,8 @@ class TabCalendar:
                 crow += 1
                 for si, exc_info in enumerate(saltados):
                     tipo = exc_info['tipo']
-                    _exc_colors = {"DA": P["da"], "FL": P["fl"], "LIC": P["lic"], "OTR": P["otr"], "FOR": P["for"]}
-                    _exc_icons = {"DA": "⏭", "FL": "🚫", "LIC": "📋", "OTR": "📌", "FOR": "⭐"}
-                    cc = _exc_colors.get(tipo, P["otr"])
-                    icon = _exc_icons.get(tipo, "📌")
+                    cc = EXC_COLORS.get(tipo, P["otr"])
+                    icon = EXC_ICONS.get(tipo, "📌")
                     cf2 = ctk.CTkFrame(ef, fg_color=cc, corner_radius=8)
                     cf2.grid(row=si, column=0, sticky="ew", pady=2)
                     ctk.CTkLabel(
