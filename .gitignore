@@ -17,7 +17,8 @@ temp_config.json
 *.log
 turnos.log
 
-# Builds de PyInstaller
+# Builds de PyInstaller y ejecutables
+*.exe
 build/
 dist/
 *.spec
