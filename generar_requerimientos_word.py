@@ -1,4 +1,11 @@
+"""
+Generador del Documento de Requerimientos y Alcance del Sistema de Turnos en formato Word (.docx).
+Diseñado para ser simple, claro y entendible para usuarios sin conocimientos informáticos,
+con una definición exhaustiva y transparente del alcance del proyecto.
+"""
+
 import os
+import sys
 from datetime import date
 
 from docx import Document
@@ -9,35 +16,46 @@ from docx.oxml import OxmlElement
 from docx.oxml.ns import qn
 from docx.shared import Inches, Pt, RGBColor
 
+# Asegurar salida de consola UTF-8 en Windows
+if sys.platform == "win32":
+    try:
+        sys.stdout.reconfigure(encoding="utf-8")
+        sys.stderr.reconfigure(encoding="utf-8")
+    except Exception:
+        pass
+
 ROOT = os.path.dirname(os.path.abspath(__file__))
-OUTPUT = os.path.join(ROOT, "Documento_de_Requerimientos.docx")
+OUTPUT = os.path.join(ROOT, "Requerimientos_del_Sistema_Turnos.docx")
 
 
-def set_cell_shading(cell, fill):
+def set_cell_shading(cell, fill_hex):
+    """Aplica color de fondo a una celda de tabla."""
     properties = cell._tc.get_or_add_tcPr()
     shading = properties.find(qn("w:shd"))
     if shading is None:
         shading = OxmlElement("w:shd")
         properties.append(shading)
-    shading.set(qn("w:fill"), fill)
+    shading.set(qn("w:fill"), fill_hex)
 
 
 def set_cell_text(cell, text, bold=False, color="1F2937", size=9.5, align=WD_ALIGN_PARAGRAPH.LEFT):
+    """Configura el texto, formato, fuente y alineación de una celda."""
     cell.text = ""
     paragraph = cell.paragraphs[0]
     paragraph.alignment = align
-    paragraph.paragraph_format.space_after = Pt(2)
-    paragraph.paragraph_format.space_before = Pt(2)
-    paragraph.paragraph_format.line_spacing = 1.05
+    paragraph.paragraph_format.space_after = Pt(2.5)
+    paragraph.paragraph_format.space_before = Pt(2.5)
+    paragraph.paragraph_format.line_spacing = 1.08
     run = paragraph.add_run(str(text))
     run.bold = bold
-    run.font.name = "Aptos"
+    run.font.name = "Segoe UI"
     run.font.size = Pt(size)
     run.font.color.rgb = RGBColor.from_string(color)
     cell.vertical_alignment = WD_CELL_VERTICAL_ALIGNMENT.CENTER
 
 
 def set_table_borders(table, color="CBD5E1", size="6"):
+    """Configura bordes delgados y elegantes en la tabla."""
     properties = table._tbl.tblPr
     borders = properties.first_child_found_in("w:tblBorders")
     if borders is None:
@@ -55,24 +73,27 @@ def set_table_borders(table, color="CBD5E1", size="6"):
         element.set(qn("w:color"), color)
 
 
-def add_table(document, headers, rows, widths=None):
+def add_custom_table(document, headers, rows, widths=None):
+    """Crea una tabla con encabezado institucional estilizado y alternancia de colores."""
     table = document.add_table(rows=1, cols=len(headers))
     table.alignment = WD_TABLE_ALIGNMENT.CENTER
     table.style = "Table Grid"
     set_table_borders(table)
 
+    # Fila de encabezado
     for index, header in enumerate(headers):
         align = WD_ALIGN_PARAGRAPH.CENTER if index == 0 else WD_ALIGN_PARAGRAPH.LEFT
         set_cell_text(table.rows[0].cells[index], header, bold=True, color="FFFFFF", size=9.5, align=align)
         set_cell_shading(table.rows[0].cells[index], "0F766E")
 
+    # Filas de datos
     for r_idx, row in enumerate(rows):
         cells = table.add_row().cells
         bg_color = "F0FDFA" if r_idx % 2 == 1 else "FFFFFF"
         for index, value in enumerate(row):
-            align = WD_ALIGN_PARAGRAPH.CENTER if index == 0 else WD_ALIGN_PARAGRAPH.LEFT
-            bold = True if index == 0 else False
-            set_cell_text(cells[index], value, bold=bold, size=9, align=align)
+            align = WD_ALIGN_PARAGRAPH.CENTER if index == 0 and len(str(value)) <= 8 else WD_ALIGN_PARAGRAPH.LEFT
+            bold = True if index == 0 and len(str(value)) <= 8 else False
+            set_cell_text(cells[index], value, bold=bold, size=9.2, align=align)
             set_cell_shading(cells[index], bg_color)
 
     if widths:
@@ -81,8 +102,63 @@ def add_table(document, headers, rows, widths=None):
                 row.cells[index].width = Inches(width)
 
     p_after = document.add_paragraph()
-    p_after.paragraph_format.space_after = Pt(6)
+    p_after.paragraph_format.space_after = Pt(4)
     return table
+
+
+def add_callout_box(document, title, text, box_type="info"):
+    """Crea un cuadro de aviso destacado y fácil de leer."""
+    table = document.add_table(rows=1, cols=1)
+    table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    table.style = "Table Grid"
+    cell = table.rows[0].cells[0]
+    cell.width = Inches(7.0)
+
+    # Colores según tipo
+    cfg = {
+        "info": ("F0FDF4", "10B981", "065F46"),   # Verde menta
+        "warn": ("FFFBEB", "F59E0B", "92400E"),   # Amarillo/Naranja
+        "alert": ("FEF2F2", "EF4444", "991B1B"),  # Rojo suave
+    }
+    bg_color, border_color, text_color = cfg.get(box_type, cfg["info"])
+
+    set_cell_shading(cell, bg_color)
+
+    # Configurar borde izquierdo grueso y sin bordes en los otros lados
+    properties = cell._tc.get_or_add_tcPr()
+    borders = properties.find(qn("w:tcBorders"))
+    if borders is None:
+        borders = OxmlElement("w:tcBorders")
+        properties.append(borders)
+    
+    for edge in ("top", "bottom", "right"):
+        el = OxmlElement(f"w:{edge}")
+        el.set(qn("w:val"), "none")
+        borders.append(el)
+    
+    left = OxmlElement("w:left")
+    left.set(qn("w:val"), "single")
+    left.set(qn("w:sz"), "24") # Grueso
+    left.set(qn("w:color"), border_color)
+    borders.append(left)
+
+    cell.text = ""
+    p = cell.paragraphs[0]
+    p.paragraph_format.space_before = Pt(4)
+    p.paragraph_format.space_after = Pt(2)
+    run_title = p.add_run(f"📌 {title}\n")
+    run_title.bold = True
+    run_title.font.name = "Segoe UI"
+    run_title.font.size = Pt(10)
+    run_title.font.color.rgb = RGBColor.from_string(text_color)
+
+    run_body = p.add_run(text)
+    run_body.font.name = "Segoe UI"
+    run_body.font.size = Pt(9.5)
+    run_body.font.color.rgb = RGBColor(31, 41, 55)
+
+    p_after = document.add_paragraph()
+    p_after.paragraph_format.space_after = Pt(4)
 
 
 def add_heading(document, text, level=1):
@@ -94,71 +170,94 @@ def add_heading(document, text, level=1):
 
 def add_body(document, text, bold_lead=None):
     paragraph = document.add_paragraph()
-    paragraph.paragraph_format.space_after = Pt(5)
-    paragraph.paragraph_format.line_spacing = 1.12
+    paragraph.paragraph_format.space_after = Pt(6)
+    paragraph.paragraph_format.line_spacing = 1.15
     if bold_lead and text.startswith(bold_lead):
-        paragraph.add_run(bold_lead).bold = True
-        paragraph.add_run(text[len(bold_lead):])
+        r_lead = paragraph.add_run(bold_lead)
+        r_lead.bold = True
+        r_lead.font.name = "Segoe UI"
+        r_lead.font.size = Pt(10)
+        r_lead.font.color.rgb = RGBColor(15, 23, 42)
+        r_body = paragraph.add_run(text[len(bold_lead):])
+        r_body.font.name = "Segoe UI"
+        r_body.font.size = Pt(10)
+        r_body.font.color.rgb = RGBColor(51, 65, 85)
     else:
-        paragraph.add_run(text)
+        r = paragraph.add_run(text)
+        r.font.name = "Segoe UI"
+        r.font.size = Pt(10)
+        r.font.color.rgb = RGBColor(51, 65, 85)
     return paragraph
 
 
 def add_bullets(document, items):
     for item in items:
         paragraph = document.add_paragraph(style="List Bullet")
-        paragraph.paragraph_format.space_after = Pt(2.5)
-        paragraph.paragraph_format.line_spacing = 1.08
+        paragraph.paragraph_format.space_after = Pt(3)
+        paragraph.paragraph_format.line_spacing = 1.12
         if ":" in item:
             parts = item.split(":", 1)
             r1 = paragraph.add_run(parts[0] + ":")
             r1.bold = True
-            paragraph.add_run(parts[1])
+            r1.font.name = "Segoe UI"
+            r1.font.size = Pt(9.8)
+            r1.font.color.rgb = RGBColor(15, 23, 42)
+            r2 = paragraph.add_run(parts[1])
+            r2.font.name = "Segoe UI"
+            r2.font.size = Pt(9.8)
+            r2.font.color.rgb = RGBColor(51, 65, 85)
         else:
-            paragraph.add_run(item)
+            r = paragraph.add_run(item)
+            r.font.name = "Segoe UI"
+            r.font.size = Pt(9.8)
+            r.font.color.rgb = RGBColor(51, 65, 85)
 
 
-def configure_styles(document):
+def configure_document_styles(document):
     styles = document.styles
     normal = styles["Normal"]
-    normal.font.name = "Aptos"
+    normal.font.name = "Segoe UI"
     normal.font.size = Pt(10)
     normal.font.color.rgb = RGBColor(31, 41, 55)
 
-    for name, size, color in (("Title", 26, "0F766E"), ("Heading 1", 15, "0F766E"), ("Heading 2", 12, "115E59")):
+    for name, size, color in (
+        ("Title", 24, "0F766E"),
+        ("Heading 1", 14, "0F766E"),
+        ("Heading 2", 11.5, "115E59"),
+        ("Heading 3", 10.5, "1E293B")
+    ):
         style = styles[name]
-        style.font.name = "Aptos Display"
+        style.font.name = "Segoe UI"
         style.font.size = Pt(size)
         style.font.bold = True
         style.font.color.rgb = RGBColor.from_string(color)
 
-    if "Caption" not in styles:
-        styles.add_style("Caption", WD_STYLE_TYPE.PARAGRAPH)
-    styles["Caption"].font.name = "Aptos"
-    styles["Caption"].font.size = Pt(8)
-    styles["Caption"].font.italic = True
-    styles["Caption"].font.color.rgb = RGBColor(100, 116, 139)
-
 
 def add_header_footer(section):
     header = section.header.paragraphs[0]
-    header.text = "Sistema de Gestión de Turnos  |  Especificación de Requerimientos de Software (ERS)"
+    header.text = "Sistema de Gestión de Turnos  |  Requerimientos y Alcance del Sistema"
     header.alignment = WD_ALIGN_PARAGRAPH.RIGHT
     for run in header.runs:
-        run.font.name = "Aptos"
-        run.font.size = Pt(8)
+        run.font.name = "Segoe UI"
+        run.font.size = Pt(8.5)
         run.font.color.rgb = RGBColor(107, 114, 128)
 
     footer = section.footer.paragraphs[0]
     footer.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    for run in footer.runs:
+        run.font.name = "Segoe UI"
+        run.font.size = Pt(8.5)
+        run.font.color.rgb = RGBColor(107, 114, 128)
+    
+    # Campo de página Word
     field = OxmlElement("w:fldSimple")
     field.set(qn("w:instr"), "PAGE")
     footer._p.append(field)
 
 
-def build_requirements_document():
+def build_word_document():
     document = Document()
-    configure_styles(document)
+    configure_document_styles(document)
 
     section = document.sections[0]
     section.top_margin = Inches(0.7)
@@ -167,152 +266,197 @@ def build_requirements_document():
     section.right_margin = Inches(0.75)
     add_header_footer(section)
 
-    document.core_properties.title = "Documento de Requerimientos - Sistema de Gestión de Turnos"
-    document.core_properties.subject = "Especificación de Requerimientos de Software (Simple y Ejecutiva)"
-    document.core_properties.author = "Sistema de Turnos"
+    document.core_properties.title = "Requerimientos y Alcance - Sistema de Gestión de Turnos"
+    document.core_properties.subject = "Documento de Requerimientos y Alcance en Lenguaje Simple"
+    document.core_properties.author = "Sistema de Gestión de Turnos"
 
-    # Encabezado Principal
+    # ── TÍTULO PRINCIPAL ──────────────────────────────────────────────────────────
     title = document.add_paragraph()
     title.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    title.paragraph_format.space_before = Pt(30)
-    title.paragraph_format.space_after = Pt(4)
-    run = title.add_run("Documento de Requerimientos de Software")
-    run.bold = True
-    run.font.name = "Aptos Display"
-    run.font.size = Pt(24)
-    run.font.color.rgb = RGBColor(15, 118, 110)
+    title.paragraph_format.space_before = Pt(16)
+    title.paragraph_format.space_after = Pt(2)
+    run_t = title.add_run("Documento de Requerimientos y Alcance")
+    run_t.bold = True
+    run_t.font.name = "Segoe UI"
+    run_t.font.size = Pt(22)
+    run_t.font.color.rgb = RGBColor(15, 118, 110)
 
-    subtitle = document.add_paragraph()
-    subtitle.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    subtitle.paragraph_format.space_after = Pt(25)
-    sub_run = subtitle.add_run("Sistema de Gestión y Planificación de Turnos de Guardia")
-    sub_run.font.name = "Aptos"
-    sub_run.font.size = Pt(13)
-    sub_run.font.color.rgb = RGBColor(75, 85, 99)
+    sub = document.add_paragraph()
+    sub.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    sub.paragraph_format.space_after = Pt(16)
+    run_sub = sub.add_run("Sistema de Planificación de Turnos de Guardia Semanal — Guía Clara y Sin Tecnicismos")
+    run_sub.font.name = "Segoe UI"
+    run_sub.font.size = Pt(11.5)
+    run_sub.font.color.rgb = RGBColor(75, 85, 99)
 
-    # Ficha técnica inicial
-    metadata = document.add_table(rows=4, cols=2)
-    metadata.alignment = WD_TABLE_ALIGNMENT.CENTER
-    metadata.style = "Table Grid"
-    set_table_borders(metadata, color="CBD5E1")
-    meta_info = [
-        ("Proyecto", "Sistema de Gestión de Turnos (TurnosApp)"),
-        ("Tipo de Documento", "Especificación de Requerimientos de Software (ERS Simple)"),
-        ("Plataforma", "Aplicación de Escritorio Windows (Standalone .exe)"),
-        ("Fecha de Actualización", date.today().strftime("%d/%m/%Y")),
+    # Ficha Técnica
+    ficha_data = [
+        ("Nombre del Sistema", "Sistema de Gestión de Turnos (TurnosApp)"),
+        ("Tipo de Aplicación", "Programa de escritorio para computador (Windows)"),
+        ("Destinatarios", "Jefaturas de Servicio, Coordinadores de Guardia y Funcionarios"),
+        ("Objetivo Principal", "Calcular y ordenar las guardias semanales de forma automática, justa y transparente"),
+        ("Fecha de Documento", date.today().strftime("%d/%m/%Y")),
     ]
-    for row, (k, v) in zip(metadata.rows, meta_info):
-        set_cell_text(row.cells[0], k, bold=True, color="FFFFFF", size=9.5)
-        set_cell_shading(row.cells[0], "0F766E")
-        set_cell_text(row.cells[1], v, size=9.5)
-        set_cell_shading(row.cells[1], "F8FAFC")
-    for row in metadata.rows:
-        row.cells[0].width = Inches(1.8)
-        row.cells[1].width = Inches(5.2)
+    ficha_table = document.add_table(rows=len(ficha_data), cols=2)
+    ficha_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    ficha_table.style = "Table Grid"
+    set_table_borders(ficha_table, color="CBD5E1")
+    for idx, (k, v) in enumerate(ficha_data):
+        set_cell_text(ficha_table.rows[idx].cells[0], k, bold=True, color="FFFFFF", size=9.5)
+        set_cell_shading(ficha_table.rows[idx].cells[0], "0F766E")
+        set_cell_text(ficha_table.rows[idx].cells[1], v, size=9.5)
+        set_cell_shading(ficha_table.rows[idx].cells[1], "F8FAFC")
+        ficha_table.rows[idx].cells[0].width = Inches(2.0)
+        ficha_table.rows[idx].cells[1].width = Inches(5.0)
 
-    p_space = document.add_paragraph()
-    p_space.paragraph_format.space_after = Pt(12)
+    p_sp = document.add_paragraph()
+    p_sp.paragraph_format.space_after = Pt(6)
 
-    # 1. Introducción y Propósito
-    add_heading(document, "1. Introducción y Propósito", level=1)
+    # ── 1. ¿QUÉ ES EL SISTEMA Y QUÉ PROBLEMA RESUELVE? ───────────────────────────
+    add_heading(document, "1. ¿Qué es este sistema y qué necesidad resuelve?", level=1)
     add_body(
         document,
-        "El presente documento especifica de forma clara y directa los requerimientos funcionales, no funcionales y reglas de negocio para el Sistema de Gestión de Turnos de Guardia. El sistema tiene por finalidad automatizar la asignación rotativa semanal de turnos para el equipo de funcionarios, garantizando un reparto equitativo, trazabilidad de ausencias y continuidad entre períodos mensuales."
+        "Antes de este sistema, los turnos de guardia se calculaban a mano en hojas de papel o en planillas de Excel aisladas. Esto generaba problemas frecuentes: personas a las que se les asignaba turno mientras estaban de vacaciones o con licencia médica, funcionarios que repetían guardias pesadas (como Navidad o Año Nuevo) dos años seguidos, y desacuerdos sobre a quién le correspondía realmente el turno."
     )
     add_body(
         document,
-        "El sistema reemplaza la confección manual en planillas aisladas, reduciendo el riesgo de omisiones, duplicidades o turnos asignados a personal no disponible."
+        "El Sistema de Gestión de Turnos es un programa para el computador que automatiza completamente este proceso. Actúa como un árbitro neutral: lleva la lista ordenada de todo el equipo, calcula a quién le corresponde cada semana, salta de manera automática a quien tenga un permiso justificado y genera la planilla oficial de Excel lista para imprimir y firmar."
     )
 
-    # 2. Alcance del Sistema
-    add_heading(document, "2. Alcance del Sistema", level=1)
-    add_table(
+    add_callout_box(
         document,
-        ["Área", "Descripción del Alcance"],
-        [
-            ("Dentro del Alcance", "• Planificación mensual con asignación rotativa semanal equitativa.\n• Gestión de excepciones y ausencias (DA, FL, LIC, OTR) con recálculo dinámico.\n• Asignación manual forzada por semana con opción de retorno al modo automático.\n• Previsualización no destructiva del mes antes de guardar.\n• Cierre formal del mes con avance de rotación e historial inmutable.\n• Vista gráfica de calendario mensual con códigos de color.\n• Exportación oficial a archivo Excel (.xlsx) con estilos y leyendas.\n• Administración de la nómina de personal (alta, edición, orden y baja).\n• Guardado atómico en archivo JSON local y respaldos automáticos fechados."),
-            ("Fuera del Alcance", "• Autenticación con contraseñas o control de accesos por roles multiusuario.\n• Trabajo colaborativo concurrente en red simultáneo sobre el mismo archivo.\n• Conexión a bases de datos relacionales en la nube o servidores externos.\n• Notificaciones automáticas por correo electrónico o mensajería."),
-        ],
-        widths=[1.8, 5.2]
+        "Principio de Equidad y Transparencia",
+        "El programa garantiza que la carga de trabajo se reparta de forma equitativa entre todos los funcionarios. Nadie trabaja turnos seguidos injustamente y nadie queda exento sin justificación.",
+        "info"
     )
 
-    # 3. Actores del Sistema
-    add_heading(document, "3. Actores del Sistema", level=1)
+    # ── 2. DEFINICIÓN DEL ALCANCE (QUÉ INCLUYE Y QUÉ NO) ────────────────────────
+    add_heading(document, "2. Definición Detallada del Alcance", level=1)
+    add_body(
+        document,
+        "El alcance define con absoluta claridad la frontera del sistema: exactamente qué responsabilidades asume el programa y cuáles quedan fuera de su función."
+    )
+
+    alcance_items = [
+        (
+            "Lo que SÍ hace el sistema\n(Dentro del Alcance)",
+            "• Asignación Semanal de Guardias: Calcula quién cubre la guardia de lunes a domingo para cada semana del mes.\n"
+            "• Rotación Circular Equitativa: Sigue el orden estricto de la lista de personal para que todos hagan turno por igual.\n"
+            "• Gestión de Permisos y Ausencias: Registra Días Administrativos (DA), Vacaciones (FL), Licencias Médicas (LIC) u Otros Permisos (OTR) e inhabilita al funcionario durante su ausencia.\n"
+            "• Sistema de Compensación (Lista de Pendientes): Si un funcionario no pudo hacer su guardia por permiso, el sistema no le 'perdona' el turno: lo anota en una lista de espera prioritaria para que recupere la guardia en cuanto vuelva a estar disponible.\n"
+            "• Cuidado de Fiestas de Diciembre: Revisa automáticamente si la persona ya trabajó en Navidad o Año Nuevo el año anterior para evitar que repita el mismo feriado.\n"
+            "• Cambios Manuales (Permutas de palabra): Permite al coordinador cambiar a mano una guardia solicitando obligatoriamente el motivo del cambio.\n"
+            "• Previsualización no destructiva: Permite mirar y jugar con los meses futuros sin alterar el orden guardado.\n"
+            "• Cierre Definitivo del Mes: Guarda el historial consolidado y hace girar la lista para el mes siguiente.\n"
+            "• Planilla Oficial en Excel (.xlsx): Exporta el calendario mensual completo con colores, leyenda y totales de turnos por persona, listo para imprimir.\n"
+            "• Administración del Personal: Permite agregar nuevos compañeros, corregir nombres, actualizar correos, cambiar el orden de la fila y retirar a quienes se trasladan sin borrar su historial pasado.\n"
+            "• Aviso por Correo Electrónico: Si se hace un cambio manual a última hora, al cerrar el mes envía automáticamente un correo a todo el equipo informando el cambio.\n"
+            "• Copias de Seguridad Automáticas: Guarda respaldos continuos en una carpeta /backups para que nunca se pierda la información si se corta la luz."
+        ),
+        (
+            "Lo que NO hace el sistema\n(Fuera del Alcance)",
+            "• No es un reloj control de asistencia diaria: No registra horas de llegada ni de salida del personal.\n"
+            "• No aprueba permisos administrativos ni vacaciones: El coordinador debe ingresar los permisos al sistema una vez que hayan sido autorizados por la jefatura.\n"
+            "• No requiere internet para el cálculo: El programa funciona 100% de forma local y desconectada en el computador (solo usa internet si se envía el correo por cambio manual).\n"
+            "• No es un sistema multiusuario en red con contraseñas: Está pensado para ser operado por el encargado o coordinador de la unidad en su equipo de trabajo.\n"
+            "• No envía mensajes de WhatsApp ni SMS: La comunicación oficial de cambios manuales se realiza exclusivamente por correo electrónico vía Gmail institucional.\n"
+            "• No modifica meses pasados por error: Un mes cerrado queda protegido como historial inmutable."
+        )
+    ]
+    add_custom_table(document, ["Clasificación", "Detalle Exhaustivo del Alcance"], alcance_items, widths=[2.2, 4.8])
+
+    # ── 3. QUIÉNES USAN EL SISTEMA (ACTORES) ─────────────────────────────────────
+    add_heading(document, "3. Usuarios del Sistema (Roles)", level=1)
     add_bullets(document, [
-        "Coordinador / Planificador de Turnos: Usuario principal que interactúa con el sistema para seleccionar períodos, registrar ausencias, asignar guardias, exportar calendarios en Excel y cerrar formalmente los meses.",
-        "Personal de Guardia (Funcionarios): Miembros del equipo sujetos a la asignación de turnos y beneficiarios de la equidad en la rotación y el respeto a sus feriados y licencias.",
+        "El Coordinador o Encargado de Turnos: Es la persona que maneja el programa. Elige el mes, ingresa los permisos conocidos, revisa que las semanas estén correctas, saca la planilla en Excel para firmar y guarda el mes definitivo.",
+        "La Jefatura de la Unidad: Recibe la planilla Excel mensual oficial para su visado, firma y publicación.",
+        "Los Funcionarios del Equipo: Son los beneficiarios de la rotación justa. Pueden consultar sus turnos en el calendario Excel y reciben un correo de aviso si su guardia fue modificada de mutuo acuerdo."
     ])
 
-    # 4. Requerimientos Funcionales
-    add_heading(document, "4. Requerimientos Funcionales (RF)", level=1)
-    rf_data = [
-        ("RF-01", "Selección de Período", "El sistema debe permitir elegir libremente el mes y año que se desea consultar o planificar mediante selectores de interfaz."),
-        ("RF-02", "Rotación Automática Equitativa", "El sistema debe asignar las semanas de forma secuencial y circular según la lista ordenada del personal, asegurando un reparto justo de la carga."),
-        ("RF-03", "Gestión de Compensaciones (Pendientes)", "Cuando un funcionario no pueda cumplir su turno debido a una ausencia registrada, el sistema debe incorporarlo a una lista de pendientes para otorgarle turno de forma prioritaria en la siguiente semana libre."),
-        ("RF-04", "Registro de Excepciones y Ausencias", "El sistema debe permitir registrar ausencias por persona, fecha o rango de días (ej. 1-5, 12) categorizadas en: DA (Día Administrativo), FL (Feriado Legal), LIC (Licencia Médica) u OTR (Otro motivo), recalculando las asignaciones afectadas."),
-        ("RF-05", "Asignación Manual por Semana", "El coordinador debe poder fijar manualmente a un funcionario específico en cualquier semana de la planificación (etiqueta 'MANUAL'), con la posibilidad de revertir la asignación a 'Auto' en cualquier momento."),
-        ("RF-06", "Regla de Feriados Nacionales (Diciembre)", "En diciembre, el sistema debe verificar que ningún funcionario repita el mismo feriado chileno (ej. Navidad o Año Nuevo) si ya lo cubrió en el diciembre anterior registrado. Si no hay alternativas viables, asigna y emite una advertencia visual."),
-        ("RF-07", "Previsualización No Destructiva", "El sistema debe permitir visualizar y simular el calendario del mes seleccionado sin alterar el puntero de la rotación ni modificar el historial guardado."),
-        ("RF-08", "Cierre y Guardado de Mes", "El sistema debe permitir consolidar el mes revisado mediante la acción 'Guardar mes'. Esto traslada las asignaciones al historial permanente, actualiza el puntero de rotación y guarda el estado para el mes siguiente."),
-        ("RF-09", "Vista de Calendario Mensual", "El sistema debe ofrecer una vista visual mensual donde se distingan claramente los días de guardia, las excepciones del personal y los fines de semana mediante códigos de color."),
-        ("RF-10", "Exportación a Excel Oficial", "El sistema debe exportar el calendario completo a un archivo Excel (.xlsx) formateado con título, cabeceras de días, celdas de guardia coloreadas y una tabla de leyenda explicativa."),
-        ("RF-11", "Administración de Personal", "El sistema debe permitir incorporar nuevos integrantes, modificar nombres, eliminarlos de la nómina y reordenar sus posiciones en la lista mediante botones de subir/bajar."),
-        ("RF-12", "Configuración de Inicio y Mantenimiento", "El sistema debe permitir definir el funcionario que inicia la rotación y ofrecer la opción de reiniciar el historial con confirmación de seguridad y respaldo previo."),
+    # ── 4. REQUERIMIENTOS FUNCIONALES (LO QUE HACE LA PANTALLA) ─────────────────
+    add_heading(document, "4. Requerimientos Funcionales (Lo que hace cada botón y pantalla)", level=1)
+    add_body(
+        document,
+        "A continuación se describen las capacidades que el sistema ofrece al usuario en su uso cotidiano, explicadas de forma sencilla y directa:"
+    )
+
+    rf_tabla = [
+        ("RF-01", "Elegir Mes y Año", "El usuario puede seleccionar libremente cualquier mes y año en pantalla. El sistema carga de inmediato las semanas correspondientes a ese período."),
+        ("RF-02", "Rotación Automática", "El sistema reparte las semanas de guardia en orden secuencial entre todos los funcionarios de la lista, asegurando que a todos les toque la misma cantidad."),
+        ("RF-03", "Ingresar Ausencias", "El usuario puede ingresar días o períodos de ausencia para cualquier funcionario escribiendo los números (ej. '1-5' o '12, 19') y seleccionando si es Día Administrativo (DA), Vacaciones (FL), Licencia Médica (LIC) u Otro (OTR)."),
+        ("RF-04", "Salto y Devolución Justa", "Si alguien tiene permiso, el programa no le da turno esa semana, le asigna al siguiente compañero libre y guarda a la persona ausente en una 'lista de pendientes' para devolverle la guardia apenas regrese."),
+        ("RF-05", "Cambio Manual de Guardia", "Si dos personas cambiaron turno entre ellas, el usuario puede pulsar 'Cambiar' en la semana, seleccionar al reemplazante y escribir obligatoriamente el motivo del cambio (queda marcado con la etiqueta verde MANUAL)."),
+        ("RF-06", "Botón para Volver a Auto", "Si el usuario se equivoca al cambiar una guardia a mano, puede pulsar el botón '↺ Auto' para que el sistema vuelva a calcular la persona original que le tocaba por lista."),
+        ("RF-07", "Protección Fiestas de Diciembre", "En diciembre, el sistema consulta los feriados nacionales de Chile para evitar que un funcionario repita Navidad o Año Nuevo si ya le tocó hacer guardia en esa misma fiesta el año anterior."),
+        ("RF-08", "Calendario Mensual a Color", "En la pestaña 'Ver Turnos del Mes', el usuario puede ver la cuadrícula completa del mes: días de turno en rojo, ausencias en sus colores y fines de semana sombreados."),
+        ("RF-09", "Exportar a Excel Oficial", "El usuario puede pulsar 'Exportar Excel' para generar un archivo .xlsx con título institucional, nombres completos, días coloreados, tabla de totales por persona y leyenda de colores."),
+        ("RF-10", "Guardar Mes Definitivo", "Al pulsar 'Guardar mes' en Planificación, el programa guarda el período en el historial, avanza la cola de rotación para el siguiente mes y deja todo listo para continuar."),
+        ("RF-11", "Administrar la Lista del Equipo", "En la pestaña Ajustes, el usuario puede agregar nuevas personas con su correo, corregir nombres, reordenar la fila con flechas (⬆/⬇) y dar de baja a quienes dejen la unidad."),
+        ("RF-12", "Avisos por Correo", "Al guardar un mes que contenga cambios manuales, el sistema envía automáticamente un correo formal a todos los funcionarios detallando la semana cambiada y el motivo."),
     ]
-    add_table(document, ["ID", "Nombre del Requerimiento", "Descripción Detallada"], rf_data, widths=[0.8, 2.0, 4.2])
+    add_custom_table(document, ["ID", "Funcionalidad", "¿Qué le permite hacer al usuario en la práctica?"], rf_tabla, widths=[0.8, 1.9, 4.3])
 
-    # 5. Requerimientos No Funcionales
-    add_heading(document, "5. Requerimientos No Funcionales (RNF)", level=1)
-    rnf_data = [
-        ("RNF-01", "Rendimiento y Respuesta", "El recálculo y la previsualización del mes deben ejecutarse en menos de 1 segundo. La generación y guardado del archivo Excel debe completarse en menos de 2 segundos."),
-        ("RNF-02", "Usabilidad e Interfaz", "Interfaz gráfica intuitiva en Modo Oscuro (Dark Mode), con avatares visuales, retroalimentación inmediata, mensajes de estado claros y confirmaciones en operaciones críticas."),
-        ("RNF-03", "Portabilidad y Distribución", "Distribución empaquetada como ejecutable único para Windows (Sistema de Turnos.exe), funcionando de forma inmediata sin necesidad de instalar Python o paquetes adicionales."),
-        ("RNF-04", "Operación Local (Offline)", "El sistema opera al 100% de manera local en el equipo del usuario, sin requerir conexión a internet ni dependencias de servicios externos."),
-        ("RNF-05", "Integridad y Respaldos", "La persistencia se realiza en config.json mediante escritura atómica (archivo temporal previo) para evitar corrupción de datos, creando respaldos fechados en la carpeta /backups en cada guardado."),
-        ("RNF-06", "Mantenibilidad y Arquitectura", "Diseño desacoplado bajo el patrón Modelo-Vista-Controlador (MVC), facilitando el soporte y futuras actualizaciones en la lógica de negocio o en la interfaz."),
+    # ── 5. REQUERIMIENTOS DE OPERACIÓN Y FUNCIONAMIENTO ─────────────────────────
+    add_heading(document, "5. Requerimientos de Operación (¿Qué necesita para funcionar?)", level=1)
+    
+    rnf_tabla = [
+        ("Velocidad Inmediata", "El cálculo de las semanas y la vista previa del calendario toman menos de 1 segundo. La creación de la hoja de Excel toma menos de 2 segundos."),
+        ("Diseño Amigable (Modo Oscuro)", "La pantalla tiene fondo oscuro descansado para la vista, letras grandes, avatares con las iniciales de cada persona y avisos en verde o rojo según corresponda."),
+        ("Sin Instalaciones Complicadas", "Viene como un único archivo ejecutable ('Sistema de Turnos.exe'). No requiere instalar Python ni programas técnicos adicionales en el computador."),
+        ("Trabajo Desconectado (Offline)", "El programa no depende de internet para armar los turnos ni para sacar las planillas de Excel."),
+        ("Seguridad y Respaldo", "El programa guarda su información de forma segura en 'config.json' y crea copias de respaldo automáticas fechadas en la carpeta /backups cada vez que se guarda un mes."),
     ]
-    add_table(document, ["ID", "Categoría", "Criterio de Aceptación"], rnf_data, widths=[0.8, 1.8, 4.4])
+    add_custom_table(document, ["Aspecto Clave", "Condición Práctica"], rnf_tabla, widths=[2.0, 5.0])
 
-    # 6. Reglas de Negocio Clave
-    add_heading(document, "6. Reglas de Negocio Principales (RN)", level=1)
-    rn_data = [
-        ("RN-01", "Jerarquía Estricta de Asignación", "Al evaluar una semana, el sistema aplica la asignación en este orden de prioridad:\n1° Asignación Manual forzada por el usuario.\n2° Semanas fijas de inicio configuradas.\n3° Historial cerrado (salvo excepciones sobrevenidas).\n4° Lista de pendientes (recuperación de turnos adeudados).\n5° Rotación circular secuencial según la lista del personal."),
-        ("RN-02", "Desacoplamiento Exportar vs Guardar", "Exportar a Excel genera un documento para revisión o difusión externa sin alterar el estado del sistema. Solo la acción explícita 'Guardar mes' avanza el puntero de la cola y consolida el historial."),
-        ("RN-03", "Incompatibilidad de Guardia con Ausencias", "Un funcionario que mantenga una excepción activa (DA, FL, LIC, OTR) en los días de una semana no puede recibir el turno de guardia correspondiente a dicho período."),
-    ]
-    add_table(document, ["ID", "Regla de Negocio", "Definición y Comportamiento"], rn_data, widths=[0.8, 2.0, 4.2])
+    # ── 6. REGLAS DE NEGOCIO EN PALABRAS SIMPLES ─────────────────────────────────
+    add_heading(document, "6. Reglas de Negocio en Palabras Simples", level=1)
+    add_body(
+        document,
+        "Estas son las 3 reglas básicas con las que piensa el programa para que todo sea justo:"
+    )
 
-    # 7. Resumen de Aprobación
-    add_heading(document, "7. Control del Documento y Aprobación", level=1)
-    approval_table = document.add_table(rows=3, cols=3)
-    approval_table.alignment = WD_TABLE_ALIGNMENT.CENTER
-    approval_table.style = "Table Grid"
-    set_table_borders(approval_table, color="CBD5E1")
+    add_bullets(document, [
+        "Regla 1 (El orden para elegir quién hace guardia): Para cada semana, el programa revisa en este orden: 1° Si el coordinador fijó a alguien a mano (asignación manual). 2° Si hay semanas fijas de inicio. 3° Si el mes ya estaba guardado en el historial. 4° Si alguien debe turno por haber estado de permiso (lista de pendientes). 5° Si nadie debe turno, le toca al siguiente de la lista en orden circular.",
+        "Regla 2 (Exportar Excel NO es lo mismo que Guardar Mes): Exportar Excel solo crea la hoja para mirar, imprimir o mandar a borrador (puedes exportar cuantas veces quieras y la cuenta no se mueve). Guardar Mes es la firma final que anota el mes en el historial y hace girar la lista para el mes siguiente.",
+        "Regla 3 (Nadie hace guardia estando de permiso): Si una persona tiene anotado un Día Administrativo (DA), Feriado Legal (FL), Licencia Médica (LIC) u Otro (OTR) en los días de una semana, el sistema jamás le asignará guardia en esa semana."
+    ])
 
-    headers_app = ["Rol", "Nombre / Responsable", "Firma y Fecha"]
+    # ── 7. VALIDACIÓN Y APROBACIÓN DEL ALCANCE ───────────────────────────────────
+    add_heading(document, "7. Ficha de Aprobación y Conformidad del Alcance", level=1)
+    add_body(
+        document,
+        "La firma del presente documento acredita que los requerimientos y el alcance aquí descritos representan fielmente las necesidades operativas de la unidad para la gestión de turnos de guardia:"
+    )
+
+    app_table = document.add_table(rows=3, cols=3)
+    app_table.alignment = WD_TABLE_ALIGNMENT.CENTER
+    app_table.style = "Table Grid"
+    set_table_borders(app_table, color="CBD5E1")
+
+    headers_app = ["Rol / Cargo", "Nombre del Responsable", "Firma y Fecha"]
     for i, h in enumerate(headers_app):
-        set_cell_text(approval_table.rows[0].cells[i], h, bold=True, color="FFFFFF", size=9.5, align=WD_ALIGN_PARAGRAPH.CENTER)
-        set_cell_shading(approval_table.rows[0].cells[i], "0F766E")
+        set_cell_text(app_table.rows[0].cells[i], h, bold=True, color="FFFFFF", size=9.5, align=WD_ALIGN_PARAGRAPH.CENTER)
+        set_cell_shading(app_table.rows[0].cells[i], "0F766E")
 
     roles = [
-        ("Elaborado por", "Equipo de Desarrollo / Soporte", ""),
-        ("Aprobado por", "Coordinador / Responsable de Turnos", ""),
+        ("Coordinador de Turnos", "", ""),
+        ("Jefatura de Unidad / Servicio", "", ""),
     ]
     for row_idx, (rol, nom, f) in enumerate(roles, start=1):
-        cells = approval_table.rows[row_idx].cells
-        set_cell_text(cells[0], rol, bold=True, size=9, align=WD_ALIGN_PARAGRAPH.CENTER)
+        cells = app_table.rows[row_idx].cells
+        set_cell_text(cells[0], rol, bold=True, size=9.5, align=WD_ALIGN_PARAGRAPH.CENTER)
         set_cell_shading(cells[0], "F8FAFC")
-        set_cell_text(cells[1], nom, size=9)
-        set_cell_text(cells[2], f, size=9)
+        set_cell_text(cells[1], nom, size=9.5)
+        set_cell_text(cells[2], f, size=9.5)
 
-    for row in approval_table.rows:
-        row.cells[0].width = Inches(2.0)
-        row.cells[1].width = Inches(3.0)
+    for row in app_table.rows:
+        row.cells[0].width = Inches(2.2)
+        row.cells[1].width = Inches(2.8)
         row.cells[2].width = Inches(2.0)
 
     document.save(OUTPUT)
-    print(f"Documento generado exitosamente en: {OUTPUT}")
+    print(f"[OK] Documento de requerimientos generado exitosamente en: {OUTPUT}")
 
 
 if __name__ == "__main__":
-    build_requirements_document()
+    build_word_document()

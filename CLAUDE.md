@@ -39,7 +39,11 @@ assets/                    ← Íconos PNG (success, error, save)
 backups/                   ← Respaldos automáticos fechados de config.json
 config.json                ← Base de datos en JSON (ver sección 4)
 generar_documento.py      ← Genera el documento ejecutivo editable en Word
+generar_manual_pdf.py     ← Genera el manual de usuario oficial en PDF (Chrome Headless)
+generar_requerimientos_word.py ← Genera el documento Word de requerimientos y alcance simple
 Sistema_de_Gestion_de_Turnos.docx ← Documento ejecutivo generado del proyecto
+Manual_de_Usuario_Sistema_de_Turnos.pdf ← Manual de usuario oficial en PDF (8 páginas)
+Requerimientos_del_Sistema_Turnos.docx ← Documento Word de requerimientos y alcance definido
 ```
 
 ---
