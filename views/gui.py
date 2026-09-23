@@ -1,4 +1,5 @@
 import os
+import sys
 import threading
 from datetime import datetime, date
 import tkinter as tk
@@ -22,9 +23,11 @@ class TurnosApp(ctk.CTk):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
+        self.title("Sistema de Turnos")
         self.geometry("1280x700")
         self.minsize(1100, 580)
         self.configure(fg_color=P["bg_app"])
+        self._setup_icon()
 
         # Maximizar automáticamente en pantallas pequeñas (ej: laptops 1366x768)
         try:
@@ -53,6 +56,44 @@ class TurnosApp(ctk.CTk):
         self.load_personal()
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         logger.info("Aplicación Sistema de Turnos iniciada correctamente.")
+
+    def _setup_icon(self):
+        """Configura el icono de la ventana para desarrollo y producción empaquetada."""
+        try:
+            possible_paths = []
+            if hasattr(sys, '_MEIPASS'):
+                possible_paths.append(os.path.join(sys._MEIPASS, "assets", "app_icon.ico"))
+                possible_paths.append(os.path.join(sys._MEIPASS, "assets", "app_icon.png"))
+
+            root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            possible_paths.append(os.path.join(root_dir, "assets", "app_icon.ico"))
+            possible_paths.append(os.path.join(root_dir, "assets", "app_icon.png"))
+
+            if hasattr(self, 'controller') and getattr(self.controller, 'root_path', None):
+                possible_paths.append(os.path.join(self.controller.root_path, "assets", "app_icon.ico"))
+                possible_paths.append(os.path.join(self.controller.root_path, "assets", "app_icon.png"))
+
+            for path in possible_paths:
+                if os.path.exists(path):
+                    if path.endswith(".ico"):
+                        try:
+                            self.iconbitmap(default=path)
+                            return
+                        except Exception:
+                            self.iconbitmap(path)
+                            return
+                    elif path.endswith(".png"):
+                        try:
+                            from PIL import ImageTk, Image
+                            img = Image.open(path)
+                            photo = ImageTk.PhotoImage(img)
+                            self.iconphoto(False, photo)
+                            self._icon_photo_ref = photo
+                            return
+                        except Exception:
+                            pass
+        except Exception as e:
+            logger.warning("No se pudo cargar el icono de la ventana: %s", e)
 
     def _setup_ui(self):
         self.grid_rowconfigure(0, weight=1)
