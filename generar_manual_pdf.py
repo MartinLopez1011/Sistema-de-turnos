@@ -767,6 +767,18 @@ Esta es la duda más común de los usuarios nuevos. Vamos a dejarla 100% clara:
   </ul>
 </div>
 
+<div class="note-box note-tip" style="background-color: #eff6ff; border-left: 5px solid #2563eb; color: #1e3a8a;">
+  <div class="note-title" style="color: #1d4ed8;">📬 Muy Importante: ¿Qué deben hacer los funcionarios con el primer correo?</div>
+  <p style="margin: 4px 0 6px 0; font-size: 9.6pt; color: #1e3a8a;">
+    La primera vez que el sistema envíe una notificación, <strong>es muy probable que el correo llegue a la carpeta de "Spam" o "Correo no deseado"</strong> debido a los filtros de seguridad de Gmail u Outlook.
+  </p>
+  <strong style="color: #0f172a; font-size: 9.6pt;">Pídeles a todos que sigan estos 2 sencillos pasos una sola vez:</strong>
+  <ol style="margin: 4px 0 0 0; padding-left: 18px; font-size: 9.4pt; color: #334155;">
+    <li><strong>Buscar en la carpeta Spam / Correo no deseado:</strong> Abrir el mensaje del sistema y hacer clic en <strong>"No es spam"</strong> (o <em>"Mover a la bandeja de entrada"</em>).</li>
+    <li><strong>Añadir el correo remitente a Contactos:</strong> Guardar esa dirección en la libreta de contactos de su correo. Con esto, los filtros reconocerán al remitente como seguro y todos los avisos futuros llegarán siempre directo a la bandeja principal.</li>
+  </ol>
+</div>
+
 <div class="page-break"></div>
 
 <!-- CAPÍTULO 6: ADMINISTRAR EL PERSONAL -->
@@ -843,6 +855,10 @@ Si un compañero es trasladado o renuncia, pulsa el botón rojo <strong>Eliminar
     <tr>
       <td><strong>"¿Se me pueden borrar los datos si se corta la luz?"</strong></td>
       <td><strong>No.</strong> El programa guarda la información con un sistema de seguridad que nunca toca el archivo original hasta asegurarse de que el nuevo se escribió perfecto. Además, crea respaldos automáticos en la carpeta <code>backups/</code>.</td>
+    </tr>
+    <tr>
+      <td><strong>"Los compañeros me dicen que no les llegó el correo de aviso de guardia"</strong></td>
+      <td>Casi seguro llegó a su carpeta de <strong>Spam o Correo no deseado</strong>. Diles que revisen esa carpeta, abran el correo y pulsen <strong>"No es spam"</strong>. Además, si guardan la dirección en sus contactos, todos los correos futuros les llegarán directo a su Bandeja de Entrada.</td>
     </tr>
     <tr>
       <td><strong>"¿Puedo volver a ver turnos de hace 4 meses?"</strong></td>
