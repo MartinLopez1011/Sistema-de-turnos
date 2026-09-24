@@ -17,6 +17,7 @@ class TabSettings:
         self.settings_status_label = None
         self.person_list_frame = None
         self.person_count_badge = None
+        self.btn_copy_github = None
 
         self._build_ui()
 
@@ -145,7 +146,7 @@ class TabSettings:
             wrapper, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        notif_card.grid(row=5, column=0, sticky="ew", pady=(20, 20))
+        notif_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
         notif_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -226,6 +227,83 @@ class TabSettings:
             text_color=P["text_s"], anchor="w"
         )
         self.notif_status_label.grid(row=2, column=0, columnspan=2, padx=14, pady=(0, 10), sticky="w")
+
+        # ── Card 4: Repositorio GitHub ───────────────────────────────────────
+        github_card = ctk.CTkFrame(
+            wrapper, fg_color=P["bg_card"], corner_radius=12,
+            border_width=1, border_color=P["border"]
+        )
+        github_card.grid(row=6, column=0, sticky="ew", pady=(20, 24))
+        github_card.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            github_card, text="🐙  Repositorio del Proyecto (GitHub)",
+            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            text_color=P["text"], anchor="w"
+        ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
+
+        ctk.CTkLabel(
+            github_card,
+            text="Código fuente oficial, documentación y control de versiones del sistema.",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w"
+        ).grid(row=1, column=0, padx=20, pady=(0, 14), sticky="w")
+
+        link_box = ctk.CTkFrame(
+            github_card, fg_color=P["bg_card2"], corner_radius=8,
+            border_width=1, border_color=P["border"]
+        )
+        link_box.grid(row=2, column=0, padx=20, pady=(0, 20), sticky="ew")
+        link_box.grid_columnconfigure(0, weight=1)
+
+        github_url = "https://github.com/MartinLopez1011/Sistema-de-turnos.git"
+
+        link_lbl = ctk.CTkLabel(
+            link_box, text=github_url,
+            font=ctk.CTkFont(family="Inter", size=12, underline=True),
+            text_color=P["text_a"], anchor="w", cursor="hand2"
+        )
+        link_lbl.grid(row=0, column=0, padx=(14, 10), pady=12, sticky="w")
+        link_lbl.bind("<Button-1>", lambda e: self._open_github())
+
+        btn_box = ctk.CTkFrame(link_box, fg_color="transparent")
+        btn_box.grid(row=0, column=1, padx=(0, 14), pady=10, sticky="e")
+
+        self.btn_copy_github = ctk.CTkButton(
+            btn_box, text="📋  Copiar", command=self._copy_github_link,
+            height=32, width=90, corner_radius=6,
+            font=ctk.CTkFont(family="Inter", size=12),
+            fg_color=P["bg_input"], hover_color=P["border_h"], text_color=P["text"]
+        )
+        self.btn_copy_github.pack(side="left", padx=(0, 8))
+
+        btn_open_github = ctk.CTkButton(
+            btn_box, text="Abrir en GitHub ↗", command=self._open_github,
+            height=32, width=140, corner_radius=6,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            fg_color=P["accent_d"], hover_color=P["accent"]
+        )
+        btn_open_github.pack(side="left")
+
+    def _open_github(self):
+        import webbrowser
+        webbrowser.open_new_tab("https://github.com/MartinLopez1011/Sistema-de-turnos.git")
+
+    def _copy_github_link(self):
+        url = "https://github.com/MartinLopez1011/Sistema-de-turnos.git"
+        try:
+            self.parent.clipboard_clear()
+            self.parent.clipboard_append(url)
+            if hasattr(self, "btn_copy_github") and self.btn_copy_github:
+                self.btn_copy_github.configure(text="✓  Copiado", fg_color=P["green_d"])
+                self.app.after(
+                    2000,
+                    lambda: self.btn_copy_github.configure(text="📋  Copiar", fg_color=P["bg_input"])
+                    if hasattr(self, "btn_copy_github") and self.btn_copy_github
+                    else None
+                )
+        except Exception:
+            pass
 
     def save_starting_person(self):
         person = self.starting_person_var.get()

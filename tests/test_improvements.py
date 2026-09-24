@@ -337,6 +337,28 @@ class ImprovementsTests(unittest.TestCase):
         self.assertEqual(sheet.cell(row=5, column=36).value, 1)  # LIC
         self.assertEqual(sheet.cell(row=5, column=37).value, 0)  # OTR
 
+    def test_tab_settings_github_actions(self):
+        from views.tabs.tab_settings import TabSettings
+        from unittest.mock import patch, MagicMock
+
+        tab_settings = TabSettings.__new__(TabSettings)
+        mock_parent = MagicMock()
+        mock_app = MagicMock()
+        mock_btn = MagicMock()
+
+        tab_settings.parent = mock_parent
+        tab_settings.app = mock_app
+        tab_settings.btn_copy_github = mock_btn
+
+        with patch("webbrowser.open_new_tab") as mock_open:
+            tab_settings._open_github()
+            mock_open.assert_called_once_with("https://github.com/MartinLopez1011/Sistema-de-turnos.git")
+
+        tab_settings._copy_github_link()
+        mock_parent.clipboard_clear.assert_called_once()
+        mock_parent.clipboard_append.assert_called_once_with("https://github.com/MartinLopez1011/Sistema-de-turnos.git")
+        mock_btn.configure.assert_called_once()
+
 
 if __name__ == "__main__":
     unittest.main()
