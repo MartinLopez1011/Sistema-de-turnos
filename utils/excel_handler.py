@@ -104,6 +104,20 @@ class ExcelHandler:
     def save_report(self):
         self.wb.save(self.output_path)
 
+    def close(self):
+        """Cierra el libro de trabajo de openpyxl liberando recursos."""
+        if hasattr(self, 'wb') and self.wb is not None:
+            try:
+                self.wb.close()
+            except Exception:
+                pass
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_val, exc_tb):
+        self.close()
+
     def write_shifts(self, shifts, exceptions, year, month):
         meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
         nombre_mes = meses[month - 1]
@@ -124,15 +138,18 @@ class ExcelHandler:
         )
         bold_font = Font(bold=True)
 
-        # Buscamos la fila de los días
-        days_row_index = None
-        for i, row in enumerate(self.sheet.iter_rows(values_only=True), 1):
-            row_vals = [str(val).strip() if val is not None else "" for val in row]
-            if any(val in ("1", "1.0", "01") for val in row_vals) and \
-               any(val in ("2", "2.0", "02") for val in row_vals) and \
-               any(val in ("3", "3.0", "03") for val in row_vals):
-                days_row_index = i
-                break
+        # Buscamos la fila de los días (row=2 por defecto en template generado)
+        days_row_index = 2
+        r_vals = [str(cell.value).strip() if cell.value is not None else "" for cell in self.sheet[days_row_index]]
+        if not (any(v in ("1", "1.0", "01") for v in r_vals) and any(v in ("2", "2.0", "02") for v in r_vals)):
+            days_row_index = None
+            for i, row in enumerate(self.sheet.iter_rows(values_only=True), 1):
+                row_vals = [str(val).strip() if val is not None else "" for val in row]
+                if any(val in ("1", "1.0", "01") for val in row_vals) and \
+                   any(val in ("2", "2.0", "02") for val in row_vals) and \
+                   any(val in ("3", "3.0", "03") for val in row_vals):
+                    days_row_index = i
+                    break
                 
         if not days_row_index:
             raise Exception("No se encontró la fila con los días del mes (1, 2, 3...)")

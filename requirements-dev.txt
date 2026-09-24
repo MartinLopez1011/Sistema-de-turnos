@@ -1,0 +1,5 @@
+# Dependencias de desarrollo — NO para producción
+-r requirements.txt
+pyinstaller
+pytest
+pytest-mock

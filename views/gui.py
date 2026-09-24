@@ -150,7 +150,25 @@ class TurnosApp(ctk.CTk):
         year, month = self.get_selected_period()
         return f"{year}-{month:02d}"
 
+    def _set_ui_locked(self, locked):
+        """Bloquea o desbloquea los controles interactivos durante operaciones async."""
+        state = "disabled" if locked else "normal"
+        try:
+            # Bloquear selectores de periodo en sidebar
+            for widget in self.tab_plan.parent.winfo_children():
+                if isinstance(widget, ctk.CTkFrame):
+                    for child in widget.winfo_children():
+                        if isinstance(child, ctk.CTkOptionMenu):
+                            child.configure(state=state)
+            # Bloquear botón de excepción y entrada de días
+            if self.tab_plan.days_entry:
+                self.tab_plan.days_entry.configure(state=state)
+        except Exception:
+            pass
+
     def on_period_change(self):
+        if self.is_exporting:
+            return
         if self.active_period_key is not None:
             self.exceptions_by_period[self.active_period_key] = self.exceptions
             self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
@@ -263,6 +281,13 @@ class TurnosApp(ctk.CTk):
             self.tab_plan.save_btn.configure(text="💾  Guardar mes")
 
     def _on_close(self):
+        if self.is_exporting:
+            messagebox.showwarning(
+                "Operación en curso",
+                "Hay una operación de guardado o envío de correo en curso.\nEspera a que termine antes de cerrar.",
+                parent=self
+            )
+            return
         if self.title().startswith("●"):
             if not messagebox.askyesno(
                 "Cambios sin guardar",
@@ -338,41 +363,49 @@ class TurnosApp(ctk.CTk):
             return
 
         self.is_exporting = True
+        self._set_ui_locked(True)
         self.tab_plan.save_btn.configure(state="disabled", text="⏳  Guardando...")
 
         def _commit_and_advance():
-            ok, msg = self.controller.advance_queue(
-                year, month, exceptions_snapshot,
-                manual_assignments=manual_snapshot,
-                manual_motives=motives_snapshot
-            )
-            self.is_exporting = False
-            if not ok:
+            try:
+                ok, msg = self.controller.advance_queue(
+                    year, month, exceptions_snapshot,
+                    manual_assignments=manual_snapshot,
+                    manual_motives=motives_snapshot
+                )
+                if not ok:
+                    self.set_status(f"Error: {msg}", "error")
+                    return
+
+                self.exceptions_by_period[self.active_period_key] = exceptions_snapshot
+                self.manual_assignments_by_period[self.active_period_key] = manual_snapshot
+                self.manual_motives_by_period[self.active_period_key] = motives_snapshot
+                self.calendar_period_override = (year, month)
+                self.mark_clean()
+
+                # Avanzar el selector al siguiente mes
+                next_month = month + 1
+                next_year = year
+                if next_month > 12:
+                    next_month = 1
+                    next_year += 1
+                self.month_var.set(MESES[next_month - 1])
+                self.year_var.set(str(next_year))
+                self.active_period_key = self.get_selected_period_key()
+                self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+                self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
+                self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
+
+                self.tab_plan.refresh_exceptions(self.exceptions)
+                self.refresh_plan_views()
+                self.set_status("Mes guardado en el historial y cola avanzada.", "ok")
+            except Exception as e:
+                logger.error("Error en _commit_and_advance: %s", e, exc_info=True)
+                self.set_status(f"Error inesperado al guardar: {e}", "error")
+            finally:
+                self.is_exporting = False
+                self._set_ui_locked(False)
                 self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
-                self.set_status(f"Error: {msg}", "error")
-                return
-
-            self.exceptions_by_period[self.active_period_key] = exceptions_snapshot
-            self.manual_assignments_by_period[self.active_period_key] = manual_snapshot
-            self.manual_motives_by_period[self.active_period_key] = motives_snapshot
-            self.calendar_period_override = (year, month)
-            self.mark_clean()
-
-            # Avanzar el selector al siguiente mes
-            next_year, next_month = year, month % 12 + 1
-            if next_month == 1:
-                next_year += 1
-            self.month_var.set(MESES[next_month - 1])
-            self.year_var.set(str(next_year))
-            self.active_period_key = self.get_selected_period_key()
-            self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
-            self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
-            self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
-
-            self.tab_plan.refresh_exceptions(self.exceptions)
-            self.refresh_plan_views()
-            self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
-            self.set_status("Mes guardado en el historial y cola avanzada.", "ok")
 
         if not has_manual:
             self.set_status("Guardando el mes en el historial...", "warn")
@@ -406,6 +439,7 @@ class TurnosApp(ctk.CTk):
             def _on_finish():
                 if not success_send:
                     self.is_exporting = False
+                    self._set_ui_locked(False)
                     self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
                     self.set_status(f"Error al enviar correo: {send_msg}", "error")
                     messagebox.showerror(

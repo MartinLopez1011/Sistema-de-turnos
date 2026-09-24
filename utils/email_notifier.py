@@ -5,6 +5,10 @@ import urllib.request
 import urllib.error
 from datetime import datetime
 
+from utils.logger import get_logger
+
+logger = get_logger("email_notifier")
+
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$")
 
 
@@ -81,10 +85,6 @@ def format_plain_text_message(mes_nombre: str, anio: int, cambios: list) -> str:
 
     return "\n".join(lineas)
 
-
-from utils.logger import get_logger
-
-logger = get_logger("email_notifier")
 
 def mask_url(url: str) -> str:
     """Enmascara la URL para evitar registrar IDs o tokens sensibles en archivos de log."""

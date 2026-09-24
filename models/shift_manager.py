@@ -157,6 +157,10 @@ class ShiftManager:
                 os.fsync(f.fileno())
             os.replace(temporary_path, self.config_path)
             logger.debug("Configuración guardada en %s", self.config_path)
+            return True
+        except (OSError, IOError) as e:
+            logger.error("Error al guardar configuración en %s: %s", self.config_path, e)
+            return False
         finally:
             if os.path.exists(temporary_path):
                 try:
@@ -208,6 +212,96 @@ class ShiftManager:
         except Exception as e:
             logger.warning("Error creando backup de config: %s", e)
             return None
+
+    def archive_old_records(self, retention_months=24, archive_dir=None):
+        """
+        Archiva semanas de historial, snapshots y excepciones más antiguas que 
+        retention_months meses en un archivo JSON en la carpeta archives/.
+        Esto evita el crecimiento ilimitado de config.json manteniendo
+        suficiente historial para la rotación y restricciones de feriados.
+        
+        Retorna (exito: bool, num_semanas_archivadas: int, ruta_archivo: str).
+        """
+        if retention_months < 12:
+            raise ValueError("retention_months debe ser al menos 12 para preservar restricciones de feriados.")
+
+        cutoff_date = date.today() - timedelta(days=int(retention_months * 30.4375))
+        cutoff_period_str = f"{cutoff_date.year}-{cutoff_date.month:02d}"
+
+        archived_historial = {}
+        for week_key, person in list(self.historial.items()):
+            try:
+                _, week_end = _parse_week_range(week_key)
+                if week_end < cutoff_date:
+                    archived_historial[week_key] = person
+            except Exception:
+                continue
+
+        archived_snapshots = {}
+        for snap_key, snap_val in list(self.snapshots.items()):
+            if snap_key < cutoff_period_str:
+                archived_snapshots[snap_key] = snap_val
+
+        archived_excepciones = {}
+        for exc_key, exc_val in list(self.excepciones.items()):
+            if exc_key < cutoff_period_str:
+                archived_excepciones[exc_key] = exc_val
+
+        archived_manual = {}
+        for man_key, man_val in list(self.asignaciones_manuales.items()):
+            if man_key < cutoff_period_str:
+                archived_manual[man_key] = man_val
+
+        archived_motivos = {}
+        for mot_key, mot_val in list(self.asignaciones_manuales_motivos.items()):
+            if mot_key < cutoff_period_str:
+                archived_motivos[mot_key] = mot_val
+
+        total_archived = len(archived_historial) + len(archived_snapshots)
+        if total_archived == 0:
+            return True, 0, ""
+
+        config_dir = os.path.dirname(os.path.abspath(self.config_path))
+        target_dir = archive_dir or os.path.join(config_dir, "archives")
+        os.makedirs(target_dir, exist_ok=True)
+
+        archive_filename = f"archive_until_{cutoff_period_str}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.json"
+        archive_path = os.path.join(target_dir, archive_filename)
+
+        archive_payload = {
+            "archived_at": datetime.now().isoformat(),
+            "retention_months": retention_months,
+            "cutoff_date": cutoff_date.isoformat(),
+            "historial": archived_historial,
+            "snapshots": archived_snapshots,
+            "excepciones": archived_excepciones,
+            "asignaciones_manuales": archived_manual,
+            "asignaciones_manuales_motivos": archived_motivos,
+        }
+
+        try:
+            self.create_backup("pre_archive")
+            with open(archive_path, 'w', encoding='utf-8') as f:
+                json.dump(archive_payload, f, indent=2, ensure_ascii=False)
+
+            # Eliminar del estado activo
+            for k in archived_historial:
+                self.historial.pop(k, None)
+            for k in archived_snapshots:
+                self.snapshots.pop(k, None)
+            for k in archived_excepciones:
+                self.excepciones.pop(k, None)
+            for k in archived_manual:
+                self.asignaciones_manuales.pop(k, None)
+            for k in archived_motivos:
+                self.asignaciones_manuales_motivos.pop(k, None)
+
+            self.save_config()
+            logger.info("Archivados %d registros antiguos en %s", total_archived, archive_path)
+            return True, len(archived_historial), archive_path
+        except Exception as e:
+            logger.error("Error durante el archivado de registros antiguos: %s", e, exc_info=True)
+            return False, 0, str(e)
 
     def get_exceptions(self, period_key):
         exceptions = []
@@ -423,12 +517,11 @@ class ShiftManager:
                 return True
         return False
 
-    def generate_shifts(self, year, month, exceptions, state=None,
-                        recalculate_history=False, manual_assignments=None):
-        self.last_warnings = []
+    # ── Helpers extraídos de generate_shifts ───────────────────────────────
 
-        # Normalizar excepciones asegurando que fecha sea date
-        normalized_exceptions = []
+    def _normalize_exceptions(self, exceptions):
+        """Asegura que cada excepción tenga su fecha como date, no str."""
+        normalized = []
         for exc in exceptions:
             f = exc.get('fecha')
             if isinstance(f, str):
@@ -436,20 +529,97 @@ class ShiftManager:
                     f = datetime.strptime(f, '%Y-%m-%d').date()
                 except ValueError:
                     continue
-            normalized_exceptions.append({
+            normalized.append({
                 'persona': exc['persona'],
                 'fecha': f,
                 'tipo': exc['tipo']
             })
-        exceptions = normalized_exceptions
+        return normalized
 
+    def _build_weeks(self, year, month):
+        """Devuelve lista de (start_date, end_date) para cada semana del mes."""
         cal = calendar.Calendar().monthdatescalendar(year, month)
-        weeks = []
-        for week in cal:
-            start_date = week[0]
-            end_date = week[-1]
-            weeks.append((start_date, end_date))
+        return [(week[0], week[-1]) for week in cal]
 
+    def _init_rotation_state(self, year, month, state):
+        """Carga el estado de rotación desde snapshot, estado externo o valores globales."""
+        snapshot_key = f"{year}-{month:02d}"
+        if state is not None:
+            return state["siguiente_id"], state["pendientes"].copy()
+        if snapshot_key in self.snapshots:
+            snap = self.snapshots[snapshot_key]
+            return snap["siguiente_id"], snap["pendientes"].copy()
+        return self.siguiente_id, self.pendientes.copy()
+
+    def _check_week_exception(self, nombre, start_date, end_date, exceptions):
+        """Verifica si una persona tiene excepción en la semana dada.
+        Retorna (has_exception, tipo_excepción)."""
+        for exc in exceptions:
+            if exc['persona'] == nombre and start_date <= exc['fecha'] <= end_date:
+                return True, exc['tipo']
+        return False, ""
+
+    def _try_immutable(self, week_key, start_date, end_date):
+        """Intenta asignar desde el registro de inicio inmutable."""
+        if hasattr(self, 'inicio') and week_key in self.inicio:
+            return {
+                'semana': (start_date, end_date),
+                'persona': self.inicio[week_key],
+                'saltados': []
+            }
+        return None
+
+    def _try_manual_assignment(self, week_key, start_date, end_date,
+                               manual_assignments, skipped, personal_ids,
+                               current_person_index, current_siguiente_id,
+                               current_pendientes):
+        """Intenta asignación manual directa."""
+        if not manual_assignments or week_key not in manual_assignments:
+            return None, current_person_index, current_siguiente_id, current_pendientes
+
+        nombre_manual = manual_assignments[week_key]
+        manual_id = next((p['id'] for p in self.personal if p['nombre'] == nombre_manual), None)
+        if manual_id:
+            current_pendientes = [p for p in current_pendientes if p != manual_id]
+            if personal_ids and personal_ids[current_person_index] == manual_id:
+                current_person_index = (current_person_index + 1) % len(personal_ids)
+                current_siguiente_id = personal_ids[current_person_index]
+
+        shift = {
+            'semana': (start_date, end_date),
+            'persona': nombre_manual,
+            'saltados': skipped.copy(),
+            'es_manual': True
+        }
+        return shift, current_person_index, current_siguiente_id, current_pendientes
+
+    def _try_forced_assignment(self, start_date, end_date, exceptions,
+                               skipped, current_pendientes):
+        """Intenta asignación forzada legacy (FOR en excepciones)."""
+        for exc in exceptions:
+            if start_date <= exc['fecha'] <= end_date and exc['tipo'] == "FOR":
+                nombre_forzado = exc['persona']
+                current_pendientes = [
+                    p for p in current_pendientes
+                    if self.get_person_by_id(p) != nombre_forzado
+                ]
+                shift = {
+                    'semana': (start_date, end_date),
+                    'persona': nombre_forzado,
+                    'saltados': skipped.copy(),
+                    'es_forzado': True
+                }
+                return shift, current_pendientes
+        return None, current_pendientes
+
+    # ── Método principal de generación ─────────────────────────────────────
+
+    def generate_shifts(self, year, month, exceptions, state=None,
+                        recalculate_history=False, manual_assignments=None):
+        self.last_warnings = []
+
+        exceptions = self._normalize_exceptions(exceptions)
+        weeks = self._build_weeks(year, month)
         holiday_restrictions = self._get_holiday_restrictions(year, month, weeks)
 
         shifts = []
@@ -458,15 +628,7 @@ class ShiftManager:
         snapshot_key = f"{year}-{month:02d}"
         if manual_assignments is None:
             manual_assignments = self.asignaciones_manuales.get(snapshot_key, {})
-        if state is not None:
-            current_siguiente_id = state["siguiente_id"]
-            current_pendientes = state["pendientes"].copy()
-        elif snapshot_key in self.snapshots:
-            current_siguiente_id = self.snapshots[snapshot_key]["siguiente_id"]
-            current_pendientes = self.snapshots[snapshot_key]["pendientes"].copy()
-        else:
-            current_siguiente_id = self.siguiente_id
-            current_pendientes = self.pendientes.copy()
+        current_siguiente_id, current_pendientes = self._init_rotation_state(year, month, state)
             
         personal_ids = [p['id'] for p in self.personal]
         personal_id_set = set(personal_ids)
@@ -493,12 +655,9 @@ class ShiftManager:
             blocked_fallback_reason = None
             
             # 2. Respetar inicio inmutable
-            if hasattr(self, 'inicio') and week_key in self.inicio:
-                shifts.append({
-                    'semana': (start_date, end_date),
-                    'persona': self.inicio[week_key],
-                    'saltados': []
-                })
+            immutable_shift = self._try_immutable(week_key, start_date, end_date)
+            if immutable_shift:
+                shifts.append(immutable_shift)
                 continue
                 
             # 3. Un mes cerrado debe conservar exactamente su asignación.
@@ -581,36 +740,27 @@ class ShiftManager:
             skipped_this_week = historical_skipped.copy()
             
             # 3.0 Asignación manual directa (Alternativa 1)
-            if manual_assignments and week_key in manual_assignments:
-                nombre_manual = manual_assignments[week_key]
-                manual_id = next((p['id'] for p in self.personal if p['nombre'] == nombre_manual), None)
-                if manual_id:
-                    current_pendientes = [p for p in current_pendientes if p != manual_id]
-                    if personal_ids and personal_ids[current_person_index] == manual_id:
-                        current_person_index = (current_person_index + 1) % len(personal_ids)
-                        current_siguiente_id = personal_ids[current_person_index]
-                shifts.append({
-                    'semana': (start_date, end_date),
-                    'persona': nombre_manual,
-                    'saltados': skipped_this_week.copy(),
-                    'es_manual': True
-                })
+            manual_shift, current_person_index, current_siguiente_id, current_pendientes = (
+                self._try_manual_assignment(
+                    week_key, start_date, end_date,
+                    manual_assignments, skipped_this_week, personal_ids,
+                    current_person_index, current_siguiente_id,
+                    current_pendientes
+                )
+            )
+            if manual_shift:
+                shifts.append(manual_shift)
                 assigned = True
 
             # 3.0b Intentar asignación forzada legacy (FOR en excepciones)
             if not assigned:
-                for exc in exceptions:
-                    if start_date <= exc['fecha'] <= end_date and exc['tipo'] == "FOR":
-                        nombre_forzado = exc['persona']
-                        current_pendientes = [p for p in current_pendientes if self.get_person_by_id(p) != nombre_forzado]
-                        shifts.append({
-                            'semana': (start_date, end_date),
-                            'persona': nombre_forzado,
-                            'saltados': skipped_this_week.copy(),
-                            'es_forzado': True
-                        })
-                        assigned = True
-                        break
+                forced_shift, current_pendientes = self._try_forced_assignment(
+                    start_date, end_date, exceptions,
+                    skipped_this_week, current_pendientes
+                )
+                if forced_shift:
+                    shifts.append(forced_shift)
+                    assigned = True
             
             # 3. Intentar asignar a pendientes (Opción B)
             new_pendientes = []

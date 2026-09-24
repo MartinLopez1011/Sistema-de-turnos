@@ -82,5 +82,45 @@ class ShiftManagerBackupAndResetTests(unittest.TestCase):
         self.assertEqual(self.manager.siguiente_id, 1)
 
 
+    def test_archive_old_records_rejects_less_than_12_months(self):
+        with self.assertRaises(ValueError):
+            self.manager.archive_old_records(retention_months=6)
+
+    def test_archive_old_records_moves_old_data_and_keeps_recent(self):
+        # Insertar registros muy antiguos (ej. año 2020) y recientes (año 2026)
+        self.manager.historial["2020-01-06_2020-01-12"] = "PERSONA UNO"
+        self.manager.snapshots["2020-01"] = {"siguiente_id": 1, "pendientes": []}
+        self.manager.excepciones["2020-01"] = [{"persona": "PERSONA UNO", "fecha": "2020-01-08", "tipo": "DA"}]
+        self.manager.save_config()
+
+        ok, count, path = self.manager.archive_old_records(retention_months=12)
+        self.assertTrue(ok)
+        self.assertEqual(count, 1)
+        self.assertTrue(os.path.exists(path))
+
+        # Verificar que el registro de 2020 se eliminó de memoria y config
+        self.assertNotIn("2020-01-06_2020-01-12", self.manager.historial)
+        self.assertNotIn("2020-01", self.manager.snapshots)
+        self.assertNotIn("2020-01", self.manager.excepciones)
+
+        # Los registros de 2026 deben permanecer intactos
+        self.assertIn("2026-08-17_2026-08-23", self.manager.historial)
+        self.assertIn("2026-09", self.manager.snapshots)
+
+        # Verificar contenido del archivo de archivo
+        with open(path, "r", encoding="utf-8") as f:
+            archive_data = json.load(f)
+        self.assertIn("2020-01-06_2020-01-12", archive_data["historial"])
+        self.assertIn("2020-01", archive_data["snapshots"])
+
+    def test_archive_old_records_noop_when_no_old_records(self):
+        # Todos los registros actuales son de 2026
+        ok, count, path = self.manager.archive_old_records(retention_months=24)
+        self.assertTrue(ok)
+        self.assertEqual(count, 0)
+        self.assertEqual(path, "")
+
+
 if __name__ == "__main__":
     unittest.main()
+

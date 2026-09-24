@@ -649,7 +649,8 @@ class TabCalendar:
             ):
                 for i, exc in enumerate(self.app.exceptions):
                     if (exc['persona'] == persona and exc['fecha'].day == day and
-                            exc['fecha'].month == active_month and exc['fecha'].year == active_year):
+                            exc['fecha'].month == active_month and exc['fecha'].year == active_year and
+                            exc.get('tipo') == exc_tipo):
                         self.app.remove_exception(i)
                         break
         else:

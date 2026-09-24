@@ -13,14 +13,19 @@ def get_env_file_path():
     return os.path.join(get_root_dir(), ".env")
 
 
+_env_loaded = False
+
+
 def load_env_file(env_path=None):
     """
     Carga variables desde un archivo .env en el diccionario retornado y en os.environ.
     No requiere librerías externas.
     """
+    global _env_loaded
     path = env_path or get_env_file_path()
     env_vars = {}
     if not os.path.isfile(path):
+        _env_loaded = True
         return env_vars
 
     try:
@@ -38,17 +43,20 @@ def load_env_file(env_path=None):
                     os.environ[key] = value
     except Exception:
         pass
+    _env_loaded = True
     return env_vars
 
 
 def get_env_var(key, default=""):
     """
-    Obtiene el valor de una variable desde os.environ o leyendo el .env.
+    Obtiene el valor de una variable desde os.environ o leyendo el .env una sola vez.
     """
+    global _env_loaded
     if key in os.environ:
         return os.environ[key]
-    env_vars = load_env_file()
-    return env_vars.get(key, default)
+    if not _env_loaded:
+        load_env_file()
+    return os.environ.get(key, default)
 
 
 def set_env_var(key, value, env_path=None):

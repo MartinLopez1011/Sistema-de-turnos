@@ -215,14 +215,14 @@ class MainController:
                     export_personal.append({"id": None, "nombre": p_name})
                     existing_names.add(p_name)
 
-            excel_handler = ExcelHandler(dynamic_output, export_personal)
-            excel_handler.load_template()
-            
-            # 3. Escribir los datos
-            excel_handler.write_shifts(shifts, exceptions, year, month)
-            
-            # 4. Guardar archivo
-            excel_handler.save_report()
+            with ExcelHandler(dynamic_output, export_personal) as excel_handler:
+                excel_handler.load_template()
+                
+                # 3. Escribir los datos
+                excel_handler.write_shifts(shifts, exceptions, year, month)
+                
+                # 4. Guardar archivo
+                excel_handler.save_report()
             logger.info("Excel exportado exitosamente a %s", dynamic_output)
             
             if warnings:
