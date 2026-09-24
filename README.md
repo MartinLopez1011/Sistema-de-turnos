@@ -201,20 +201,23 @@ Prefijos reconocidos y omitidos automáticamente en tarjetas reducidas y avatare
 
 ---
 
-## 🚀 Instalación y Uso Rápido
+## 🚀 Distribución y Uso Rápido
 
-### Modo 1: Usuario Final (Ejecutable `.exe` Standalone)
+### Modo 1: Ejecutable Autónomo Standalone (`Sistema de Turnos.exe`) — Recomendado para Funcionarios
 
-No requiere tener Python instalado. Compatible con **Windows 10** y **Windows 11**.
+Diseñado específicamente para computadores de funcionarios y estaciones de trabajo institucionales en **Windows 10** y **Windows 11**. **No requiere permisos de administrador ni asistente de instalación**.
 
-1. Descarga la versión compilada `Sistema de Turnos.exe`.
-2. Ejecuta `Sistema de Turnos.exe`. La aplicación crea automáticamente su carpeta
-   de datos de usuario en `%APPDATA%\Sistema de Turnos`.
-3. Si recibiste un `config.json` inicial, cópialo dentro de
-   `%APPDATA%\Sistema de Turnos` antes del primer uso.
-3. Haz doble clic en `Sistema de Turnos.exe`.
-4. Los archivos Excel, respaldos, auditoría y logs se guardarán en la carpeta de
-   datos de usuario. El ejecutable puede actualizarse sin sobrescribir ese estado.
+1. **Sin Instalación ni Privilegios de Administrador:** Los funcionarios no necesitan solicitar claves de administrador a los departamentos de soporte/TI ni lidiar con bloqueos de políticas de seguridad (UAC).
+2. **Uso Inmediato:** Descarga o copia directamente `dist/Sistema de Turnos.exe` a tu Escritorio, carpeta personal o a un pendrive USB, y haz doble clic para iniciar.
+3. **Persistencia Segura en el Perfil de Usuario:**
+   Tus archivos de datos (`config.json`), respaldos automáticos (`backups/`), auditoría y logs se gestionan automáticamente en la carpeta protegida de tu usuario:
+   ```text
+   %APPDATA%\Sistema de Turnos\
+   ```
+   *Nota:* También soporta **Modo Portable**: si colocas un archivo `config.json` o `.portable` en la misma carpeta del `.exe`, los datos se guardarán localmente junto al ejecutable (ideal para llevar en un pendrive).
+4. **Actualizaciones sin Pérdida de Datos:**
+   Para actualizar a una versión nueva, simplemente reemplaza el archivo `Sistema de Turnos.exe` por el nuevo ejecutable. **Tus turnos históricos, configuraciones, excepciones y respaldos se conservan al 100% de manera automática**.
+5. **Eliminación Limpia:** Si deseas retirar la aplicación, basta con borrar el archivo `Sistema de Turnos.exe` sin dejar entradas en el registro ni requerir desinstaladores.
 
 ---
 
@@ -266,8 +269,11 @@ la **previsualización**, la **exportación** y el **cierre definitivo del mes**
 1. Abre la aplicación.
 2. En la pestaña **📋 Planificación**, selecciona el **mes** y **año**.
 3. Revisa las tarjetas semanales generadas automáticamente.
-4. El sistema utiliza la rotación, los pendientes, los snapshots y el historial
-   para mantener continuidad aunque se consulte un mes futuro.
+4. Al seleccionar cualquier funcionario en el panel, el sistema calcula y muestra la
+   **fecha estimada de su próximo turno proyectado**.
+5. El sistema utiliza la rotación continua, la cola de pendientes, la **regla de descanso
+   mínimo de 4 semanas** (`min_gap_weeks = 4`), la protección anual de feriados chilenos
+   y el historial para mantener absoluta equidad y continuidad.
 
 La previsualización no modifica el historial ni la cola de rotación.
 
@@ -287,23 +293,27 @@ Cuando un funcionario no pueda cubrir determinados días:
 5. Comprueba en la lista de excepciones que los días y el tipo sean correctos.
 
 El sistema recalcula la vista previa y registra como pendiente a quien haya sido
-saltado por una excepción, para que recupere su turno cuando corresponda.
+saltado por una excepción, para que recupere su turno cuando corresponda y cumpla su descanso.
+Cualquier cambio sin guardar se reflejará con el indicador **●** en el título de la ventana.
 
 ### 3. Gestionar una permuta o asignación manual
 
 Para cambiar una semana específica:
 
-1. En la tarjeta de la semana, selecciona **Cambiar Guardia**.
-2. Elige el funcionario que cubrirá el turno.
-3. Ingresa el motivo obligatorio de la modificación.
+1. En la tarjeta de la semana, presiona el botón **✏️ Cambiar**.
+2. Elige el funcionario que cubrirá efectivamente el turno.
+3. Ingresa el **motivo obligatorio** de la modificación (para auditoría y aviso al equipo).
 4. Confirma la asignación.
-5. Revisa que la tarjeta indique que es una asignación manual y que el motivo
-   sea el acordado.
+5. La tarjeta se identificará con la etiqueta verde **📌 MANUAL**. Si deseas revertir
+   el cambio al cálculo automático de la cola, presiona el botón **↺ Auto**.
 
-Las asignaciones manuales quedan registradas en la auditoría. Si existen cambios
-manuales, el sistema intentará enviar una notificación al equipo al cerrar el
-mes. Una falla de correo no revierte el cierre local: la notificación queda en
-la cola de pendientes para reintentarla posteriormente.
+Las asignaciones manuales quedan registradas en la auditoría del sistema. Si existen cambios
+manuales, el sistema enviará automáticamente una notificación por correo al equipo al cerrar el
+mes. Si no hay conexión a internet en ese momento, el cierre local no se anula: la notificación
+queda retenida en la **cola de notificaciones pendientes** para reintentar su envío con un clic.
+
+Si intentas cerrar la ventana teniendo modificaciones sin guardar, el sistema te solicitará
+confirmación de seguridad para evitar pérdida accidental de datos.
 
 ### 4. Revisar el calendario mensual
 
@@ -315,16 +325,16 @@ la cola de pendientes para reintentarla posteriormente.
    - Violeta: FL.
    - Turquesa: LIC.
    - Gris: OTR.
-   - Gris oscuro: fin de semana.
+   - Gris claro: fin de semana.
 4. Confirma que no existan excepciones o asignaciones manuales pendientes de
-   revisión.
+   revisión. Los reportes históricos preservan la participación de ex-funcionarios.
 
 ### 5. Exportar el reporte Excel
 
 1. Con el mes revisado, presiona **📊 Exportar Excel**.
 2. Selecciona la ubicación de destino si la aplicación la solicita.
-3. Abre el archivo `turnos_<Mes>_<Año>.xlsx` y revisa la matriz, los totales y
-   la leyenda de convenciones.
+3. Abre el archivo `turnos_<Mes>_<Año>.xlsx` y revisa la matriz mensual de 31 días,
+   los totales por funcionario y la leyenda oficial.
 
 **Exportar Excel no cierra el mes y no modifica la rotación.** Puede repetirse
 cuantas veces sea necesario para corregir o revisar la presentación.
@@ -341,27 +351,24 @@ Cuando el mes esté aprobado:
 Al cerrar el mes, el sistema:
 
 - Valida las semanas y las asignaciones manuales.
-- Guarda las semanas en el historial.
+- Guarda las semanas en el historial permanente.
 - Genera un snapshot del mes siguiente.
 - Avanza la cola de rotación.
-- Crea un respaldo previo al cambio.
-- Envía una notificación si corresponde.
+- Crea un respaldo automático fechado previo al cambio.
+- Envía una notificación por correo al equipo si hubo cambios manuales (o la retiene en cola si falla la red).
 
 No cierres nuevamente un mes ya cerrado salvo que necesites corregirlo de forma
 controlada y hayas verificado el respaldo disponible.
 
 ### 7. Administrar personal y configuración
 
-En **⚙️ Ajustes** puedes:
+En **⚙️ Ajustes** dispones de 5 áreas operativas:
 
-- Cambiar la persona inicial para futuros cálculos que no tengan historial.
-- Agregar, editar, eliminar y reordenar funcionarios.
-- Registrar o corregir sus correos electrónicos.
-- Configurar y probar el webhook de notificaciones.
-- Crear respaldos manuales.
-- Restaurar un respaldo validado.
-- Consultar los últimos eventos de auditoría.
-- Ver la cantidad de notificaciones pendientes y reintentarlas.
+- **Persona inicial:** Cambiar el punto de inicio para futuros ciclos sin historial previo.
+- **Gestión de Personal (CRUD):** Agregar, editar, eliminar y reordenar funcionarios (botones ⬆ y ⬇).
+- **Notificaciones por Correo:** Configurar la URL del webhook de Google Apps Script y realizar envíos de prueba instantáneos.
+- **Recuperación y Auditoría:** Crear respaldos manuales, restaurar versiones anteriores con protección `pre_restore`, consultar la bitácora de auditoría y reintentar notificaciones acumuladas.
+- **Repositorio GitHub:** Acceso directo al código fuente, con botones para copiar el enlace o abrirlo en el navegador.
 
 Eliminar un funcionario no borra sus turnos históricos. Los nombres que aparecen
 en periodos anteriores se conservan en los reportes y en el historial.
@@ -593,9 +600,8 @@ y registra cambios relevantes en `auditoria`. Antes de cerrar un mes se validan
 las semanas y las asignaciones manuales. Si una notificación falla después del
 cierre, el mes permanece guardado y el error se informa por separado.
 
-Para compilar y generar el instalador:
+Para compilar el ejecutable standalone (`.exe`):
 
 ```powershell
-pyinstaller "Sistema de Turnos.spec"
-iscc installer\SistemaDeTurnos.iss
+.\.venv\Scripts\python.exe -m PyInstaller "Sistema de Turnos.spec"
 ```

@@ -2,13 +2,13 @@
 <html lang="es">
 <head>
 <meta charset="UTF-8">
-<title>Manual de Usuario Fácil — Sistema de Turnos</title>
+<title>Manual de Usuario — Sistema de Gestión de Turnos</title>
 <style>
   @page {
     size: letter portrait;
-    margin: 1.6cm 1.5cm 1.8cm 1.5cm;
+    margin: 1.5cm 1.4cm 1.6cm 1.4cm;
     @top-right {
-      content: "Guía de Usuario — Sistema de Turnos";
+      content: "Sistema de Turnos — Manual Oficial de Usuario";
       font-size: 8pt;
       font-family: 'Segoe UI', Arial, sans-serif;
       color: #64748b;
@@ -30,8 +30,8 @@
     font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, Roboto, Helvetica, Arial, sans-serif;
     color: #1e293b;
     background-color: #ffffff;
-    line-height: 1.6;
-    font-size: 10.5pt;
+    line-height: 1.55;
+    font-size: 10pt;
     margin: 0;
     padding: 0;
   }
@@ -45,117 +45,117 @@
     justify-content: space-between;
     padding: 2.2cm 1.2cm 1.2cm 1.2cm;
     border-left: 10px solid #0f766e;
-    padding-left: 2cm;
-    background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 40%);
+    padding-left: 1.8cm;
+    background: linear-gradient(180deg, #f0fdfa 0%, #ffffff 45%);
   }
 
   .badge-app {
     display: inline-block;
     background-color: #0f766e;
     color: #ffffff;
-    font-size: 9.5pt;
+    font-size: 9pt;
     font-weight: bold;
     letter-spacing: 1px;
     text-transform: uppercase;
-    padding: 6px 14px;
+    padding: 5px 12px;
     border-radius: 6px;
-    margin-bottom: 20px;
+    margin-bottom: 18px;
   }
 
   .cover-title {
-    font-size: 27pt;
+    font-size: 26pt;
     font-weight: 800;
     color: #0f172a;
     line-height: 1.2;
-    margin: 0 0 14px 0;
+    margin: 0 0 12px 0;
   }
 
   .cover-subtitle {
-    font-size: 13.5pt;
+    font-size: 13pt;
     font-weight: 400;
     color: #334155;
     line-height: 1.5;
-    margin: 0 0 25px 0;
-    max-width: 600px;
+    margin: 0 0 22px 0;
+    max-width: 620px;
   }
 
   .summary-card-hero {
     background-color: #ffffff;
     border: 2px solid #ccfbf1;
     border-radius: 12px;
-    padding: 20px 24px;
+    padding: 18px 22px;
     box-shadow: 0 4px 15px rgba(15, 118, 110, 0.08);
-    margin-bottom: 25px;
+    margin-bottom: 22px;
   }
 
   .summary-card-hero h3 {
-    margin: 0 0 10px 0;
+    margin: 0 0 8px 0;
     color: #0f766e;
-    font-size: 13pt;
+    font-size: 12.5pt;
     font-weight: 700;
   }
 
   .summary-card-hero p {
     margin: 0;
     color: #475569;
-    font-size: 10pt;
+    font-size: 9.8pt;
     line-height: 1.5;
   }
 
   .cover-footer {
     border-top: 1px solid #e2e8f0;
-    padding-top: 15px;
-    font-size: 9pt;
+    padding-top: 14px;
+    font-size: 8.8pt;
     color: #64748b;
   }
 
   /* Encabezados claros */
   h1 {
     color: #0f766e;
-    font-size: 17pt;
+    font-size: 16pt;
     font-weight: 800;
     border-bottom: 2px solid #99f6e4;
-    padding-bottom: 6px;
-    margin-top: 24pt;
-    margin-bottom: 12pt;
+    padding-bottom: 5px;
+    margin-top: 20pt;
+    margin-bottom: 10pt;
     page-break-after: avoid;
     break-after: avoid;
   }
 
   h2 {
     color: #1e293b;
-    font-size: 13pt;
+    font-size: 12.5pt;
     font-weight: 700;
-    margin-top: 16pt;
-    margin-bottom: 8pt;
+    margin-top: 14pt;
+    margin-bottom: 6pt;
     page-break-after: avoid;
     break-after: avoid;
   }
 
   h3 {
     color: #334155;
-    font-size: 11pt;
+    font-size: 10.5pt;
     font-weight: 700;
-    margin-top: 12pt;
-    margin-bottom: 6pt;
+    margin-top: 10pt;
+    margin-bottom: 4pt;
     page-break-after: avoid;
     break-after: avoid;
   }
 
   p {
-    margin: 0 0 10pt 0;
+    margin: 0 0 9pt 0;
     text-align: left;
   }
 
-  /* Cajas de Pasos Numerados Grandes */
+  /* Cajas de Pasos Numerados */
   .step-box {
     display: flex;
-    gap: 16px;
+    gap: 14px;
     background-color: #f8fafc;
     border: 1px solid #e2e8f0;
     border-radius: 10px;
-    padding: 14px 18px;
-    margin-bottom: 14px;
+    padding: 12px 16px;
+    margin-bottom: 12px;
     align-items: flex-start;
     page-break-inside: avoid;
   }
@@ -163,10 +163,10 @@
   .step-number {
     background-color: #0f766e;
     color: #ffffff;
-    font-size: 14pt;
+    font-size: 13pt;
     font-weight: 800;
-    min-width: 36px;
-    height: 36px;
+    min-width: 32px;
+    height: 32px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -180,23 +180,23 @@
 
   .step-content strong {
     display: block;
-    font-size: 11pt;
+    font-size: 10.5pt;
     color: #0f172a;
-    margin-bottom: 4px;
+    margin-bottom: 3px;
   }
 
   .step-content p {
     margin: 0;
-    font-size: 9.8pt;
+    font-size: 9.4pt;
     color: #475569;
   }
 
   /* Cajas de Aviso / Notas */
   .note-box {
     border-radius: 8px;
-    padding: 12px 16px;
-    margin: 14pt 0;
-    font-size: 9.8pt;
+    padding: 11px 15px;
+    margin: 12pt 0;
+    font-size: 9.4pt;
     page-break-inside: avoid;
   }
 
@@ -218,6 +218,12 @@
     color: #991b1b;
   }
 
+  .note-info {
+    background-color: #eff6ff;
+    border-left: 5px solid #3b82f6;
+    color: #1e3a8a;
+  }
+
   .note-title {
     font-weight: bold;
     margin-bottom: 4px;
@@ -230,14 +236,14 @@
   .scope-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin: 14pt 0;
+    gap: 12px;
+    margin: 12pt 0;
     page-break-inside: avoid;
   }
 
   .scope-card {
-    border-radius: 10px;
-    padding: 16px;
+    border-radius: 9px;
+    padding: 14px;
   }
 
   .scope-yes {
@@ -252,7 +258,7 @@
 
   .scope-card h3 {
     margin-top: 0;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     display: flex;
     align-items: center;
     gap: 6px;
@@ -263,21 +269,21 @@
 
   .scope-card ul {
     margin: 0;
-    padding-left: 18px;
-    font-size: 9.5pt;
+    padding-left: 16px;
+    font-size: 9.2pt;
     color: #334155;
   }
 
   .scope-card li {
-    margin-bottom: 6px;
+    margin-bottom: 5px;
   }
 
   /* Tablas sencillas */
   table.simple-table {
     width: 100%;
     border-collapse: collapse;
-    margin: 12pt 0;
-    font-size: 9.5pt;
+    margin: 11pt 0;
+    font-size: 9.2pt;
     page-break-inside: avoid;
   }
 
@@ -285,13 +291,13 @@
     background-color: #0f766e;
     color: #ffffff;
     font-weight: 700;
-    padding: 8px 12px;
+    padding: 7px 10px;
     text-align: left;
     border: 1px solid #0d9488;
   }
 
   table.simple-table td {
-    padding: 8px 12px;
+    padding: 7px 10px;
     border: 1px solid #e2e8f0;
     vertical-align: middle;
   }
@@ -305,7 +311,7 @@
     display: inline-block;
     padding: 3px 8px;
     border-radius: 5px;
-    font-size: 8.5pt;
+    font-size: 8.3pt;
     font-weight: bold;
     color: #ffffff;
     white-space: nowrap;
@@ -315,12 +321,15 @@
   .btn-change { background-color: #252d34; border: 1px solid #475569; color: #f1f5f3; }
   .btn-excel { background-color: #059669; }
   .btn-auto { background-color: #374151; color: #fca5a5; }
+  .btn-orange { background-color: #d97706; color: #ffffff; }
+  .btn-accent { background-color: #0f766e; color: #ffffff; }
+  .btn-card2 { background-color: #252d34; border: 1px solid #475569; color: #f1f5f3; }
 
   .badge-color {
     display: inline-block;
-    padding: 2px 7px;
+    padding: 2px 6px;
     border-radius: 4px;
-    font-size: 8pt;
+    font-size: 7.8pt;
     font-weight: bold;
     color: #ffffff;
     margin-right: 4px;
@@ -332,6 +341,7 @@
   .col-lic { background-color: #0e7490; }
   .col-otr { background-color: #374151; }
   .col-fin { background-color: #64748b; }
+  .col-for { background-color: #059669; }
 
   /* Ilustración sencilla de pantalla */
   .screen-mock {
@@ -339,9 +349,9 @@
     color: #f1f5f3;
     border-radius: 8px;
     border: 1px solid #303a40;
-    padding: 14px;
-    margin: 14pt 0;
-    font-size: 9pt;
+    padding: 12px;
+    margin: 12pt 0;
+    font-size: 8.8pt;
     page-break-inside: avoid;
   }
 
@@ -349,8 +359,8 @@
     display: flex;
     justify-content: space-between;
     border-bottom: 1px solid #252d34;
-    padding-bottom: 6px;
-    margin-bottom: 10px;
+    padding-bottom: 5px;
+    margin-bottom: 9px;
     font-weight: bold;
     color: #57c7b5;
   }
@@ -358,14 +368,14 @@
   .tabs-bar {
     display: flex;
     gap: 6px;
-    margin-bottom: 12px;
+    margin-bottom: 10px;
   }
 
   .tab-pill {
     background-color: #1c2228;
-    padding: 5px 12px;
+    padding: 4px 10px;
     border-radius: 4px;
-    font-size: 8pt;
+    font-size: 7.8pt;
     color: #91a0a5;
     font-weight: bold;
   }
@@ -379,8 +389,20 @@
     background-color: #1c2228;
     border: 1px solid #303a40;
     border-radius: 6px;
-    padding: 10px 12px;
-    margin-bottom: 8px;
+    padding: 9px 11px;
+    margin-bottom: 7px;
+  }
+
+  .audit-mock {
+    background-color: #0a0d10;
+    color: #a7f3d0;
+    font-family: 'Consolas', 'Courier New', monospace;
+    font-size: 8pt;
+    border-radius: 6px;
+    padding: 8px 12px;
+    border: 1px solid #1e293b;
+    margin: 8pt 0;
+    line-height: 1.4;
   }
 
   .page-break {
@@ -394,24 +416,24 @@
 <!-- PORTADA AMIGABLE -->
 <div class="cover-box">
   <div>
-    <div class="badge-app">Manual Rápido para el Usuario</div>
+    <div class="badge-app">Manual Oficial de Usuario · Versión Actualizada</div>
     <div class="cover-title">Sistema de Gestión de Turnos</div>
     <div class="cover-subtitle">
-      Guía paso a paso y fácil de entender para organizar las guardias de turno de tu equipo, registrar permisos y sacar la hoja de Excel sin complicaciones.
+      Guía paso a paso, visual y fácil de entender para organizar las guardias de turno de tu equipo, registrar permisos, exportar a Excel, restaurar respaldos y gestionar avisos sin complicaciones.
     </div>
 
     <div class="summary-card-hero">
       <h3>¿Qué es este programa y para qué sirve?</h3>
       <p>
-        Es un programa muy sencillo diseñado para que <strong>nunca más tengas que calcular los turnos a mano</strong> ni pelear con fechas. 
-        El sistema sabe a quién le toca la guardia cada semana de forma justa y equitativa, salta automáticamente a las personas que estén con vacaciones o permiso, y te entrega una <strong>planilla de Excel lista para imprimir y firmar</strong> con un solo clic.
+        Es una aplicación moderna y segura diseñada para que <strong>nunca más tengas que calcular los turnos a mano</strong> ni preocuparte por olvidos o injusticias. 
+        El sistema sabe a quién le toca la guardia cada semana de forma equitativa, respeta un <strong>descanso mínimo garantizado de 4 semanas</strong> entre turnos, salta automáticamente a personas con vacaciones o licencias para reasignarlas cuando vuelvan, protege los feriados patrios y de fin de año, y te entrega una <strong>planilla de Excel lista para imprimir y firmar</strong> con un solo clic. Además, incluye <strong>respaldos seguros con 1 clic</strong> y protección total ante fallas de internet.
       </p>
     </div>
   </div>
 
   <div class="cover-footer">
-    <strong>Guía Oficial de Usuario</strong> · Versión Simple · Fecha de actualización: 23 de septiembre de 2026<br>
-    <em>Diseñado para que cualquier persona pueda usarlo sin conocimientos de computación.</em>
+    <strong>Guía Oficial de Usuario</strong> · Versión Ejecutiva y Operativa · Fecha de actualización: 24 de septiembre de 2026<br>
+    <em>Diseñado para que cualquier persona pueda usarlo con absoluta confianza, sin necesidad de conocimientos de informática.</em>
   </div>
 </div>
 
@@ -419,16 +441,19 @@
 <h1>1. Resumen en 1 Minuto: ¿Qué hace el programa?</h1>
 
 <p>
-Imagina que los funcionarios del equipo están sentados en una mesa redonda. Cada semana, la guardia pasa a la siguiente persona en el orden de la lista.
+Imagina que los funcionarios del equipo están sentados en una mesa redonda de turnos. Cada semana, la guardia pasa de forma ordenada a la siguiente persona disponible de la lista.
 </p>
 <p>
-<strong>¿Qué hace el programa por ti?</strong>
+<strong>¿Qué hace el programa por ti automáticamente?</strong>
 </p>
 <ul>
-  <li><strong>Lleva la cuenta por ti:</strong> Sabe exactamente a quién le toca cada semana para que nadie trabaje el doble ni nadie se quede sin hacer turno.</li>
-  <li><strong>Respeta los permisos y vacaciones:</strong> Si alguien pide un Día Administrativo (<span class="badge-color col-da">DA</span>), se va de vacaciones (<span class="badge-color col-fl">FL</span>) o tiene licencia médica (<span class="badge-color col-lic">LIC</span>), el programa no le da turno esa semana, busca al siguiente libre, y <em>le guarda su turno</em> para devolvérselo cuando regrese.</li>
-  <li><strong>Cuida las fiestas de fin de año:</strong> En diciembre, se asegura de que si alguien trabajó en Navidad o Año Nuevo el año pasado, este año no le toque repetir la misma fecha.</li>
-  <li><strong>Entrega el informe en Excel:</strong> Con un solo botón te genera la hoja con colores, títulos y los totales de cada funcionario lista para entregar a la jefatura.</li>
+  <li><strong>Lleva la cuenta perfecta por ti:</strong> Sabe exactamente a quién le toca cada semana para que nadie trabaje el doble ni nadie se quede sin cumplir su turno.</li>
+  <li><strong>Respeta los permisos y vacaciones:</strong> Si alguien tiene un Día Administrativo (<span class="badge-color col-da">DA</span>), vacaciones (<span class="badge-color col-fl">FL</span>) o licencia médica (<span class="badge-color col-lic">LIC</span>), el programa no le asigna turno esa semana, busca al siguiente libre, y <em>le guarda su turno en la lista de pendientes</em> para devolvérselo apenas regrese.</li>
+  <li><strong>Garantiza descanso digno (Regla de 4 semanas):</strong> El algoritmo impide que un mismo funcionario repita guardia en un lapso menor a 4 semanas, incluso si estaba pendiente de recuperar un turno o tras asignaciones de reemplazo, evitando la fatiga laboral.</li>
+  <li><strong>Cuida las festividades anuales de Chile:</strong> En Fiestas Patrias, Navidad y Año Nuevo, el sistema revisa el año anterior para asegurar que quien cubrió esa fecha especial no tenga que repetirla en años consecutivos.</li>
+  <li><strong>Entrega el informe oficial en Excel:</strong> Con un solo clic genera una planilla con colores, títulos, nombres completos y el total de turnos y permisos de cada uno, lista para imprimir en hoja horizontal tamaño carta.</li>
+  <li><strong>Protección total ante cortes de internet:</strong> Si guardas el mes y no tienes internet en ese momento, el sistema guarda tus datos de forma segura y almacena los correos de aviso en una cola de espera para enviarlos luego con el botón <em>Reintentar</em>.</li>
+  <li><strong>Tranquilidad con respaldos y auditoría:</strong> Si cometes un error grave, puedes volver a un estado anterior con un solo clic gracias a la herramienta de restauración integrada.</li>
 </ul>
 
 <h2>El Alcance: ¿Qué hace y qué no hace el sistema?</h2>
@@ -438,21 +463,24 @@ Imagina que los funcionarios del equipo están sentados en una mesa redonda. Cad
     <h3>✔ Lo que SÍ hace el programa</h3>
     <ul>
       <li>Calcula las semanas de lunes a domingo de todo el mes.</li>
-      <li>Permite cambiar manualmente a alguien si hicieron una permuta o cambio de turno de palabra.</li>
-      <li>Crea el archivo Excel con el calendario de todo el mes.</li>
-      <li>Guarda la historia de los meses pasados para no perder la cuenta.</li>
-      <li>Avisa por correo a los funcionarios si hubo un cambio forzado de última hora.</li>
-      <li>Funciona de forma rápida y segura en tu computador.</li>
+      <li>Calcula el próximo turno estimado para cada funcionario.</li>
+      <li>Permite cambiar manualmente una guardia exigiendo un motivo para auditoría.</li>
+      <li>Crea el archivo Excel mensual configurado para imprimir en 1 página de ancho.</li>
+      <li>Conserva el historial de turnos de ex-funcionarios aunque hayan sido dados de baja.</li>
+      <li>Avisa por correo al equipo cuando hay cambios manuales de guardia.</li>
+      <li>Permite crear y restaurar copias de seguridad desde la misma ventana.</li>
+      <li>Almacena de forma aislada y segura los datos en la carpeta de usuario del computador.</li>
     </ul>
   </div>
 
   <div class="scope-card scope-no">
     <h3>✖ Lo que NO hace (ni necesitas)</h3>
     <ul>
-      <li><strong>No necesitas internet</strong> para calcular los turnos ni para sacar la hoja de Excel.</li>
-      <li><strong>No necesitas usuario ni contraseña:</strong> Lo abres y ya puedes trabajar.</li>
-      <li><strong>No borra nada por error:</strong> Si te equivocas de mes, los meses anteriores ya guardados no se modifican.</li>
-      <li><strong>No sobreescribe tus archivos abiertos:</strong> Te avisa con claridad si algo falta.</li>
+      <li><strong>No necesitas internet constante:</strong> Funciona 100% offline para calcular, planificar y sacar tus archivos Excel.</li>
+      <li><strong>No requiere claves ni contraseñas:</strong> Lo abres y puedes trabajar de inmediato sin demoras.</li>
+      <li><strong>No borra datos al reinstalar:</strong> La base de datos reside en la carpeta de datos del usuario (<code>%APPDATA%</code>), protegida ante actualizaciones del programa.</li>
+      <li><strong>No permite sobrecargas de turnos:</strong> Bloquea guardias dobles en menos de 4 semanas.</li>
+      <li><strong>No pierde correos por caídas de red:</strong> Los retiene en cola hasta que decidas reintentar el despacho.</li>
     </ul>
   </div>
 </div>
@@ -460,48 +488,70 @@ Imagina que los funcionarios del equipo están sentados en una mesa redonda. Cad
 <div class="note-box note-tip">
   <div class="note-title">💡 La Regla de Oro: En 3 simples pasos</div>
   <strong>1.</strong> Eliges el mes y agregas si alguien tiene vacaciones o permiso.<br>
-  <strong>2.</strong> Miras cómo quedó la lista de semanas y sacas el Excel.<br>
+  <strong>2.</strong> Miras cómo quedó la lista de semanas y sacas el Excel para revisión.<br>
   <strong>3.</strong> Cuando esté todo listo y aprobado, pulsas el botón verde <strong>Guardar mes</strong>.
 </div>
 
 <div class="page-break"></div>
 
 <!-- CAPÍTULO 2: CÓMO ABRIR Y EMPEZAR -->
-<h1>2. ¿Cómo abrir el programa y primeros pasos?</h1>
+<h1>2. ¿Cómo abrir el programa y dar los primeros pasos?</h1>
+
+<p>
+El sistema está diseñado específicamente como un <strong>ejecutable directo y autónomo (<code>Sistema de Turnos.exe</code>)</strong>. 
+Pensando en la realidad laboral de los funcionarios públicos e institucionales, <strong>no requiere instalación, no modifica el registro de Windows ni solicita claves de Administrador de TI</strong>.
+</p>
+
+<div class="note-box note-tip">
+  <div class="note-title">⭐ Ventajas del Diseño Autónomo (.exe directo)</div>
+  <ul>
+    <li><strong>Cero instalación y cero trabas de permisos:</strong> Los funcionarios no necesitan permisos de administrador ni lidiar con bloqueos de seguridad de TI. Funciona en cualquier computador de trabajo con una cuenta estándar.</li>
+    <li><strong>Máxima comodidad y portabilidad:</strong> Puedes guardar el archivo en tu Escritorio, en Documentos o llevarlo en un pendrive USB para usarlo donde sea necesario.</li>
+    <li><strong>Tus datos 100% protegidos y permanentes:</strong> Todos tus turnos históricos, configuraciones y respaldos se almacenan automáticamente en tu perfil protegido de usuario (<code>%APPDATA%\Sistema de Turnos\</code>). Al actualizar o mover el <code>.exe</code>, nunca se pierde ningún dato.</li>
+  </ul>
+</div>
+
+<h2>Pasos para Comenzar a Usarlo</h2>
 
 <div class="step-box">
   <div class="step-number">1</div>
   <div class="step-content">
-    <strong>Abre la carpeta del programa</strong>
-    <p>Busca la carpeta en tu computador donde guardaste el sistema (por ejemplo, en Documentos o en el Escritorio).</p>
+    <strong>Ubica el archivo ejecutable</strong>
+    <p>Descarga o copia el archivo <code>Sistema de Turnos.exe</code> en el lugar de tu preferencia (por ejemplo, en el <em>Escritorio</em> o en tu carpeta de <em>Documentos</em>).</p>
   </div>
 </div>
 
 <div class="step-box">
   <div class="step-number">2</div>
   <div class="step-content">
-    <strong>Haz doble clic en: Sistema de Turnos.exe</strong>
-    <p>Es la aplicación con el ícono del calendario. Espera un par de segundos y se abrirá la ventana en tu pantalla.</p>
+    <strong>Haz doble clic para abrir la aplicación</strong>
+    <p>El programa se iniciará de inmediato en modo oscuro, con su ícono oficial en la barra de tareas, listo para trabajar de inmediato sin asistentes de instalación.</p>
   </div>
 </div>
 
 <div class="step-box">
   <div class="step-number">3</div>
   <div class="step-content">
-    <strong>Verás 3 pestañas principales en la parte de arriba:</strong>
-    <p>
-      • <strong>📋 Planificación:</strong> Es donde se prepara el mes y se registran permisos.<br>
-      • <strong>📅 Ver Turnos del Mes:</strong> Es donde ves el calendario completo y sacas el Excel.<br>
-      • <strong>⚙ Ajustes:</strong> Es donde ves la lista de compañeros y sus correos.
-    </p>
+    <strong>Tus datos se gestionan solos y seguros</strong>
+    <p>En el primer inicio, el sistema carga automáticamente la plantilla de funcionarios y crea tu espacio de trabajo seguro en tu perfil de usuario. Todo lo que planifiques se respalda en tiempo real.</p>
   </div>
 </div>
+
+<h2>Las 3 Pestañas Principales del Programa</h2>
+<p>
+Al abrir la aplicación verás una barra superior con 3 pestañas principales:
+</p>
+<ul>
+  <li><strong>📋 Planificación:</strong> Es donde se prepara el mes, se consultan proyecciones de turno, se registran licencias o permisos, se hacen permutas y se aprueba el cierre del mes.</li>
+  <li><strong>📅 Ver Turnos del Mes:</strong> Es la vista de calendario en cuadrícula con chips de color y el botón verde para exportar la planilla oficial a Excel.</li>
+  <li><strong>⚙ Ajustes:</strong> Es el centro de control para administrar al personal, verificar el estado del correo, crear respaldos, restaurar versiones anteriores y revisar la auditoría.</li>
+</ul>
 
 <!-- DIBUJO DE LA PANTALLA -->
 <div class="screen-mock">
   <div class="screen-header">
-    <span>🗓 Sistema de Turnos (Vista Principal)</span>
-    <span>Ventana Principal</span>
+    <span>● Sistema de Turnos — Planificación (Modo Oscuro)</span>
+    <span style="font-size: 7.5pt; color: #a7f3d0;">● Cambios pendientes indicados en título</span>
   </div>
 
   <div class="tabs-bar">
@@ -510,37 +560,51 @@ Imagina que los funcionarios del equipo están sentados en una mesa redonda. Cad
     <div class="tab-pill">⚙ Ajustes</div>
   </div>
 
-  <div style="display: grid; grid-template-columns: 200px 1fr; gap: 10px;">
+  <div style="display: grid; grid-template-columns: 210px 1fr; gap: 10px;">
     <div style="background: #171b20; padding: 10px; border-radius: 6px;">
-      <strong style="color: #57c7b5; font-size: 8pt;">1. ELEGIR MES</strong><br>
-      <div style="background: #252d34; padding: 4px; margin: 4px 0 8px 0; border-radius: 4px;">Septiembre 2026</div>
+      <strong style="color: #57c7b5; font-size: 8pt;">1. PERIODO Y PROYECCIÓN</strong><br>
+      <div style="background: #252d34; padding: 4px; margin: 4px 0 6px 0; border-radius: 4px;">Octubre 2026</div>
+      <div style="font-size: 7.5pt; color: #6ee7b7; margin-bottom: 8px;">Próximo turno: ~ 12/10/2026</div>
 
       <strong style="color: #57c7b5; font-size: 8pt;">2. AGREGAR PERMISO</strong><br>
-      <div style="font-size: 7.5pt; color: #91a0a5; margin-bottom: 4px;">Seleccionar persona y días:</div>
+      <div style="font-size: 7.5pt; color: #91a0a5; margin-bottom: 3px;">Persona y días del mes:</div>
       <div style="background: #252d34; padding: 4px; margin-bottom: 6px; border-radius: 4px;">Ej: 1-5 o 12, 19</div>
       <div class="btn-sample btn-save" style="width: 100%; text-align: center; font-size: 7.5pt;">＋ Añadir Permiso</div>
     </div>
 
     <div>
       <div class="mock-card">
-        <strong style="color: #8de1d2; font-size: 8.5pt;">📅 Semana 1 (07/09 al 13/09)</strong>
+        <div style="display: flex; justify-content: space-between;">
+          <strong style="color: #8de1d2; font-size: 8.5pt;">📅 Semana 1 (05/10 al 11/10)</strong>
+          <span style="background: #0f766e; color: #fff; font-size: 7pt; padding: 2px 6px; border-radius: 4px;">AUTOMÁTICO</span>
+        </div>
         <div style="margin-top: 4px; font-weight: bold; color: #6ee7b7;">Le toca a: PRO VEGA NATALIA</div>
+        <div style="text-align: right; margin-top: 4px;">
+          <span class="btn-sample btn-change" style="font-size: 7.5pt;">✏️ Cambiar</span>
+        </div>
       </div>
       <div class="mock-card">
-        <strong style="color: #8de1d2; font-size: 8.5pt;">📅 Semana 2 (14/09 al 20/09)</strong>
-        <div style="margin-top: 4px; font-weight: bold; color: #6ee7b7;">Le toca a: PRO TAPIA KARINA</div>
+        <div style="display: flex; justify-content: space-between;">
+          <strong style="color: #8de1d2; font-size: 8.5pt;">📅 Semana 2 (12/10 al 18/10)</strong>
+          <span style="background: #059669; color: #fff; font-size: 7pt; padding: 2px 6px; border-radius: 4px;">📌 MANUAL</span>
+        </div>
+        <div style="margin-top: 4px; font-weight: bold; color: #6ee7b7;">Le toca a: SBC VALENZUELA JORGE</div>
+        <div style="font-size: 7.5pt; color: #94a3b8; font-style: italic;">Motivo: Permuta acordada por curso institucional</div>
       </div>
-      <div style="text-align: right; margin-top: 6px;">
-        <span class="btn-sample btn-save" style="padding: 6px 14px;">💾 Guardar mes</span>
+      <div style="text-align: right; margin-top: 8px;">
+        <span class="btn-sample btn-save" style="padding: 6px 14px; font-size: 8.5pt;">💾 Guardar mes</span>
       </div>
     </div>
   </div>
 </div>
 
-<div class="note-box note-warn">
-  <div class="note-title">⚠️ Importante para cuidar tus datos</div>
-  En esa misma carpeta verás un archivo llamado <code>config.json</code>. 
-  <strong>Ese archivo es el "cuaderno" donde el programa anota todo.</strong> No lo borres ni le cambies el nombre para que el programa siempre recuerde los turnos anteriores.
+<div class="note-box note-info">
+  <div class="note-title">📁 ¿Dónde se guardan mis datos y configuraciones?</div>
+  <p style="margin: 0; font-size: 9.2pt;">
+    En la versión estándar de Windows, tus datos se guardan en la carpeta segura de tu usuario:<br>
+    <code>%APPDATA%\Sistema de Turnos\</code> (contiene <code>config.json</code>, la carpeta de copias <code>backups/</code>, el registro de auditoría y la bitácora <code>turnos.log</code>).<br>
+    Esto garantiza que si actualizas o reinstalas la aplicación en el futuro, <strong>nunca se borre tu información ni tus turnos históricos</strong>.
+  </p>
 </div>
 
 <div class="page-break"></div>
@@ -549,56 +613,91 @@ Imagina que los funcionarios del equipo están sentados en una mesa redonda. Cad
 <h1>3. Cómo preparar el mes (Pestaña "Planificación")</h1>
 
 <p>
-Esta es la pestaña que más vas a usar. Sigue estos pasos en orden:
+Esta es la pestaña principal de trabajo diario del encargado. Sigue estos pasos en orden:
 </p>
 
-<h2>Paso 1: Elige el Mes y el Año</h2>
+<h2>Paso 1: Elige el Mes y Año (con Proyección de Próximo Turno)</h2>
 <p>
-En el costado izquierdo, elige el <strong>mes</strong> y el <strong>año</strong> que quieres planificar. Al hacerlo, el programa te mostrará inmediatamente las semanas del mes en el panel derecho.
+En el costado izquierdo, elige el <strong>mes</strong> y el <strong>año</strong> que deseas planificar.
 </p>
+<ul>
+  <li>El programa mostrará de inmediato las semanas calculadas en el panel derecho.</li>
+  <li><strong>Indicador Dinámico:</strong> Al seleccionar a cualquier funcionario en el menú, el programa te indicará en qué fecha aproximada está proyectado su próximo turno de guardia, facilitando responder consultas del personal al instante.</li>
+</ul>
 
-<h2>Paso 2: Marca si alguien tiene permiso o vacaciones</h2>
+<h2>Paso 2: Registra permisos, vacaciones y licencias</h2>
 <p>
-Si sabes que un compañero no va a estar disponible:
+Si un compañero te comunica que no estará disponible en determinadas fechas:
 </p>
 <ol>
-  <li>En <strong>Persona</strong>, selecciona el nombre del funcionario.</li>
-  <li>En <strong>Días del mes</strong>, escribe los días que va a faltar:
+  <li>En el campo <strong>Persona</strong>, selecciona su nombre.</li>
+  <li>En <strong>Días del mes</strong>, escribe los días en que estará ausente:
     <ul>
-      <li>Si es un solo día: escribe <span style="background: #f1f5f9; padding: 2px 5px; font-weight: bold;">15</span></li>
-      <li>Si son varios días sueltos: escribe <span style="background: #f1f5f9; padding: 2px 5px; font-weight: bold;">12, 19, 25</span></li>
-      <li>Si es un período continuo de vacaciones: escribe <span style="background: #f1f5f9; padding: 2px 5px; font-weight: bold;">1-15</span> (del 1 al 15)</li>
+      <li>Un solo día suelto: por ejemplo <code>15</code></li>
+      <li>Varios días discontinuos: por ejemplo <code>12, 19, 25</code></li>
+      <li>Un rango de vacaciones continuas: por ejemplo <code>1-15</code> (del día 1 al 15)</li>
+      <li>Combinaciones mixtas: por ejemplo <code>1-5, 12, 20-25</code></li>
     </ul>
   </li>
-  <li>Elige el botón del tipo de ausencia:
+  <li>Elige el botón correspondiente al tipo de ausencia:
     <div style="margin: 6px 0;">
-      <span class="badge-color col-da">DA</span> <strong>Día Administrativo</strong> (Permiso personal con goce de sueldo)<br>
+      <span class="badge-color col-da">DA</span> <strong>Día Administrativo</strong> (Permiso reglamentario)<br>
       <span class="badge-color col-fl">FL</span> <strong>Feriado Legal</strong> (Vacaciones anuales)<br>
-      <span class="badge-color col-lic">LIC</span> <strong>Licencia Médica</strong> (Reposo por salud)<br>
+      <span class="badge-color col-lic">LIC</span> <strong>Licencia Médica</strong> (Reposo de salud)<br>
       <span class="badge-color col-otr">OTR</span> <strong>Otro</strong> (Comisión de servicio, duelo, etc.)
     </div>
   </li>
   <li>Presiona el botón verde <strong>＋ Añadir</strong>.</li>
 </ol>
 <p>
-<em>¿Qué pasa de inmediato?</em> El programa recalcula las semanas. Si a esa persona le tocaba guardia mientras estaba de permiso, el programa se la quita, pone a otro compañero disponible y deja anotado que a la persona ausente se le debe ese turno para devolvérselo cuando regrese.
+<strong>¿Qué hace el sistema al instante?</strong> Recalcula las semanas de inmediato. Si a esa persona le correspondía hacer turno en esas fechas, la retira de la guardia, asigna al siguiente compañero disponible y anota a la persona ausente en la <em>lista de pendientes</em> para devolverle su turno apenas se reintegre.
 </p>
 
-<h2>Paso 3: ¿Qué pasa si hicieron un cambio o permuta de palabra?</h2>
+<h2>Paso 3: Permutas y Cambios Manuales de Guardia</h2>
 <p>
-A veces dos compañeros acuerdan cambiarse la guardia entre ellos. Para reflejarlo en el programa:
+Si dos compañeros acordaron cambiar su guardia o se requiere designar a un reemplazo específico:
 </p>
 <ol>
-  <li>En la tarjeta de la semana que quieres cambiar, pulsa el botón <span class="btn-sample btn-change">✏️ Cambiar</span>.</li>
-  <li>Elige quién va a hacer la guardia en la lista desplegable.</li>
-  <li><strong>Escribe el motivo del cambio</strong> (ejemplo: <em>"Permuta autorizada por asuntos familiares"</em>).</li>
-  <li>Pulsa <strong>Asignar Guardia</strong>.</li>
-  <li>La tarjeta se marcará con una etiqueta verde que dice <strong>📌 MANUAL</strong>.</li>
+  <li>En la tarjeta de la semana respectiva, presiona el botón <span class="btn-sample btn-change">✏️ Cambiar</span>.</li>
+  <li>Selecciona en la lista desplegable quién cubrirá efectivamente la guardia.</li>
+  <li><strong>Escribe el motivo del cambio (Obligatorio):</strong> El programa exige registrar una justificación breve (ej: <em>"Permuta autorizada por motivos personales"</em>). Esto queda asentado en la auditoría y se incluye en el aviso al equipo.</li>
+  <li>Presiona <strong>Asignar Guardia</strong>.</li>
+  <li>La tarjeta mostrará la etiqueta verde distintiva <strong>📌 MANUAL</strong>.</li>
 </ol>
 
 <div class="note-box note-tip">
-  <div class="note-title">💡 ¿Te equivocaste al cambiarlo a mano?</div>
-  Si pulsas el botón <span class="btn-sample btn-auto">↺ Auto</span> que aparece en la tarjeta, el programa borra el cambio forzado y vuelve a calcular automáticamente la persona que le tocaba por lista.
+  <div class="note-title">💡 ¿Deseas revertir un cambio manual?</div>
+  Si pulsas el botón <span class="btn-sample btn-auto">↺ Auto</span> en esa tarjeta, el sistema descarta la asignación forzada y vuelve a calcular automáticamente la persona que correspondía por rotación natural.
+</div>
+
+<h2>Reglas Inteligentes de Equidad y Descanso del Motor</h2>
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th style="width: 32%;">Regla Algorítmica</th>
+      <th>¿Cómo protege a los funcionarios?</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>Enfriamiento de 4 Semanas<br>(<code>min_gap_weeks = 4</code>)</strong></td>
+      <td>Ningún funcionario puede recibir dos turnos con una distancia menor a 4 semanas entre sí. Incluso si a la persona le correspondía recuperar un turno pendiente o tras reemplazos forzados, el motor esperará hasta que cumpla su periodo de descanso.</td>
+    </tr>
+    <tr>
+      <td><strong>Feriados Chilenos Anuales</strong></td>
+      <td>El sistema analiza los feriados nacionales (Fiestas Patrias, Navidad y Año Nuevo). Si un funcionario trabajó en uno de estos festivos el año anterior, el sistema impide que repita esa misma fecha al año siguiente.</td>
+    </tr>
+    <tr>
+      <td><strong>Cola Circular Equitativa</strong></td>
+      <td>La rotación avanza secuencialmente. Nadie se queda sin hacer turno y nadie hace más guardias que sus pares a lo largo del año.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div class="note-box note-warn">
+  <div class="note-title">● Indicador de cambios sin guardar y protección al salir</div>
+  Si modificas permisos o cambias guardias manualmente, la barra de título de la aplicación mostrará un punto antes del nombre: <strong>● Sistema de Turnos</strong>.<br>
+  Si intentas cerrar la ventana teniendo cambios sin guardar, el sistema te mostrará una alerta para que no pierdas tu trabajo por accidente.
 </div>
 
 <div class="page-break"></div>
@@ -607,20 +706,20 @@ A veces dos compañeros acuerdan cambiarse la guardia entre ellos. Para reflejar
 <h1>4. Cómo ver el calendario y sacar la hoja de Excel</h1>
 
 <p>
-Haz clic en la segunda pestaña arriba: <strong>📅 Ver Turnos del Mes</strong>.
+Haz clic en la segunda pestaña superior: <strong>📅 Ver Turnos del Mes</strong>.
 </p>
 
-<h2>¿Qué vas a ver aquí?</h2>
+<h2>La Cuadrícula Mensual a Todo Color</h2>
 <p>
-Verás una cuadrícula mensual como un calendario grande donde cada fila es una persona y cada columna es un día del 1 al 31:
+Verás una tabla visual de todo el mes donde cada fila representa a un funcionario y cada columna es un día del 1 al 31:
 </p>
 
 <table class="simple-table">
   <thead>
     <tr>
-      <th style="width: 25%;">Color o Símbolo</th>
-      <th style="width: 25%;">Nombre</th>
-      <th>¿Qué significa en la práctica?</th>
+      <th style="width: 26%;">Muestra de Color</th>
+      <th style="width: 24%;">Concepto</th>
+      <th>Significado en el calendario</th>
     </tr>
   </thead>
   <tbody>
@@ -630,56 +729,67 @@ Verás una cuadrícula mensual como un calendario grande donde cada fila es una 
       <td>Esa persona está de guardia esa semana (días en rojo).</td>
     </tr>
     <tr>
-      <td><span class="badge-color col-da">Naranja DA</span></td>
+      <td><span class="badge-color col-da">■ Naranja DA</span></td>
       <td><strong>Día Administrativo</strong></td>
-      <td>Ese día tiene permiso administrativo.</td>
+      <td>Permiso con goce de remuneraciones otorgado ese día.</td>
     </tr>
     <tr>
-      <td><span class="badge-color col-fl">Violeta FL</span></td>
+      <td><span class="badge-color col-fl">■ Violeta FL</span></td>
       <td><strong>Feriado Legal</strong></td>
-      <td>Ese día está de vacaciones.</td>
+      <td>Día correspondiente a vacaciones anuales.</td>
     </tr>
     <tr>
-      <td><span class="badge-color col-lic">Turquesa LIC</span></td>
+      <td><span class="badge-color col-lic">■ Turquesa LIC</span></td>
       <td><strong>Licencia Médica</strong></td>
-      <td>Ese día está con reposo médico.</td>
+      <td>Día con reposo justificado por certificado médico.</td>
     </tr>
     <tr>
-      <td><span class="badge-color col-fin">Gris Claro</span></td>
+      <td><span class="badge-color col-otr">■ Gris Azul OTR</span></td>
+      <td><strong>Otro Permiso</strong></td>
+      <td>Comisión de servicio, duelo, capacitación, etc.</td>
+    </tr>
+    <tr>
+      <td><span class="badge-color col-fin">■ Gris Claro</span></td>
       <td><strong>Fin de Semana</strong></td>
-      <td>Son los días sábado y domingo.</td>
+      <td>Días sábado y domingo para rápida orientación visual.</td>
     </tr>
   </tbody>
 </table>
 
-<h2>Cómo sacar la hoja de Excel para imprimir:</h2>
+<h2>Pasos para Exportar el Reporte Oficial en Excel</h2>
+
 <div class="step-box">
   <div class="step-number">1</div>
   <div class="step-content">
-    <strong>Revisa que el mes sea el correcto</strong>
-    <p>Usa los botones <strong>‹ Anterior</strong> o <strong>Siguiente ›</strong> si necesitas cambiar de mes, o pulsa <strong>Hoy</strong> para volver al actual.</p>
+    <strong>Verifica el mes deseado en el calendario</strong>
+    <p>Usa los botones <strong>‹ Anterior</strong> o <strong>Siguiente ›</strong> para desplazarte entre meses, o pulsa <strong>Hoy</strong> para volver al actual.</p>
   </div>
 </div>
 
 <div class="step-box">
   <div class="step-number">2</div>
   <div class="step-content">
-    <strong>Pulsa el botón verde: 📊 Exportar Excel</strong>
-    <p>Está arriba a la derecha de la barra de navegación del calendario.</p>
+    <strong>Presiona el botón verde: 📊 Exportar Excel</strong>
+    <p>Ubicado arriba a la derecha de la barra de navegación del calendario.</p>
   </div>
 </div>
 
 <div class="step-box">
   <div class="step-number">3</div>
   <div class="step-content">
-    <strong>Elige dónde guardarlo y pulsa "Guardar"</strong>
-    <p>El programa te sugiere un nombre claro como <code>turnos_Septiembre_2026.xlsx</code>. Puedes guardarlo en tu Escritorio o donde prefieras.</p>
+    <strong>Elige la carpeta donde guardarlo</strong>
+    <p>El programa te propondrá un nombre estandarizado (ej: <code>turnos_Octubre_2026.xlsx</code>). Puedes guardarlo en el Escritorio o en tu carpeta de informes.</p>
   </div>
 </div>
 
 <div class="note-box note-tip">
-  <div class="note-title">📄 El archivo Excel ya viene listo para imprimir</div>
-  El Excel viene con título formal, los nombres completos de todos los funcionarios, las columnas finales con el total de turnos de cada uno y la leyenda explicativa al pie. Está configurado de forma horizontal (apaisado) para que al imprimirlo no se corten las hojas.
+  <div class="note-title">📄 Características de la Planilla Excel Generada</div>
+  <ul>
+    <li><strong>Listo para firmar:</strong> Viene con encabezado formal, membrete institucional y la cuadrícula completa del mes.</li>
+    <li><strong>Impresión perfecta en 1 página:</strong> Configurado en orientación horizontal (Landscape Carta) ajustado exactamente a 1 página de ancho (sin cortar columnas).</li>
+    <li><strong>Totales automáticos por persona:</strong> Al costado derecho incluye columnas con el total acumulado del mes: <code>TURNOS</code>, <code>DA</code>, <code>FL</code>, <code>LIC</code> y <code>OTR</code>.</li>
+    <li><strong>Respeto por el historial:</strong> Si consultas o exportas un mes del pasado donde participó un compañero que hoy ya no está en el equipo, su nombre y sus turnos aparecerán intactos en el reporte.</li>
+  </ul>
 </div>
 
 <div class="page-break"></div>
@@ -688,157 +798,204 @@ Verás una cuadrícula mensual como un calendario grande donde cada fila es una 
 <h1>5. Cuándo y cómo pulsar "Guardar mes"</h1>
 
 <p>
-Esta es la duda más común de los usuarios nuevos. Vamos a dejarla 100% clara:
+Esta es la distinción más importante para operar el sistema con total tranquilidad:
 </p>
 
-<h2>¿Cuál es la diferencia entre "Exportar Excel" y "Guardar mes"?</h2>
+<h2>Diferencia entre "Exportar Excel" y "Guardar mes"</h2>
 
 <table class="simple-table">
   <thead>
     <tr>
-      <th style="width: 30%;">Acción</th>
-      <th style="width: 35%;">¿Qué hace?</th>
-      <th>¿Cambia la cuenta de turnos?</th>
+      <th style="width: 28%;">Acción</th>
+      <th style="width: 38%;">¿Qué hace exactamente?</th>
+      <th>¿Afecta la cuenta de turnos?</th>
     </tr>
   </thead>
   <tbody>
     <tr>
       <td><strong>📊 Exportar Excel</strong></td>
-      <td>Crea un archivo Excel para mostrarlo, imprimirlo o revisarlo con el equipo.</td>
-      <td><strong>NO.</strong> Puedes exportar 20 veces si quieres y la cola de turnos no se mueve ni se altera nada.</td>
+      <td>Crea un archivo Excel para mostrarlo a la jefatura, imprimirlo o revisarlo en reunión.</td>
+      <td><strong>NO afecta nada.</strong> Puedes exportar tantas veces como desees sin alterar la rotación ni el historial.</td>
     </tr>
     <tr>
       <td><strong>💾 Guardar mes</strong></td>
-      <td>Es la <strong>firma definitiva</strong>. Le dice al programa: <em>"Este mes está cerrado y aprobado"</em>.</td>
-      <td><strong>SÍ.</strong> Anota este mes en el historial y hace girar la rueda para que el próximo mes empiece quien corresponde.</td>
+      <td>Es el <strong>cierre oficial y definitivo</strong> del periodo. Confirma que la planificación fue aprobada.</td>
+      <td><strong>SÍ.</strong> Anota este mes en el historial permanente y avanza la rueda de turnos para el próximo mes.</td>
     </tr>
   </tbody>
 </table>
 
-<h2>Pasos para Guardar el Mes con Seguridad:</h2>
+<h2>Pasos para Guardar el Mes con Total Seguridad</h2>
 <ol>
   <li>Ve a la pestaña <strong>📋 Planificación</strong>.</li>
-  <li>Revisa que todas las semanas estén como deben ser.</li>
-  <li>Pulsa el botón verde grande abajo a la derecha: <strong>💾 Guardar mes</strong>.</li>
-  <li>El programa te mostrará una ventana preguntando: <em>"¿Deseas guardar este mes en el historial?"</em>.</li>
-  <li>Pulsa <strong>Sí</strong>.</li>
-  <li>¡Listo! El programa guardará todo de forma segura y cambiará automáticamente al siguiente mes para que puedas seguir trabajando si lo necesitas.</li>
+  <li>Revisa que todas las semanas del mes tengan asignada a la persona correcta.</li>
+  <li>Presiona el botón verde inferior derecho: <strong>💾 Guardar mes</strong>.</li>
+  <li>Aparecerá una ventana de confirmación mostrando el resumen del mes. Pulsa <strong>Sí</strong>.</li>
+  <li>El sistema creará una copia de respaldo automática previa, registrará el historial, generará el snapshot del mes siguiente y avanzará al próximo periodo.</li>
 </ol>
 
-<div class="note-box note-alert">
-  <div class="note-title">⚠️ Si hiciste cambios manuales de guardia</div>
-  Si cambiaste a mano alguna guardia con el botón <em>✏️ Cambiar</em>, al guardar el mes el programa:
-  <ul style="margin: 6px 0 0 0; padding-left: 18px;">
-    <li>Comprobará que tengas conexión a internet.</li>
-    <li>Comprobará que todos los funcionarios tengan su correo anotado en Ajustes.</li>
-    <li><strong>Enviará automáticamente un correo a todo el equipo</strong> avisando el cambio y el motivo que escribiste para que todos estén enterados.</li>
-  </ul>
-</div>
-
-<div class="note-box note-tip" style="background-color: #eff6ff; border-left: 5px solid #2563eb; color: #1e3a8a;">
-  <div class="note-title" style="color: #1d4ed8;">📬 Muy Importante: ¿Qué deben hacer los funcionarios con el primer correo?</div>
-  <p style="margin: 4px 0 6px 0; font-size: 9.6pt; color: #1e3a8a;">
-    La primera vez que el sistema envíe una notificación, <strong>es muy probable que el correo llegue a la carpeta de "Spam" o "Correo no deseado"</strong> debido a los filtros de seguridad de Gmail u Outlook.
-  </p>
-  <strong style="color: #0f172a; font-size: 9.6pt;">Pídeles a todos que sigan estos 2 sencillos pasos una sola vez:</strong>
-  <ol style="margin: 4px 0 0 0; padding-left: 18px; font-size: 9.4pt; color: #334155;">
-    <li><strong>Buscar en la carpeta Spam / Correo no deseado:</strong> Abrir el mensaje del sistema y hacer clic en <strong>"No es spam"</strong> (o <em>"Mover a la bandeja de entrada"</em>).</li>
-    <li><strong>Añadir el correo remitente a Contactos:</strong> Guardar esa dirección en la libreta de contactos de su correo. Con esto, los filtros reconocerán al remitente como seguro y todos los avisos futuros llegarán siempre directo a la bandeja principal.</li>
-  </ol>
-</div>
-
-<div class="page-break"></div>
-
-<!-- CAPÍTULO 6: ADMINISTRAR EL PERSONAL -->
-<h1>6. Cómo agregar o cambiar compañeros (Pestaña "Ajustes")</h1>
-
+<h2>¿Qué pasa con los correos si hubo cambios manuales?</h2>
 <p>
-En la pestaña <strong>⚙ Ajustes</strong> puedes gestionar al equipo de trabajo de forma muy intuitiva:
-</p>
-
-<h2>1. Agregar un nuevo funcionario al equipo</h2>
-<ol>
-  <li>Haz clic en el botón verde <strong>＋ Añadir Persona</strong>.</li>
-  <li>Escribe su <strong>Nombre Completo</strong> (ejemplo: <code>COM PEREZ JUAN</code> o <code>PRO SOTO MARIA</code>).</li>
-  <li>Escribe su <strong>Correo Electrónico</strong> (ejemplo: <code>juan.perez@institucion.cl</code>).</li>
-  <li>Pulsa <strong>Guardar</strong>. La persona se agregará automáticamente al final de la lista.</li>
-</ol>
-
-<h2>2. Modificar el nombre o correo de alguien</h2>
-<p>
-Si alguien cambió de correo o hubo un error en su nombre:
-</p>
-<ol>
-  <li>Busca su nombre en la lista de personal.</li>
-  <li>Pulsa el botón <strong>Editar</strong> a su derecha.</li>
-  <li>Corrige los datos y pulsa <strong>Guardar</strong>.</li>
-</ol>
-<p>
-<em>Tranquilidad:</em> Si cambias un nombre, el programa actualiza automáticamente todos los turnos anteriores para que los nombres en el historial queden impecables.
-</p>
-
-<h2>3. Cambiar el orden de la fila de turnos</h2>
-<p>
-Al lado de cada persona verás dos flechitas:
+Si en ese mes se realizaron cambios manuales o permutas con el botón <em>✏️ Cambiar</em>:
 </p>
 <ul>
-  <li><strong>⬆ (Subir):</strong> Adelanta a esa persona una posición en la rotación.</li>
-  <li><strong>⬇ (Bajar):</strong> Retrasa a esa persona una posición en la rotación.</li>
+  <li>El sistema preparará automáticamente un correo electrónico estructurado detallando la semana modificada, quién debía hacer turno, quién lo reemplazó y el motivo justificado.</li>
+  <li>Despacha el mensaje a todo el equipo mediante el servicio serverless de Google Apps Script.</li>
 </ul>
 
-<h2>4. Dar de baja a alguien que se fue del equipo</h2>
-<p>
-Si un compañero es trasladado o renuncia, pulsa el botón rojo <strong>Eliminar</strong> junto a su nombre.
-</p>
-<div class="note-box note-tip">
-  <div class="note-title">💡 ¿Qué pasa con los turnos que ya hizo en meses pasados?</div>
-  <strong>No se pierden.</strong> El programa conserva todo su historial en los meses ya cerrados para que los reportes viejos sigan siendo reales. Solo dejará de convocarlo para los meses futuros.
+<div class="note-box note-alert">
+  <div class="note-title">🛡️ ¿Qué pasa si se corta el internet al momento de guardar?</div>
+  <strong>Tu trabajo nunca se pierde.</strong> El sistema aplica la regla de resiliencia:<br>
+  1. El mes se guarda y se cierra de forma 100% exitosa en la base de datos local de tu computador.<br>
+  2. La notificación por correo no se descarta; se almacena de forma segura en la <strong>Cola de Notificaciones Pendientes</strong>.<br>
+  3. En la pestaña <strong>Ajustes</strong> verás el indicador: <span style="font-weight: bold; color: #b45309;">Notificaciones pendientes: 1</span>.<br>
+  4. Cuando vuelva la conexión a internet, simplemente pulsas el botón <strong>Reintentar notificaciones</strong> y listo.
+</div>
+
+<div class="note-box note-info">
+  <div class="note-title">📬 Primeros correos: Consejos contra la carpeta de Spam</div>
+  Al comenzar a usar el sistema, los filtros de correo de Gmail u Outlook pueden enviar la primera notificación a la carpeta <strong>Spam o Correo no deseado</strong>.<br>
+  Pide a los funcionarios que sigan estos 2 pasos una sola vez:<br>
+  1. Abrir el mensaje en Spam y pulsar <strong>"No es spam"</strong>.<br>
+  2. Agregar la dirección del correo a su lista de <strong>Contactos</strong>. Así, todos los avisos futuros llegarán siempre directo a la Bandeja de Entrada.
 </div>
 
 <div class="page-break"></div>
 
-<!-- CAPÍTULO 7: PREGUNTAS FRECUENTES -->
-<h1>7. Preguntas Frecuentes y Solución de Dudas</h1>
+<!-- CAPÍTULO 6: ADMINISTRAR EL PERSONAL Y SEGURIDAD -->
+<h1>6. Personal, Respaldos y Seguridad (Pestaña "Ajustes")</h1>
+
+<p>
+En la pestaña <strong>⚙ Ajustes</strong> dispones de un centro de control integral dividido en 5 tarjetas claras:
+</p>
+
+<h2>1. Persona inicial de la rotación</h2>
+<p>
+Permite definir quién iniciará la rueda de turnos si vas a arrancar un ciclo nuevo que no tenga meses históricos anteriores. Selecciona al funcionario y pulsa <strong>Guardar punto de inicio</strong>.
+</p>
+
+<h2>2. Gestión de Personal (Dotación del Equipo)</h2>
+<ul>
+  <li><strong>Agregar persona:</strong> Pulsa el botón verde <strong>＋ Añadir Persona</strong>, ingresa su nombre estandarizado (ej: <code>COM PEREZ JUAN</code>) y su correo electrónico institucional.</li>
+  <li><strong>Editar datos:</strong> Pulsa <strong>Editar</strong> junto al funcionario para actualizar su nombre o cambiar su correo. Los turnos históricos conservarán la concordancia.</li>
+  <li><strong>Modificar orden de rotación:</strong> Usa los botones <strong>⬆</strong> (Subir) y <strong>⬇</strong> (Bajar) para cambiar la posición de un compañero en la fila de turnos.</li>
+  <li><strong>Dar de baja (Eliminar):</strong> Si alguien se retira del equipo, pulsa <strong>Eliminar</strong>. El sistema lo quita de las planificaciones futuras, pero <strong>mantiene intacto todo su historial</strong> en los meses ya cerrados.</li>
+</ul>
+
+<h2>3. Notificaciones por Correo (Webhook Serverless)</h2>
+<ul>
+  <li>Muestra el indicador de conexión (<strong>● Conectado</strong> en verde o <strong>○ No configurado</strong> en naranja).</li>
+  <li><strong>Prueba de Envío:</strong> Puedes escribir tu correo en la casilla y presionar <strong>✉ Probar Envío</strong> para comprobar en 3 segundos que los correos salgan de forma impecable.</li>
+</ul>
+
+<h2>4. Recuperación, Respaldos y Auditoría (¡Novedad de Seguridad!)</h2>
+<p>
+Esta sección te brinda total tranquilidad ante cualquier eventualidad o equivocación:
+</p>
 
 <table class="simple-table">
   <thead>
     <tr>
-      <th style="width: 35%;">Pregunta o Problema</th>
-      <th>¿Qué debo hacer? (Solución sencilla)</th>
+      <th style="width: 28%;">Herramienta</th>
+      <th>¿Para qué sirve y cómo se utiliza?</th>
     </tr>
   </thead>
   <tbody>
     <tr>
-      <td><strong>"El programa me dice que no puede guardar el Excel porque está abierto"</strong></td>
-      <td>Tienes el archivo Excel abierto en tu pantalla. Ciérralo en Excel y vuelve a presionar el botón <strong>Exportar Excel</strong> en el programa.</td>
+      <td><span class="btn-sample btn-accent">Crear respaldo</span></td>
+      <td>Genera una copia de seguridad manual inmediata de todos tus datos en la carpeta <code>backups/</code> con fecha y hora. Es muy recomendable pulsarlo antes de hacer cambios grandes en el personal.</td>
     </tr>
     <tr>
-      <td><strong>"Quiero cambiar una persona de una guardia pero no sé por qué"</strong></td>
-      <td>El programa te pide obligatoriamente escribir un motivo para que quede constancia y transparencia para la jefatura y los compañeros.</td>
+      <td><span class="btn-sample btn-orange">Restaurar respaldo</span></td>
+      <td>Si cometiste un error grave al guardar un mes o al editar datos, pulsa este botón. Se abrirá una lista con los respaldos disponibles. Seleccionas el que deseas y el sistema <strong>crea automáticamente una copia previa de seguridad (pre_restore)</strong> antes de restaurar, protegiéndote contra cualquier equivocación.</td>
     </tr>
     <tr>
-      <td><strong>"Un compañero se fue con licencia de improviso hoy"</strong></td>
-      <td>Entra a <strong>Planificación</strong>, busca su nombre, escribe los días de su licencia, marca <strong>LIC</strong> y dale a <strong>＋ Añadir</strong>. El programa lo quitará de la guardia y pondrá a quien le corresponda.</td>
+      <td><span class="btn-sample btn-card2">Actualizar auditoría</span></td>
+      <td>Muestra en la caja de texto una bitácora transparente con las últimas operaciones registradas (fechas, horas, avances de mes y restauraciones realizadas).</td>
     </tr>
     <tr>
-      <td><strong>"¿Se me pueden borrar los datos si se corta la luz?"</strong></td>
-      <td><strong>No.</strong> El programa guarda la información con un sistema de seguridad que nunca toca el archivo original hasta asegurarse de que el nuevo se escribió perfecto. Además, crea respaldos automáticos en la carpeta <code>backups/</code>.</td>
-    </tr>
-    <tr>
-      <td><strong>"Los compañeros me dicen que no les llegó el correo de aviso de guardia"</strong></td>
-      <td>Casi seguro llegó a su carpeta de <strong>Spam o Correo no deseado</strong>. Diles que revisen esa carpeta, abran el correo y pulsen <strong>"No es spam"</strong>. Además, si guardan la dirección en sus contactos, todos los correos futuros les llegarán directo a su Bandeja de Entrada.</td>
-    </tr>
-    <tr>
-      <td><strong>"¿Puedo volver a ver turnos de hace 4 meses?"</strong></td>
-      <td><strong>Sí.</strong> Ve a <strong>Ver Turnos del Mes</strong> y navega con el botón <strong>‹ Anterior</strong> o elige el mes en el menú desplegable. Verás exactamente cómo quedó ese mes cerrado.</td>
+      <td><span class="btn-sample btn-card2">Reintentar notificaciones</span></td>
+      <td>Si una notificación de guardia no pudo enviarse por caída de internet, este botón despacha los correos acumulados en la cola de pendientes.</td>
     </tr>
   </tbody>
 </table>
 
-<div style="margin-top: 35pt; background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px; padding: 18px; text-align: center;">
-  <strong style="font-size: 12pt; color: #166534;">¡Todo listo para usar el sistema!</strong><br>
-  <span style="font-size: 9.5pt; color: #1e293b;">
-    Recuerda: Si tienes dudas, abre este manual, sigue los 3 pasos principales y apóyate siempre en la vista previa antes de guardar el mes.
+<div class="audit-mock">
+  [AUDITORÍA DEL SISTEMA — EJEMPLO DE REGISTRO TRANSPARENTE]<br>
+  2026-09-24 10:30:15 | AVANCE_MES | Periodo cerrado: 2026-09 | 4 semanas guardadas<br>
+  2026-09-24 11:15:42 | BACKUP_MANUAL | Archivo: config_20260924_111542_manual.json<br>
+  2026-09-24 11:20:05 | RESTAURAR | Origen: config_20260924_103015_pre_advance.json (Pre-restore OK)
+</div>
+
+<h2>5. Repositorio Oficial en GitHub</h2>
+<p>
+En la parte inferior de Ajustes encuentras el enlace directo al repositorio oficial del proyecto. Cuentas con un botón <strong>📋 Copiar</strong> para copiar el enlace al portapapeles y un botón <strong>Abrir en GitHub ↗</strong> para acceder al código y documentación en tu navegador web.
+</p>
+
+<div class="page-break"></div>
+
+<!-- CAPÍTULO 7: PREGUNTAS FRECUENTES -->
+<h1>7. Preguntas Frecuentes y Solución de Problemas</h1>
+
+<table class="simple-table">
+  <thead>
+    <tr>
+      <th style="width: 34%;">Pregunta o Problema</th>
+      <th>Solución clara y directa</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td><strong>"Aparece un punto (●) en el título de la ventana"</strong></td>
+      <td>Significa que tienes cambios o permisos agregados que aún no se han guardado. Si pulsas <strong>💾 Guardar mes</strong>, el mes quedará cerrado y el punto desaparecerá.</td>
+    </tr>
+    <tr>
+      <td><strong>"Se cortó el internet cuando pulsé Guardar mes"</strong></td>
+      <td><strong>No te preocupes.</strong> El mes ya quedó guardado y seguro en tu computador. El aviso por correo quedó anotado en Ajustes. Cuando vuelva la conexión, ve a <strong>Ajustes</strong> y pulsa <strong>Reintentar notificaciones</strong>.</td>
+    </tr>
+    <tr>
+      <td><strong>"Guardé un mes por error y quiero volver al estado anterior"</strong></td>
+      <td>Ve a <strong>⚙ Ajustes</strong>, pulsa <strong>Restaurar respaldo</strong> y elige el respaldo inmediatamente anterior (por fecha y hora). El sistema volverá al estado previo de forma segura e instantánea.</td>
+    </tr>
+    <tr>
+      <td><strong>"El programa me avisa que el archivo Excel está en uso"</strong></td>
+      <td>Tienes la planilla abierta en Microsoft Excel. Ciérrala en tu pantalla y vuelve a pulsar el botón <strong>📊 Exportar Excel</strong> en el programa.</td>
+    </tr>
+    <tr>
+      <td><strong>"¿Por qué el sistema no le da turno a un compañero disponible?"</strong></td>
+      <td>Revisa la <strong>regla de descanso de 4 semanas</strong>. El sistema protege al personal impidiendo que una persona repita guardia en un lapso menor a un mes, evitando la sobrecarga laboral.</td>
+    </tr>
+    <tr>
+      <td><strong>"¿Por qué es obligatorio poner un motivo en los cambios manuales?"</strong></td>
+      <td>Para asegurar la máxima transparencia. Ese motivo queda registrado en la bitácora de auditoría y se incluye en el correo de aviso a los compañeros para que todos conozcan la justificación formal.</td>
+    </tr>
+    <tr>
+      <td><strong>"Un funcionario se fue de licencia hoy de improviso"</strong></td>
+      <td>Entra a <strong>Planificación</strong>, selecciona al funcionario, escribe los días de su licencia, marca <strong>LIC</strong> y pulsa <strong>＋ Añadir</strong>. El sistema lo reemplazará de inmediato y le reservará su turno para devolverlo cuando regrese.</td>
+    </tr>
+    <tr>
+      <td><strong>"Si elimino a alguien del equipo, ¿se borran sus turnos pasados?"</strong></td>
+      <td><strong>No se borra nada.</strong> Todos sus turnos realizados en meses cerrados se conservan intactos en el historial y en las planillas Excel históricas. Solo dejará de ser convocado para los meses futuros.</td>
+    </tr>
+    <tr>
+      <td><strong>"¿Dónde se ubican mis datos en el computador?"</strong></td>
+      <td>Se almacenan de forma segura en tu carpeta privada de usuario en <code>%APPDATA%\Sistema de Turnos\</code> (archivo <code>config.json</code> y carpeta <code>backups/</code>). También puedes usar el modo portable manteniendo <code>config.json</code> junto al ejecutable.</td>
+    </tr>
+    <tr>
+      <td><strong>"¿Cómo instalo una actualización futura sin perder mis turnos?"</strong></td>
+      <td>Simplemente descarga o copia el nuevo archivo <code>Sistema de Turnos.exe</code> y reemplaza el anterior. Tus turnos históricos, funcionarios, excepciones y respaldos se conservan al 100% de manera automática.</td>
+    </tr>
+    <tr>
+      <td><strong>"¿Cómo desinstalo o elimino el programa si cambio de computador?"</strong></td>
+      <td>Al ser un programa autónomo que no modifica el registro de Windows ni requiere desinstalador, solo basta con borrar el archivo <code>Sistema de Turnos.exe</code> de tu Escritorio o carpeta.</td>
+    </tr>
+  </tbody>
+</table>
+
+<div style="margin-top: 25pt; background: #f0fdf4; border: 2px solid #86efac; border-radius: 10px; padding: 16px; text-align: center;">
+  <strong style="font-size: 11.5pt; color: #166534;">¡Todo listo para gestionar tus turnos con total tranquilidad!</strong><br>
+  <span style="font-size: 9.3pt; color: #1e293b;">
+    El sistema está diseñado para darte certeza matemática, proteger la equidad del equipo y garantizar que tu información esté siempre respaldada y disponible.
   </span>
 </div>
 

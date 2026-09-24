@@ -42,8 +42,9 @@ generar_documento.py      ← Genera el documento ejecutivo editable en Word
 generar_manual_pdf.py     ← Genera el manual de usuario oficial en PDF (Chrome Headless)
 generar_requerimientos_word.py ← Genera el documento Word de requerimientos y alcance simple
 Sistema_de_Gestion_de_Turnos.docx ← Documento ejecutivo generado del proyecto
-Manual_de_Usuario_Sistema_de_Turnos.pdf ← Manual de usuario oficial en PDF (8 páginas)
+Manual_de_Usuario_Sistema_de_Turnos.pdf ← Manual de usuario oficial en PDF (actualizado)
 Requerimientos_del_Sistema_Turnos.docx ← Documento Word de requerimientos y alcance definido
+dist/Sistema de Turnos.exe   ← Ejecutable standalone autónomo (sin instalador, no requiere admin)
 ```
 
 ---

@@ -3,7 +3,7 @@
 
 from PyInstaller.utils.hooks import collect_all
 
-datas = [('assets', 'assets')]
+datas = [('assets', 'assets'), ('config.json', '.')]
 binaries = []
 hiddenimports = ['holidays.countries.chile']
 

@@ -1,5 +1,6 @@
 import json
 import os
+import sys
 import collections
 import calendar
 import functools
@@ -47,9 +48,23 @@ class ShiftManager:
 
     def load_config(self):
         if not os.path.exists(self.config_path):
-            logger.warning("Archivo de configuración %s no encontrado. Creando configuración base limpia.", self.config_path)
-            self._init_defaults()
-            self.save_config()
+            bundled_loaded = False
+            if getattr(sys, "frozen", False) and hasattr(sys, "_MEIPASS"):
+                bundled_path = os.path.join(sys._MEIPASS, "config.json")
+                if os.path.exists(bundled_path):
+                    try:
+                        with open(bundled_path, "r", encoding="utf-8") as f:
+                            data = json.load(f)
+                        self._parse_config_data(data)
+                        self.save_config()
+                        logger.info("Configuración inicial creada a partir de la plantilla integrada en el ejecutable.")
+                        bundled_loaded = True
+                    except Exception as e:
+                        logger.warning("No se pudo cargar la plantilla integrada: %s", e)
+            if not bundled_loaded:
+                logger.warning("Archivo de configuración %s no encontrado. Creando configuración base limpia.", self.config_path)
+                self._init_defaults()
+                self.save_config()
             return
 
         try:
