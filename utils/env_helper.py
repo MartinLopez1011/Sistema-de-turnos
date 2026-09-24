@@ -1,10 +1,11 @@
 import os
 import sys
+from utils.app_paths import get_application_data_dir
 
 def get_root_dir():
     """Obtiene el directorio raíz del proyecto o del ejecutable."""
     if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
+        return get_application_data_dir()
     return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 

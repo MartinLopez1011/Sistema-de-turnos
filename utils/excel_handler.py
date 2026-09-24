@@ -2,6 +2,7 @@ import calendar
 import datetime
 from datetime import timedelta
 import openpyxl
+import os
 from openpyxl.styles import PatternFill, Alignment, Border, Side, Font
 
 class ExcelHandler:
@@ -102,7 +103,13 @@ class ExcelHandler:
         self.sheet.page_setup.fitToHeight = 0
 
     def save_report(self):
-        self.wb.save(self.output_path)
+        temporary_path = self.output_path + ".tmp"
+        try:
+            self.wb.save(temporary_path)
+            os.replace(temporary_path, self.output_path)
+        finally:
+            if os.path.exists(temporary_path):
+                os.remove(temporary_path)
 
     def close(self):
         """Cierra el libro de trabajo de openpyxl liberando recursos."""

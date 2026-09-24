@@ -23,3 +23,7 @@ build/
 dist/
 *.spec
 *.xlsx
+archives/
+*.tmp
+*.corrupted_*
+pending_notifications.json

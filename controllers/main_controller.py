@@ -78,7 +78,9 @@ class MainController:
         return self.shift_manager.get_notification_settings()
 
     def set_notification_settings(self, webhook_url, activo=True):
-        self.shift_manager.set_notification_settings(webhook_url, activo)
+        success = self.shift_manager.set_notification_settings(webhook_url, activo)
+        if not success:
+            return False, "No se pudo guardar la configuración de notificaciones"
         return True, "Configuración de notificaciones guardada"
 
     def get_manual_motive(self, period_key, week_key):
@@ -102,6 +104,18 @@ class MainController:
     def reset_historial(self, preserve_inicio=True):
         success = self.shift_manager.reset_historial(preserve_inicio=preserve_inicio)
         return success, "Historial y configuraciones eliminadas correctamente" if success else "Error al limpiar historial"
+
+    def list_backups(self):
+        return self.shift_manager.list_backups()
+
+    def create_backup(self, tag=None):
+        return self.shift_manager.create_backup(tag)
+
+    def restore_backup(self, backup_path):
+        return self.shift_manager.restore_backup(backup_path)
+
+    def get_audit_entries(self, limit=20):
+        return list(reversed(self.shift_manager.auditoria[-limit:]))
 
     def preview_shifts(self, year, month, exceptions, manual_assignments=None):
         target_key = f"{year}-{month:02d}"
@@ -190,6 +204,11 @@ class MainController:
                 preview_month += 1
 
         return []
+
+    def validate_month(self, year, month, exceptions, manual_assignments=None):
+        return self.shift_manager.validate_month(
+            year, month, exceptions, manual_assignments=manual_assignments
+        )
 
     def process_generation(self, year, month, exceptions, manual_assignments=None, target_path=None):
         try:

@@ -1,0 +1,3 @@
+APP_NAME = "Sistema de Turnos"
+APP_VERSION = "1.0.0"
+CONFIG_SCHEMA_VERSION = 2

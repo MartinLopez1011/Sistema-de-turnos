@@ -1,8 +1,11 @@
+import os
 import customtkinter as ctk
 
 from views.theme import P
 from views.components.widgets import _short_name, _make_row_hover
-from views.components.dialogs import CustomInputDialog, CustomConfirmDialog, PersonFormDialog
+from views.components.dialogs import (
+    CustomConfirmDialog, PersonFormDialog, SelectPersonDialog
+)
 from utils.email_notifier import send_notification_webhook, is_valid_email
 
 class TabSettings:
@@ -18,6 +21,8 @@ class TabSettings:
         self.person_list_frame = None
         self.person_count_badge = None
         self.btn_copy_github = None
+        self.backup_status_label = None
+        self.audit_textbox = None
 
         self._build_ui()
 
@@ -228,12 +233,71 @@ class TabSettings:
         )
         self.notif_status_label.grid(row=2, column=0, columnspan=2, padx=14, pady=(0, 10), sticky="w")
 
-        # ── Card 4: Repositorio GitHub ───────────────────────────────────────
+        # ── Card 4: Backups, auditoría y recuperación ───────────────────────
+        operations_card = ctk.CTkFrame(
+            wrapper, fg_color=P["bg_card"], corner_radius=12,
+            border_width=1, border_color=P["border"]
+        )
+        operations_card.grid(row=6, column=0, sticky="ew", pady=(20, 0))
+        operations_card.grid_columnconfigure(0, weight=1)
+
+        ctk.CTkLabel(
+            operations_card, text="🛡  Recuperación y auditoría",
+            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            text_color=P["text"], anchor="w"
+        ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
+        ctk.CTkLabel(
+            operations_card,
+            text="Crea respaldos manuales, restaura una versión validada y revisa los últimos cambios.",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w"
+        ).grid(row=1, column=0, padx=20, pady=(0, 12), sticky="w")
+
+        actions = ctk.CTkFrame(operations_card, fg_color="transparent")
+        actions.grid(row=2, column=0, padx=20, pady=(0, 10), sticky="w")
+        ctk.CTkButton(
+            actions, text="Crear respaldo", command=self._create_backup,
+            width=140, height=34, fg_color=P["accent_d"], hover_color=P["accent"]
+        ).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(
+            actions, text="Restaurar respaldo", command=self._restore_backup,
+            width=150, height=34, fg_color=P["orange"], hover_color=P["da"],
+            text_color="#111418"
+        ).pack(side="left", padx=(0, 8))
+        ctk.CTkButton(
+            actions, text="Actualizar auditoría", command=self._refresh_audit,
+            width=160, height=34, fg_color=P["bg_card2"], hover_color=P["border_h"]
+        ).pack(side="left")
+        ctk.CTkButton(
+            actions, text="Reintentar notificaciones",
+            command=self._retry_pending_notifications,
+            width=190, height=34, fg_color=P["bg_card2"], hover_color=P["border_h"]
+        ).pack(side="left", padx=(8, 0))
+        pending = len(self.app.notification_queue.list_pending())
+        self.pending_notifications_label = ctk.CTkLabel(
+            actions,
+            text=f"Notificaciones pendientes: {pending}",
+            text_color=P["text_w"] if pending else P["text_s"],
+        )
+        self.pending_notifications_label.pack(side="left", padx=(14, 0))
+
+        self.backup_status_label = ctk.CTkLabel(
+            operations_card, text="", text_color=P["text_s"], anchor="w"
+        )
+        self.backup_status_label.grid(row=3, column=0, padx=20, pady=(0, 8), sticky="w")
+        self.audit_textbox = ctk.CTkTextbox(
+            operations_card, height=130, fg_color=P["bg_card2"],
+            border_width=1, border_color=P["border"]
+        )
+        self.audit_textbox.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
+        self._refresh_audit()
+
+        # ── Card 5: Repositorio GitHub ───────────────────────────────────────
         github_card = ctk.CTkFrame(
             wrapper, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        github_card.grid(row=6, column=0, sticky="ew", pady=(20, 24))
+        github_card.grid(row=7, column=0, sticky="ew", pady=(20, 24))
         github_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -284,6 +348,81 @@ class TabSettings:
             fg_color=P["accent_d"], hover_color=P["accent"]
         )
         btn_open_github.pack(side="left")
+
+    def _create_backup(self):
+        path = self.controller.create_backup("manual")
+        if path:
+            self.backup_status_label.configure(
+                text=f"Respaldo creado: {os.path.basename(path)}",
+                text_color=P["text_ok"],
+            )
+        else:
+            self.backup_status_label.configure(
+                text="No se pudo crear el respaldo.", text_color=P["text_e"]
+            )
+
+    def _restore_backup(self):
+        backups = self.controller.list_backups()
+        if not backups:
+            self.backup_status_label.configure(
+                text="No existen respaldos disponibles.", text_color=P["text_w"]
+            )
+            return
+        names = [os.path.basename(path) for path in backups]
+        selected = SelectPersonDialog.show(
+            self.app,
+            "Restaurar respaldo",
+            "Selecciona el respaldo que deseas restaurar:",
+            names,
+        )
+        if not selected:
+            return
+        selected_path = next(path for path in backups if os.path.basename(path) == selected)
+        if not CustomConfirmDialog.show(
+            self.app,
+            "Confirmar restauración",
+            "Se creará un respaldo del estado actual antes de restaurar.\n¿Continuar?",
+            is_danger=True,
+            confirm_text="Restaurar",
+        ):
+            return
+        success, message = self.controller.restore_backup(selected_path)
+        self.backup_status_label.configure(
+            text=message,
+            text_color=P["text_ok"] if success else P["text_e"],
+        )
+        if success:
+            self.refresh_person_list()
+            self.app.load_personal()
+            self._refresh_audit()
+
+    def _refresh_audit(self):
+        if not self.audit_textbox:
+            return
+        self.audit_textbox.configure(state="normal")
+        self.audit_textbox.delete("1.0", "end")
+        entries = self.controller.get_audit_entries()
+        if not entries:
+            self.audit_textbox.insert("end", "Sin operaciones registradas.")
+        else:
+            for entry in entries:
+                self.audit_textbox.insert(
+                    "end",
+                    f"{entry.get('timestamp', '')}  {entry.get('action', '')}  "
+                    f"{entry.get('period', '')}\n",
+                )
+        self.audit_textbox.configure(state="disabled")
+
+    def _refresh_pending_notifications(self):
+        pending = len(self.app.notification_queue.list_pending())
+        self.pending_notifications_label.configure(
+            text=f"Notificaciones pendientes: {pending}",
+            text_color=P["text_w"] if pending else P["text_s"],
+        )
+
+    def _retry_pending_notifications(self):
+        self.app._retry_pending_notifications()
+        self._refresh_pending_notifications()
 
     def _open_github(self):
         import webbrowser
@@ -507,4 +646,3 @@ class TabSettings:
                 self.app.load_personal()
             else:
                 self.settings_status_label.configure(text=msg, text_color=P["text_e"])
-

@@ -12,6 +12,7 @@ from views.tabs.tab_calendar import TabCalendar
 from views.tabs.tab_settings import TabSettings
 from utils.logger import get_logger
 from utils.email_notifier import check_internet_connection, format_plain_text_message, send_notification_webhook
+from utils.notification_queue import NotificationQueue
 
 logger = get_logger("gui")
 
@@ -23,6 +24,7 @@ class TurnosApp(ctk.CTk):
     def __init__(self, controller):
         super().__init__()
         self.controller = controller
+        self.notification_queue = NotificationQueue(controller.root_path)
         self.title("Sistema de Turnos")
         self.geometry("1280x700")
         self.minsize(1100, 580)
@@ -54,8 +56,34 @@ class TurnosApp(ctk.CTk):
 
         self._setup_ui()
         self.load_personal()
+        self.after(500, self._retry_pending_notifications)
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         logger.info("Aplicación Sistema de Turnos iniciada correctamente.")
+
+    def _retry_pending_notifications(self):
+        pending = self.notification_queue.list_pending()
+        if not pending:
+            return
+
+        def worker():
+            for item in pending:
+                success, message = send_notification_webhook(
+                    item.get("webhook_url", ""),
+                    item.get("recipients", []),
+                    item.get("subject", ""),
+                    item.get("body", ""),
+                )
+                if success:
+                    self.notification_queue.remove(item.get("queued_at"))
+            self.after(
+                0,
+                lambda: self.set_status(
+                    "Notificaciones pendientes procesadas.",
+                    "ok",
+                ),
+            )
+
+        threading.Thread(target=worker, daemon=True).start()
 
     def _setup_icon(self):
         """Configura el icono de la ventana para desarrollo y producción empaquetada."""
@@ -310,6 +338,17 @@ class TurnosApp(ctk.CTk):
         has_manual = len(manual_snapshot) > 0
         webhook_url = ""
 
+        validation_errors = self.controller.validate_month(
+            year, month, exceptions_snapshot, manual_assignments=manual_snapshot
+        )
+        if validation_errors:
+            messagebox.showerror(
+                "No se puede cerrar el mes",
+                "\n".join(f"• {error}" for error in validation_errors),
+                parent=self
+            )
+            return
+
         if has_manual:
             # 1. Validar Webhook configurado
             notif_cfg = self.controller.get_notification_settings()
@@ -375,7 +414,7 @@ class TurnosApp(ctk.CTk):
                 )
                 if not ok:
                     self.set_status(f"Error: {msg}", "error")
-                    return
+                    return False
 
                 self.exceptions_by_period[self.active_period_key] = exceptions_snapshot
                 self.manual_assignments_by_period[self.active_period_key] = manual_snapshot
@@ -402,19 +441,17 @@ class TurnosApp(ctk.CTk):
             except Exception as e:
                 logger.error("Error en _commit_and_advance: %s", e, exc_info=True)
                 self.set_status(f"Error inesperado al guardar: {e}", "error")
+                return False
             finally:
                 self.is_exporting = False
                 self._set_ui_locked(False)
                 self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
+            return True
 
         if not has_manual:
             self.set_status("Guardando el mes en el historial...", "warn")
             _commit_and_advance()
             return
-
-        # Notificación por correo en segundo plano
-        self.set_status("Enviando notificación por correo a todos los funcionarios...", "warn")
-        self.tab_plan.save_btn.configure(text="⏳  Enviando correos...")
 
         shifts_auto = self.controller.preview_shifts(year, month, exceptions_snapshot, manual_assignments={})
         cambios_detalle = []
@@ -434,23 +471,28 @@ class TurnosApp(ctk.CTk):
         subject = f"[Sistema de Turnos] Modificación de Guardia - {MESES[month - 1]} {year}"
         body_text = format_plain_text_message(MESES[month - 1], year, cambios_detalle)
 
+        # El cierre local es la fuente de verdad. La notificación no puede
+        # bloquear ni revertir un mes ya persistido.
+        self.set_status("Guardando el mes en el historial...", "warn")
+        if not _commit_and_advance():
+            return
+        self.set_status("Mes guardado. Enviando notificación...", "warn")
+
         def _worker():
             success_send, send_msg = send_notification_webhook(webhook_url, recipients, subject, body_text)
             def _on_finish():
                 if not success_send:
-                    self.is_exporting = False
-                    self._set_ui_locked(False)
-                    self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
+                    self.notification_queue.enqueue(
+                        webhook_url, recipients, subject, body_text, send_msg
+                    )
                     self.set_status(f"Error al enviar correo: {send_msg}", "error")
-                    messagebox.showerror(
-                        "Error al Enviar Notificación",
-                        f"No se pudo guardar el mes porque falló el envío de correos:\n\n{send_msg}\n\n"
-                        "El historial NO ha sido modificado.",
+                    messagebox.showwarning(
+                        "Mes guardado; notificación pendiente",
+                        f"El mes fue guardado correctamente, pero no se pudo enviar el aviso:\n\n{send_msg}",
                         parent=self
                     )
                     return
 
-                _commit_and_advance()
                 self.set_status("Mes guardado y notificación enviada a todos los funcionarios.", "ok")
 
             self.after(0, _on_finish)

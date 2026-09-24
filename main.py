@@ -6,6 +6,7 @@ from controllers.main_controller import MainController
 from views.gui import TurnosApp
 from utils.logger import get_logger
 from utils.env_helper import load_env_file
+from utils.app_paths import get_application_data_dir
 
 logger = get_logger("main")
 
@@ -28,10 +29,7 @@ def setup_global_exception_handler():
 
 def main():
     setup_global_exception_handler()
-    if getattr(sys, 'frozen', False):
-        root_path = os.path.dirname(sys.executable)
-    else:
-        root_path = os.path.dirname(os.path.abspath(__file__))
+    root_path = get_application_data_dir()
         
     load_env_file(os.path.join(root_path, ".env"))
     controller = MainController(root_path)

@@ -131,7 +131,7 @@ def send_notification_webhook(
         return False, msg
 
     valid_recipients = [r.strip() for r in recipients if is_valid_email(r)]
-    logger.info("[EMAIL] Destinatarios válidos (%d): %s", len(valid_recipients), valid_recipients)
+    logger.info("[EMAIL] Destinatarios válidos: %d", len(valid_recipients))
     if not valid_recipients:
         msg = "No hay destinatarios válidos con formato de correo correcto."
         logger.error("[EMAIL] %s", msg)

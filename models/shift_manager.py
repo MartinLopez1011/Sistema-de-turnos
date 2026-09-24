@@ -3,12 +3,18 @@ import os
 import collections
 import calendar
 import functools
+import threading
+import copy
 from datetime import datetime, timedelta, date
 
 from utils.chilean_holidays import national_holidays, normalize_holiday_name
 from utils.logger import get_logger
 from utils.email_notifier import is_valid_email
 from utils.env_helper import get_env_var, set_env_var
+from utils.config_validator import validate_config
+from app_version import CONFIG_SCHEMA_VERSION
+from models.config_repository import ConfigRepository
+from models.rotation_engine import RotationEngine
 
 logger = get_logger("shift_manager")
 
@@ -33,6 +39,9 @@ def _parse_week_range(week_key):
 class ShiftManager:
     def __init__(self, config_path):
         self.config_path = config_path
+        self._lock = threading.RLock()
+        self.repository = ConfigRepository(config_path, self._default_payload)
+        self.rotation_engine = RotationEngine(self)
         self.last_warnings = []
         self.load_config()
 
@@ -44,24 +53,21 @@ class ShiftManager:
             return
 
         try:
-            with open(self.config_path, 'r', encoding='utf-8') as f:
-                data = json.load(f)
-            if not isinstance(data, dict):
-                raise ValueError("El contenido de config.json no es un objeto JSON válido.")
-        except (json.JSONDecodeError, UnicodeDecodeError, ValueError) as e:
+            data = self.repository.load()
+            validation_errors = validate_config(data)
+            if validation_errors:
+                logger.warning(
+                    "La configuración contiene %d advertencias de validación: %s",
+                    len(validation_errors), "; ".join(validation_errors)
+                )
+        except (OSError, json.JSONDecodeError, UnicodeDecodeError, ValueError) as e:
             logger.error("Archivo config.json corrupto o ilegible: %s. Creando respaldo y restaurando base limpia.", e)
             try:
-                config_dir = os.path.dirname(os.path.abspath(self.config_path))
-                backups_dir = os.path.join(config_dir, "backups")
-                os.makedirs(backups_dir, exist_ok=True)
-                timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-                base_name = os.path.basename(self.config_path)
-                corrupt_path = os.path.join(backups_dir, f"{base_name}.corrupted_{timestamp}")
-                with open(self.config_path, 'rb') as src, open(corrupt_path, 'wb') as dst:
-                    dst.write(src.read())
-                logger.info("Respaldo de archivo corrupto guardado en %s", corrupt_path)
-            except Exception as be:
-                logger.warning("No se pudo respaldar el archivo corrupto: %s", be)
+                corrupt_path = self.repository.backup_corrupt_file()
+                if corrupt_path:
+                    logger.info("Respaldo de archivo corrupto guardado en %s", corrupt_path)
+            except OSError as backup_error:
+                logger.warning("No se pudo respaldar el archivo corrupto: %s", backup_error)
 
             self._init_defaults()
             self.save_config()
@@ -79,6 +85,7 @@ class ShiftManager:
         self.excepciones = {}
         self.asignaciones_manuales = {}
         self.asignaciones_manuales_motivos = {}
+        self.auditoria = []
         self.notificaciones = {"webhook_url": DEFAULT_WEBHOOK_URL, "activo": True}
 
     def _parse_config_data(self, data):
@@ -102,6 +109,8 @@ class ShiftManager:
         self.asignaciones_manuales = saved_manual if isinstance(saved_manual, dict) else {}
         saved_motivos = data.get('asignaciones_manuales_motivos', {})
         self.asignaciones_manuales_motivos = saved_motivos if isinstance(saved_motivos, dict) else {}
+        saved_audit = data.get('auditoria', [])
+        self.auditoria = saved_audit if isinstance(saved_audit, list) else []
         saved_notif = data.get('notificaciones', {})
         if isinstance(saved_notif, dict):
             self.notificaciones = dict(saved_notif)
@@ -134,11 +143,17 @@ class ShiftManager:
             serialized.append(item)
         return serialized
 
-    def save_config(self):
-        directory = os.path.dirname(os.path.abspath(self.config_path))
-        os.makedirs(directory, exist_ok=True)
-        temporary_path = self.config_path + '.tmp'
-        payload = {
+    def _record_audit(self, action, **details):
+        self.auditoria.append({
+            "timestamp": datetime.now().isoformat(timespec="seconds"),
+            "action": action,
+            **details,
+        })
+        if len(self.auditoria) > 500:
+            del self.auditoria[:-500]
+
+    def _payload(self):
+        return {
             "notificaciones": self.notificaciones,
             "personal": self._serialize_personal(),
             "inicio": self.inicio,
@@ -148,25 +163,33 @@ class ShiftManager:
             "snapshots": self.snapshots,
             "excepciones": self.excepciones,
             "asignaciones_manuales": self.asignaciones_manuales,
-            "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos
+            "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos,
+            "auditoria": self.auditoria,
+            "schema_version": CONFIG_SCHEMA_VERSION,
         }
-        try:
-            with open(temporary_path, 'w', encoding='utf-8') as f:
-                json.dump(payload, f, indent=2, ensure_ascii=False)
-                f.flush()
-                os.fsync(f.fileno())
-            os.replace(temporary_path, self.config_path)
-            logger.debug("Configuración guardada en %s", self.config_path)
-            return True
-        except (OSError, IOError) as e:
-            logger.error("Error al guardar configuración en %s: %s", self.config_path, e)
-            return False
-        finally:
-            if os.path.exists(temporary_path):
-                try:
-                    os.remove(temporary_path)
-                except OSError:
-                    pass
+
+    def _default_payload(self):
+        return {
+            "notificaciones": {"webhook_url": DEFAULT_WEBHOOK_URL, "activo": True},
+            "personal": [],
+            "inicio": {},
+            "historial": {},
+            "siguiente_id": 1,
+            "pendientes": [],
+            "snapshots": {},
+            "excepciones": {},
+            "asignaciones_manuales": {},
+            "asignaciones_manuales_motivos": {},
+            "auditoria": [],
+            "schema_version": CONFIG_SCHEMA_VERSION,
+        }
+
+    def save_config(self):
+        with self._lock:
+            saved = self.repository.save(self._payload())
+            if saved:
+                logger.debug("Configuración guardada en %s", self.config_path)
+            return saved
 
     def create_backup(self, tag=None):
         """Crea una copia de seguridad fechada de config.json en la carpeta backups/."""
@@ -190,7 +213,8 @@ class ShiftManager:
                 "snapshots": self.snapshots,
                 "excepciones": self.excepciones,
                 "asignaciones_manuales": self.asignaciones_manuales,
-                "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos
+                "asignaciones_manuales_motivos": self.asignaciones_manuales_motivos,
+                "auditoria": self.auditoria
             }
             with open(backup_path, 'w', encoding='utf-8') as f:
                 json.dump(payload, f, indent=2, ensure_ascii=False)
@@ -212,6 +236,45 @@ class ShiftManager:
         except Exception as e:
             logger.warning("Error creando backup de config: %s", e)
             return None
+
+    def list_backups(self):
+        """Return available backups ordered from newest to oldest."""
+        config_dir = os.path.dirname(os.path.abspath(self.config_path))
+        backups_dir = os.path.join(config_dir, "backups")
+        if not os.path.isdir(backups_dir):
+            return []
+        return [
+            os.path.join(backups_dir, name)
+            for name in sorted(os.listdir(backups_dir), reverse=True)
+            if name.startswith("config_") and name.endswith(".json")
+        ]
+
+    def restore_backup(self, backup_path):
+        """Restore a validated backup while preserving the current config first."""
+        backup_path = os.path.abspath(backup_path)
+        if backup_path not in [os.path.abspath(path) for path in self.list_backups()]:
+            return False, "El archivo seleccionado no pertenece a la carpeta de respaldos."
+        try:
+            with open(backup_path, "r", encoding="utf-8") as source:
+                payload = json.load(source)
+            errors = validate_config(payload)
+            if errors:
+                return False, "El respaldo no es válido: " + "; ".join(errors)
+            self.create_backup("pre_restore")
+            temporary_path = self.config_path + ".tmp"
+            with open(temporary_path, "w", encoding="utf-8") as target:
+                json.dump(payload, target, indent=2, ensure_ascii=False)
+                target.flush()
+                os.fsync(target.fileno())
+            os.replace(temporary_path, self.config_path)
+            self._parse_config_data(payload)
+            self._record_audit("RESTORE_BACKUP", backup=os.path.basename(backup_path))
+            if not self.save_config():
+                return False, "El respaldo fue copiado, pero no pudo validarse al guardar."
+            return True, "Respaldo restaurado correctamente."
+        except (OSError, ValueError, TypeError, json.JSONDecodeError) as exc:
+            logger.error("No se pudo restaurar el respaldo %s: %s", backup_path, exc, exc_info=True)
+            return False, f"No se pudo restaurar el respaldo: {exc}"
 
     def archive_old_records(self, retention_months=24, archive_dir=None):
         """
@@ -324,7 +387,27 @@ class ShiftManager:
     def get_manual_assignments(self, period_key):
         return dict(self.asignaciones_manuales.get(period_key, {}))
 
+    def validate_month(self, year, month, exceptions, manual_assignments=None):
+        """Validate a month before committing it to history."""
+        shifts, _, _ = self.generate_shifts(
+            year, month, exceptions, manual_assignments=manual_assignments
+        )
+        errors = []
+        if not shifts:
+            errors.append("El mes no contiene semanas calculables.")
+        if any(not shift.get("persona") for shift in shifts):
+            errors.append("Existe al menos una semana sin funcionario asignado.")
+        if manual_assignments:
+            known_names = {person["nombre"] for person in self.personal}
+            unknown = sorted(set(manual_assignments.values()) - known_names)
+            if unknown:
+                errors.append("Hay asignaciones manuales a personas inexistentes.")
+        return errors
+
     def set_manual_assignment(self, period_key, week_key, person_name, motivo=""):
+        previous_assignments = copy.deepcopy(self.asignaciones_manuales)
+        previous_motives = copy.deepcopy(self.asignaciones_manuales_motivos)
+        previous_audit = copy.deepcopy(self.auditoria)
         if period_key not in self.asignaciones_manuales:
             self.asignaciones_manuales[period_key] = {}
         self.asignaciones_manuales[period_key][week_key] = person_name
@@ -339,12 +422,27 @@ class ShiftManager:
             if not self.asignaciones_manuales_motivos[period_key]:
                 del self.asignaciones_manuales_motivos[period_key]
 
-        self.save_config()
+        self._record_audit(
+            "SET_MANUAL_ASSIGNMENT",
+            period=period_key,
+            week=week_key,
+            person=person_name,
+            reason=clean_motivo,
+        )
+        if not self.save_config():
+            self.asignaciones_manuales = previous_assignments
+            self.asignaciones_manuales_motivos = previous_motives
+            self.auditoria = previous_audit
+            return False
+        return True
 
     def get_manual_motive(self, period_key, week_key):
         return self.asignaciones_manuales_motivos.get(period_key, {}).get(week_key, "")
 
     def remove_manual_assignment(self, period_key, week_key):
+        previous_assignments = copy.deepcopy(self.asignaciones_manuales)
+        previous_motives = copy.deepcopy(self.asignaciones_manuales_motivos)
+        previous_audit = copy.deepcopy(self.auditoria)
         if period_key in self.asignaciones_manuales and week_key in self.asignaciones_manuales[period_key]:
             del self.asignaciones_manuales[period_key][week_key]
             if not self.asignaciones_manuales[period_key]:
@@ -353,7 +451,12 @@ class ShiftManager:
             del self.asignaciones_manuales_motivos[period_key][week_key]
             if not self.asignaciones_manuales_motivos[period_key]:
                 del self.asignaciones_manuales_motivos[period_key]
-        self.save_config()
+        if not self.save_config():
+            self.asignaciones_manuales = previous_assignments
+            self.asignaciones_manuales_motivos = previous_motives
+            self.auditoria = previous_audit
+            return False
+        return True
 
     def get_person_by_id(self, p_id):
         for p in self.personal:
@@ -616,6 +719,17 @@ class ShiftManager:
 
     def generate_shifts(self, year, month, exceptions, state=None,
                         recalculate_history=False, manual_assignments=None):
+        return self.rotation_engine.generate(
+            year,
+            month,
+            exceptions,
+            state=state,
+            recalculate_history=recalculate_history,
+            manual_assignments=manual_assignments,
+        )
+
+    def _generate_shifts_legacy(self, year, month, exceptions, state=None,
+                                recalculate_history=False, manual_assignments=None):
         self.last_warnings = []
 
         exceptions = self._normalize_exceptions(exceptions)
@@ -946,6 +1060,17 @@ class ShiftManager:
         return shifts, current_siguiente_id, current_pendientes
 
     def advance_month(self, year, month, exceptions, manual_assignments=None, manual_motives=None):
+        previous_state = {
+            "inicio": copy.deepcopy(self.inicio),
+            "historial": copy.deepcopy(self.historial),
+            "siguiente_id": self.siguiente_id,
+            "pendientes": copy.deepcopy(self.pendientes),
+            "snapshots": copy.deepcopy(self.snapshots),
+            "excepciones": copy.deepcopy(self.excepciones),
+            "asignaciones_manuales": copy.deepcopy(self.asignaciones_manuales),
+            "asignaciones_manuales_motivos": copy.deepcopy(self.asignaciones_manuales_motivos),
+            "auditoria": copy.deepcopy(self.auditoria),
+        }
         self.create_backup(f"pre_advance_{year}_{month:02d}")
         period_key = f"{year}-{month:02d}"
         if manual_assignments is None:
@@ -1059,8 +1184,18 @@ class ShiftManager:
                 self.asignaciones_manuales_motivos[period_key] = dict(manual_motives)
             elif period_key in self.asignaciones_manuales_motivos:
                 del self.asignaciones_manuales_motivos[period_key]
+
+        self._record_audit(
+            "CLOSE_MONTH",
+            period=period_key,
+            manual_assignments=len(manual_assignments_dict),
+            exceptions=len(exceptions),
+        )
         
-        self.save_config()
+        if not self.save_config():
+            for field, value in previous_state.items():
+                setattr(self, field, value)
+            return False, "No se pudo guardar la configuración; el mes no fue cerrado."
         return True, "Turnos guardados y cola avanzada."
 
     # ── Person Management ──────────────────────────────────────
@@ -1085,11 +1220,20 @@ class ShiftManager:
         max_id = max((p['id'] for p in self.personal), default=0)
         new_id = max_id + 1
         self.personal.append({"id": new_id, "nombre": normalized_name, "email": clean_email})
-        self.save_config()
+        if not self.save_config():
+            self.personal.pop()
+            return None
         return new_id
 
     def edit_person(self, person_id, new_name, new_email=None):
         """Edit the name and optional email of an existing person and update all historical records."""
+        previous_state = {
+            "personal": copy.deepcopy(self.personal),
+            "inicio": copy.deepcopy(self.inicio),
+            "historial": copy.deepcopy(self.historial),
+            "excepciones": copy.deepcopy(self.excepciones),
+            "asignaciones_manuales": copy.deepcopy(self.asignaciones_manuales),
+        }
         if not isinstance(new_name, str):
             return False
 
@@ -1138,7 +1282,10 @@ class ShiftManager:
                             if assigned_p == old_name:
                                 week_dict[week_key] = normalized_name
                             
-            self.save_config()
+            if not self.save_config():
+                for field, value in previous_state.items():
+                    setattr(self, field, value)
+                return False
             return True
         return False
 
@@ -1174,12 +1321,22 @@ class ShiftManager:
             "webhook_url": clean_url,
             "activo": bool(activo)
         }
-        self.save_config()
+        previous = dict(self.notificaciones)
+        if not self.save_config():
+            self.notificaciones = previous
+            return False
         set_env_var("WEBHOOK_URL", clean_url)
         set_env_var("NOTIFICACIONES_ACTIVAS", "true" if activo else "false")
+        return True
 
     def remove_person(self, person_id):
         """Remove a person from future rotation while preserving past records."""
+        previous_state = {
+            "personal": copy.deepcopy(self.personal),
+            "siguiente_id": self.siguiente_id,
+            "pendientes": copy.deepcopy(self.pendientes),
+            "snapshots": copy.deepcopy(self.snapshots),
+        }
         for i, p in enumerate(self.personal):
             if p['id'] == person_id:
                 del self.personal[i]
@@ -1204,7 +1361,10 @@ class ShiftManager:
                     if snapshot.get("siguiente_id") == person_id:
                         snapshot["siguiente_id"] = replacement_id
 
-                self.save_config()
+                if not self.save_config():
+                    for field, value in previous_state.items():
+                        setattr(self, field, value)
+                    return False
                 return True
         return False
 
@@ -1214,7 +1374,9 @@ class ShiftManager:
             if p['id'] == person_id:
                 if i > 0:
                     self.personal[i], self.personal[i-1] = self.personal[i-1], self.personal[i]
-                    self.save_config()
+                    if not self.save_config():
+                        self.personal[i], self.personal[i-1] = self.personal[i-1], self.personal[i]
+                        return False
                     return True
                 break
         return False

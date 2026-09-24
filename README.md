@@ -7,12 +7,13 @@
 ![UI Framework](https://img.shields.io/badge/GUI-CustomTkinter%20(Dark%20Mode)-16877D)
 ![Reports](https://img.shields.io/badge/reports-OpenPyXL%20(Excel)-217346?logo=microsoftexcel&logoColor=white)
 ![Notifications](https://img.shields.io/badge/notifications-Google%20Apps%20Script%20(Serverless)-EA4335?logo=google&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-78%20passing-brightgreen?logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-87%20passing-brightgreen?logo=pytest&logoColor=white)
 ![Distribution](https://img.shields.io/badge/dist-PyInstaller%20Standalone%20.exe-orange)
 
 **Aplicación de escritorio moderna, robusta y automatizada para la planificación, asignación rotativa semanal, gestión de excepciones y notificación institucional de turnos de guardia.**
 
 [Características](#-características-principales) •
+[Manual de usuario](#-manual-de-usuario) •
 [Arquitectura](#-arquitectura-del-sistema) •
 [Instalación y Uso](#-instalación-y-uso-rápido) •
 [Notificaciones Serverless](#-notificaciones-por-correo-google-apps-script) •
@@ -34,6 +35,18 @@ Este sistema soluciona dichos problemas combinando un **motor algorítmico deter
 ---
 
 ## ✨ Características Principales
+
+### 🧱 Límites internos de arquitectura
+
+El modelo conserva una fachada compatible (`ShiftManager`), pero sus
+responsabilidades principales están separadas:
+
+- `models/config_repository.py`: lectura, validación y escritura atómica de la configuración.
+- `models/rotation_engine.py`: límite del motor de generación de turnos.
+- `models/domain_types.py`: tipos explícitos para asignaciones y excepciones.
+
+La GUI y el controlador siguen consumiendo el formato histórico de diccionarios
+para mantener compatibilidad con configuraciones y reportes existentes.
 
 ### 🔄 1. Motor de Rotación Algorítmica Inteligente
 - **Cola Circular Continua:** Asigna las semanas de guardia siguiendo estrictamente el orden del personal (`siguiente_id`), garantizando que todos cumplan su cuota proporcional de servicio.
@@ -195,12 +208,13 @@ Prefijos reconocidos y omitidos automáticamente en tarjetas reducidas y avatare
 No requiere tener Python instalado. Compatible con **Windows 10** y **Windows 11**.
 
 1. Descarga la versión compilada `Sistema de Turnos.exe`.
-2. Asegúrate de tener en la misma carpeta:
-   - `Sistema de Turnos.exe`
-   - `config.json` (base de datos con la lista inicial de personal)
-   - `.env` (opcional, para la URL del webhook de correos)
+2. Ejecuta `Sistema de Turnos.exe`. La aplicación crea automáticamente su carpeta
+   de datos de usuario en `%APPDATA%\Sistema de Turnos`.
+3. Si recibiste un `config.json` inicial, cópialo dentro de
+   `%APPDATA%\Sistema de Turnos` antes del primer uso.
 3. Haz doble clic en `Sistema de Turnos.exe`.
-4. Los archivos Excel generados (`turnos_<Mes>_<Año>.xlsx`) y los respaldos (`backups/`) se guardarán automáticamente en esa misma carpeta.
+4. Los archivos Excel, respaldos, auditoría y logs se guardarán en la carpeta de
+   datos de usuario. El ejecutable puede actualizarse sin sobrescribir ese estado.
 
 ---
 
@@ -238,6 +252,164 @@ No requiere tener Python instalado. Compatible con **Windows 10** y **Windows 11
    ```powershell
    python main.py
    ```
+
+---
+
+## 📖 Manual de Usuario
+
+Esta sección describe el flujo recomendado para supervisores y encargados de
+planificación. La aplicación conserva el historial cerrado y separa claramente
+la **previsualización**, la **exportación** y el **cierre definitivo del mes**.
+
+### 1. Iniciar la planificación
+
+1. Abre la aplicación.
+2. En la pestaña **📋 Planificación**, selecciona el **mes** y **año**.
+3. Revisa las tarjetas semanales generadas automáticamente.
+4. El sistema utiliza la rotación, los pendientes, los snapshots y el historial
+   para mantener continuidad aunque se consulte un mes futuro.
+
+La previsualización no modifica el historial ni la cola de rotación.
+
+### 2. Registrar excepciones
+
+Cuando un funcionario no pueda cubrir determinados días:
+
+1. Selecciona la persona en el panel lateral.
+2. Escribe los días del mes. Se aceptan días individuales y rangos, por ejemplo:
+   `1-5, 12, 19-20`.
+3. Selecciona el tipo:
+   - **DA**: Día Administrativo.
+   - **FL**: Feriado Legal.
+   - **LIC**: Licencia Médica.
+   - **OTR**: Otro permiso o impedimento.
+4. Presiona **＋ Añadir**.
+5. Comprueba en la lista de excepciones que los días y el tipo sean correctos.
+
+El sistema recalcula la vista previa y registra como pendiente a quien haya sido
+saltado por una excepción, para que recupere su turno cuando corresponda.
+
+### 3. Gestionar una permuta o asignación manual
+
+Para cambiar una semana específica:
+
+1. En la tarjeta de la semana, selecciona **Cambiar Guardia**.
+2. Elige el funcionario que cubrirá el turno.
+3. Ingresa el motivo obligatorio de la modificación.
+4. Confirma la asignación.
+5. Revisa que la tarjeta indique que es una asignación manual y que el motivo
+   sea el acordado.
+
+Las asignaciones manuales quedan registradas en la auditoría. Si existen cambios
+manuales, el sistema intentará enviar una notificación al equipo al cerrar el
+mes. Una falla de correo no revierte el cierre local: la notificación queda en
+la cola de pendientes para reintentarla posteriormente.
+
+### 4. Revisar el calendario mensual
+
+1. Abre la pestaña **📅 Ver Turnos del Mes** o presiona **Abrir calendario**.
+2. Usa **Anterior**, **Siguiente** o **Hoy** para navegar.
+3. Verifica los colores y la leyenda:
+   - Rojo: turno asignado.
+   - Naranja: DA.
+   - Violeta: FL.
+   - Turquesa: LIC.
+   - Gris: OTR.
+   - Gris oscuro: fin de semana.
+4. Confirma que no existan excepciones o asignaciones manuales pendientes de
+   revisión.
+
+### 5. Exportar el reporte Excel
+
+1. Con el mes revisado, presiona **📊 Exportar Excel**.
+2. Selecciona la ubicación de destino si la aplicación la solicita.
+3. Abre el archivo `turnos_<Mes>_<Año>.xlsx` y revisa la matriz, los totales y
+   la leyenda de convenciones.
+
+**Exportar Excel no cierra el mes y no modifica la rotación.** Puede repetirse
+cuantas veces sea necesario para corregir o revisar la presentación.
+
+### 6. Cerrar y guardar el mes
+
+Cuando el mes esté aprobado:
+
+1. Regresa a **📋 Planificación**.
+2. Presiona **💾 Guardar mes**.
+3. Revisa el resumen de excepciones y asignaciones manuales.
+4. Confirma la operación.
+
+Al cerrar el mes, el sistema:
+
+- Valida las semanas y las asignaciones manuales.
+- Guarda las semanas en el historial.
+- Genera un snapshot del mes siguiente.
+- Avanza la cola de rotación.
+- Crea un respaldo previo al cambio.
+- Envía una notificación si corresponde.
+
+No cierres nuevamente un mes ya cerrado salvo que necesites corregirlo de forma
+controlada y hayas verificado el respaldo disponible.
+
+### 7. Administrar personal y configuración
+
+En **⚙️ Ajustes** puedes:
+
+- Cambiar la persona inicial para futuros cálculos que no tengan historial.
+- Agregar, editar, eliminar y reordenar funcionarios.
+- Registrar o corregir sus correos electrónicos.
+- Configurar y probar el webhook de notificaciones.
+- Crear respaldos manuales.
+- Restaurar un respaldo validado.
+- Consultar los últimos eventos de auditoría.
+- Ver la cantidad de notificaciones pendientes y reintentarlas.
+
+Eliminar un funcionario no borra sus turnos históricos. Los nombres que aparecen
+en periodos anteriores se conservan en los reportes y en el historial.
+
+### 8. Recuperar un respaldo
+
+Usa esta función únicamente cuando necesites volver a un estado anterior:
+
+1. Abre **⚙️ Ajustes > Recuperación y auditoría**.
+2. Presiona **Restaurar respaldo**.
+3. Selecciona el archivo por fecha y etiqueta.
+4. Confirma la restauración.
+5. El sistema crea automáticamente un respaldo `pre_restore` del estado actual.
+6. Verifica nuevamente el personal, el periodo activo, los pendientes y el
+   historial.
+
+Los respaldos inválidos o externos a la carpeta autorizada se rechazan. Después
+de restaurar, vuelve a revisar la planificación antes de cerrar otro mes.
+
+### 9. Resolver notificaciones pendientes
+
+Si el envío de correo falla después de guardar el mes:
+
+1. Comprueba la conexión a Internet y la URL del webhook.
+2. Revisa que todos los funcionarios activos tengan un correo válido.
+3. Abre **⚙️ Ajustes > Recuperación y auditoría**.
+4. Presiona **Reintentar notificaciones**.
+5. Verifica que el contador de pendientes disminuya.
+
+El cierre local del mes es independiente del envío de correo. No vuelvas a
+cerrar el mes solo porque una notificación haya fallado.
+
+### 10. Ubicaciones de datos y soporte
+
+En la versión empaquetada, la carpeta operativa es:
+
+```text
+%APPDATA%\Sistema de Turnos\
+├── config.json
+├── backups\
+├── archives\
+├── pending_notifications.json
+└── turnos.log
+```
+
+En modo desarrollador, los archivos permanecen en el directorio del proyecto.
+Para soporte, conserva el mensaje visible de error, el periodo afectado y una
+copia del respaldo más reciente; no edites `config.json` manualmente.
 
 ---
 
@@ -324,7 +496,7 @@ El ejecutable resultante se creará en el directorio `dist/Sistema de Turnos.exe
 
 ## 🧪 Pruebas Automatizadas (Testing)
 
-El proyecto cuenta con una batería de **78 pruebas unitarias y de integración** automatizadas desarrolladas con `pytest` y `pytest-mock`, cubriendo:
+El proyecto cuenta con una batería de **87 pruebas unitarias y de integración** automatizadas desarrolladas con `pytest` y `pytest-mock`, cubriendo:
 - Rotación pura y ciclo circular.
 - Asignación de pendientes y reglas de espaciado (gap de 4 semanas).
 - Restricciones anuales de feriados patrios y festivos de diciembre.
@@ -342,7 +514,7 @@ Para ejecutar todas las pruebas:
 
 Resultado esperado:
 ```text
-============================= 78 passed in ~1.6s =============================
+============================= 87 passed in ~1.6s =============================
 ```
 
 ---
@@ -378,7 +550,7 @@ Sistema de turnos/
 │   └── logger.py                    # Logger rotativo en consola y archivo turnos.log
 ├── scripts/                         # Scripts de backend y soporte
 │   └── google_apps_script.js        # Webhook serverless para Google Apps Script
-├── tests/                           # Suite de 78 pruebas automatizadas con pytest
+├── tests/                           # Suite de 87 pruebas automatizadas con pytest
 ├── .env.example                     # Plantilla de variables de entorno
 ├── config.json                      # Estado actual de personal, historial y rotación
 ├── main.py                          # Punto de entrada de la aplicación
@@ -403,3 +575,27 @@ Encuentra los manuales y documentos técnicos generados en la raíz del proyecto
 
 Desarrollado para optimizar la gestión operativa de turnos de guardia.  
 Código abierto bajo los términos establecidos en la organización institucional.
+# Datos de ejecución y recuperación
+
+En la versión empaquetada, la configuración operativa se guarda en
+`%APPDATA%\Sistema de Turnos` y no junto al ejecutable. Esto permite actualizar
+el `.exe` sin sobrescribir turnos, excepciones ni respaldos.
+
+La carpeta contiene:
+
+- `config.json`: estado actual.
+- `backups\`: respaldos automáticos y respaldos previos a restauraciones.
+- `archives\`: historial archivado.
+- `turnos.log`: registro técnico.
+
+El modelo valida la configuración al cargarla, agrega `schema_version` al guardar
+y registra cambios relevantes en `auditoria`. Antes de cerrar un mes se validan
+las semanas y las asignaciones manuales. Si una notificación falla después del
+cierre, el mes permanece guardado y el error se informa por separado.
+
+Para compilar y generar el instalador:
+
+```powershell
+pyinstaller "Sistema de Turnos.spec"
+iscc installer\SistemaDeTurnos.iss
+```

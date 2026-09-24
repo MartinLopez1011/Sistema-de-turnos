@@ -2,12 +2,13 @@ import logging
 import os
 import sys
 from logging.handlers import RotatingFileHandler
+from utils.app_paths import get_application_data_dir
 
 _logger_initialized = False
 
 def get_root_dir():
     if getattr(sys, 'frozen', False):
-        return os.path.dirname(sys.executable)
+        return get_application_data_dir()
     return os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
 
 def _init_base_logger(log_filename="turnos.log", level=logging.INFO, force_reinit=False):
@@ -75,4 +76,3 @@ def setup_logger(name="turnos", log_filename="turnos.log", level=logging.INFO, f
 
 def get_logger(name="turnos"):
     return setup_logger(name)
-
