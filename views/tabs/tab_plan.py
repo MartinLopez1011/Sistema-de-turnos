@@ -386,43 +386,63 @@ class TabPlan:
                 self.app.set_status(f"Días fuera del rango 1–{last_day}: {inv_str}", "error")
                 return
 
-            existing_dates = {
-                exc['fecha'] for exc in self.app.exceptions if exc['persona'] == person
+            existing_map = {
+                exc['fecha']: exc for exc in self.app.exceptions if exc['persona'] == person
             }
 
             new_exc = []
+            updated_exc = []
             skipped_existing = []
 
             for day in raw_days:
                 date_obj = datetime(year, month, day).date()
-                if date_obj in existing_dates:
-                    skipped_existing.append(date_obj)
+                if date_obj in existing_map:
+                    item = existing_map[date_obj]
+                    if item.get('tipo') != exc_type:
+                        item['tipo'] = exc_type
+                        updated_exc.append(date_obj)
+                    else:
+                        skipped_existing.append(date_obj)
                     continue
                 new_exc.append({'persona': person, 'fecha': date_obj, 'tipo': exc_type})
 
-            if not new_exc:
+            if not new_exc and not updated_exc:
                 self.days_entry.configure(border_color=P["orange"])
                 self.app.set_status(
-                    f"Todos los días ingresados ya tenían excepción registrada para {_short_name(person)}.",
+                    f"Todos los días ingresados ya tenían la excepción {exc_type} registrada para {_short_name(person)}.",
                     "warn"
                 )
                 return
 
-            self.app.add_exceptions(new_exc)
+            if new_exc:
+                self.app.add_exceptions(new_exc)
+            if updated_exc:
+                if hasattr(self.app, 'exceptions_by_period') and hasattr(self.app, 'active_period_key'):
+                    self.app.exceptions_by_period[self.app.active_period_key] = self.app.exceptions
+                if hasattr(self.app, 'refresh_plan_views'):
+                    self.app.refresh_plan_views()
+                if hasattr(self.app, 'mark_dirty'):
+                    self.app.mark_dirty()
+                if hasattr(self, 'refresh_exceptions') and getattr(self, 'exception_list', None) is not None:
+                    self.refresh_exceptions(self.app.exceptions)
+
             self.days_entry.delete(0, 'end')
             self.days_entry.focus_set()
 
-            n = len(new_exc)
-            dias_str = ", ".join(e['fecha'].strftime('%d/%m') for e in new_exc)
-            skip_msg = ""
+            msgs = []
+            if new_exc:
+                n = len(new_exc)
+                dias_str = ", ".join(e['fecha'].strftime('%d/%m') for e in new_exc)
+                msgs.append(f"✓ {n} nueva{'s' if n > 1 else ''} {exc_type} ({dias_str})")
+            if updated_exc:
+                u = len(updated_exc)
+                u_str = ", ".join(d.strftime('%d/%m') for d in updated_exc)
+                msgs.append(f"✓ {u} actualizada{'s' if u > 1 else ''} a {exc_type} ({u_str})")
             if skipped_existing:
-                skip_str = ", ".join(d.strftime('%d/%m') for d in skipped_existing)
-                skip_msg = f" (omitidos por ya existir: {skip_str})"
+                s_str = ", ".join(d.strftime('%d/%m') for d in skipped_existing)
+                msgs.append(f"(sin cambios: {s_str})")
 
-            self.app.set_status(
-                f"✓ {n} excepción{'es' if n > 1 else ''} {exc_type} para {_short_name(person)}: {dias_str}{skip_msg}",
-                "ok"
-            )
+            self.app.set_status(f"{_short_name(person)}: {' | '.join(msgs)}", "ok")
 
         except ValueError:
             self.app.set_status("Ingresa días o rangos válidos, ej: 1-5, 12 o 15, 20-25.", "error")
