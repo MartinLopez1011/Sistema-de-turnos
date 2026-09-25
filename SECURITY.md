@@ -7,7 +7,7 @@ Para consultar las políticas completas de seguridad de la información, protecc
 ## Resumen Ejecutivo de Seguridad
 
 1. **Datos Sensibles Prohibidos en Git**:
-   - Queda estrictamente prohibido subir nombres de funcionarios, correos reales (`@investigaciones.cl`), números de contacto o motivos personales/médicos al repositorio.
+   - Queda estrictamente prohibido subir nombres de funcionarios, correos reales (`@institucion.cl`), números de contacto o motivos personales/médicos al repositorio.
    - El archivo `config.json` de operación local y la carpeta `backups/` están permanentemente excluidos mediante `.gitignore`.
 2. **Uso de Plantillas**:
    - Utilice `config.example.json` y `.env.example` como plantilla para desplegar nuevas instancias del sistema.
