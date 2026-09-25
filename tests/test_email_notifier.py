@@ -51,6 +51,9 @@ class TestEmailNotifier(unittest.TestCase):
         # Simular conexión exitosa
         mock_socket.return_value = MagicMock()
         self.assertTrue(check_internet_connection())
+        # Verificar que se utiliza el puerto 443 HTTPS
+        call_args = mock_socket.call_args[0][0]
+        self.assertEqual(call_args[1], 443)
 
         # Simular falla de conexión
         mock_socket.side_effect = OSError("Sin red")

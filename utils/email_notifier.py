@@ -22,9 +22,10 @@ def is_valid_email(email: str) -> bool:
 def check_internet_connection(timeout: float = 3.0) -> bool:
     """
     Verifica de manera rápida la conectividad a Internet.
-    Intenta abrir un socket TCP a servidores DNS públicos conocidos (Google 8.8.8.8 o Cloudflare 1.1.1.1).
+    Intenta abrir un socket TCP a puertos HTTPS estándar (443) de Google y Cloudflare.
+    El puerto 443 es el estándar para tráfico web y evita bloqueos de cortafuegos en el puerto 53 (DNS).
     """
-    servers = [("8.8.8.8", 53), ("1.1.1.1", 53)]
+    servers = [("8.8.8.8", 443), ("1.1.1.1", 443), ("www.google.com", 443)]
     for host, port in servers:
         try:
             with socket.create_connection((host, port), timeout=timeout):
@@ -160,7 +161,9 @@ def send_notification_webhook(
 
     opener = urllib.request.build_opener(_GoogleAppsScriptRedirectHandler())
 
+    prev_default_timeout = socket.getdefaulttimeout()
     try:
+        socket.setdefaulttimeout(timeout)
         logger.info("[EMAIL] Despachando petición POST...")
         with opener.open(req, timeout=timeout) as response:
             status_code = response.getcode()
@@ -220,3 +223,5 @@ def send_notification_webhook(
         msg = f"Error inesperado al enviar correo: {str(e)}"
         logger.error("[EMAIL] %s", msg, exc_info=True)
         return False, msg
+    finally:
+        socket.setdefaulttimeout(prev_default_timeout)

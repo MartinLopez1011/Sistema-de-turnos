@@ -669,6 +669,77 @@ class ShiftManager:
             return snap["siguiente_id"], snap["pendientes"].copy()
         return self.siguiente_id, self.pendientes.copy()
 
+    def get_initial_state_for_period(self, year, month):
+        """
+        Determina el estado de rotación {'siguiente_id', 'pendientes'}
+        con el que debe iniciar el periodo (year, month).
+        
+        1. Si ya existe un snapshot guardado para (year, month), lo retorna.
+        2. Si (year, month) <= mes actual, retorna el puntero global actual.
+        3. Si (year, month) es un mes futuro sin snapshot:
+           Encadena y proyecta la rotación desde el último snapshot válido
+           o mes actual hasta el inicio de (year, month).
+        """
+        target_key = f"{year}-{month:02d}"
+        if target_key in self.snapshots:
+            return {
+                "siguiente_id": self.snapshots[target_key]["siguiente_id"],
+                "pendientes": self.snapshots[target_key]["pendientes"].copy(),
+            }
+
+        today = date.today()
+        target_is_future = (year, month) > (today.year, today.month)
+        if not target_is_future:
+            return {
+                "siguiente_id": self.siguiente_id,
+                "pendientes": self.pendientes.copy(),
+            }
+
+        best_snapshot_key = None
+        best_snapshot_period = None
+        for snap_k in self.snapshots.keys():
+            try:
+                parts = snap_k.split('-')
+                p_tuple = (int(parts[0]), int(parts[1]))
+                if p_tuple <= (year, month):
+                    if best_snapshot_period is None or p_tuple > best_snapshot_period:
+                        best_snapshot_period = p_tuple
+                        best_snapshot_key = snap_k
+            except (ValueError, IndexError):
+                continue
+
+        if best_snapshot_key is not None and best_snapshot_period >= (today.year, today.month):
+            state = {
+                "siguiente_id": self.snapshots[best_snapshot_key]["siguiente_id"],
+                "pendientes": self.snapshots[best_snapshot_key]["pendientes"].copy(),
+            }
+            preview_year, preview_month = best_snapshot_period
+        else:
+            state = {
+                "siguiente_id": self.siguiente_id,
+                "pendientes": self.pendientes.copy(),
+            }
+            preview_year, preview_month = today.year, today.month
+
+        while (preview_year, preview_month) < (year, month):
+            preview_key = f"{preview_year}-{preview_month:02d}"
+            period_exceptions = self.get_exceptions(preview_key)
+            period_manual = self.get_manual_assignments(preview_key)
+            _, final_id, final_pending = self.generate_shifts(
+                preview_year, preview_month, period_exceptions, state=state,
+                manual_assignments=period_manual)
+            state = {
+                "siguiente_id": final_id,
+                "pendientes": final_pending,
+            }
+            if preview_month == 12:
+                preview_year += 1
+                preview_month = 1
+            else:
+                preview_month += 1
+
+        return state
+
     def _check_week_exception(self, nombre, start_date, end_date, exceptions):
         """Verifica si una persona tiene excepción en la semana dada.
         Retorna (has_exception, tipo_excepción)."""
@@ -1133,16 +1204,13 @@ class ShiftManager:
         )
 
         if period_key not in self.snapshots:
-            self.snapshots[period_key] = {
-                "siguiente_id": self.siguiente_id,
-                "pendientes": self.pendientes.copy()
-            }
+            self.snapshots[period_key] = self.get_initial_state_for_period(year, month)
 
-        recalculation_state = self.snapshots.get(period_key) if exceptions_changed else None
+        recalculation_state = self.snapshots.get(period_key)
         shifts, final_id, final_pendientes = self.generate_shifts(
             year, month, exceptions,
             state=recalculation_state,
-            recalculate_history=exceptions_changed,
+            recalculate_history=True,
             manual_assignments=manual_assignments)
         
         for shift in shifts:

@@ -53,6 +53,30 @@ class FuturePreviewChainingTests(unittest.TestCase):
         self.assertEqual(len(saved_oct_exc), 1)
         self.assertEqual(saved_oct_exc[0]["persona"], "P1")
 
+    def test_advance_future_month_preserves_preview_parity(self):
+        # 1. Previsualizar un mes futuro con excepciones
+        oct_exceptions = [
+            {"persona": "P1", "fecha": date(self.future_year, 10, 1), "tipo": "DA"}
+        ]
+        shifts_preview = self.controller.preview_shifts(self.future_year, 10, oct_exceptions)
+        self.assertTrue(len(shifts_preview) > 0)
+        preview_assignments = [s["persona"] for s in shifts_preview]
+
+        # 2. Guardar mes (advance_queue)
+        ok, msg = self.controller.advance_queue(self.future_year, 10, oct_exceptions)
+        self.assertTrue(ok)
+
+        # 3. Previsualizar nuevamente: debe ser idéntico al preview original
+        shifts_after = self.controller.preview_shifts(self.future_year, 10, oct_exceptions)
+        after_assignments = [s["persona"] for s in shifts_after]
+        self.assertEqual(preview_assignments, after_assignments)
+
+        # 4. Verificar que en historial coincidan exactamente
+        for shift in shifts_preview:
+            start, end = shift["semana"]
+            wk_key = f"{start.isoformat()}_{end.isoformat()}"
+            self.assertEqual(self.controller.shift_manager.historial.get(wk_key), shift["persona"])
+
 
 if __name__ == "__main__":
     unittest.main()
