@@ -396,6 +396,8 @@ class ShiftManager:
                     'fecha': datetime.strptime(item['fecha'], '%Y-%m-%d').date(),
                     'tipo': item['tipo']
                 }
+                if 'motivo' in item and item['motivo']:
+                    exception['motivo'] = str(item['motivo'])
                 key = (exception['persona'], exception['fecha'])
                 if key not in seen:
                     exceptions.append(exception)
@@ -652,11 +654,14 @@ class ShiftManager:
                     f = datetime.strptime(f, '%Y-%m-%d').date()
                 except ValueError:
                     continue
-            normalized.append({
+            item = {
                 'persona': exc['persona'],
                 'fecha': f,
                 'tipo': exc['tipo']
-            })
+            }
+            if 'motivo' in exc and exc['motivo']:
+                item['motivo'] = str(exc['motivo'])
+            normalized.append(item)
         return normalized
 
     def _build_weeks(self, year, month):
@@ -1257,7 +1262,8 @@ class ShiftManager:
             {
                 'persona': exc['persona'],
                 'fecha': exc['fecha'].isoformat(),
-                'tipo': exc['tipo']
+                'tipo': exc['tipo'],
+                **({'motivo': str(exc['motivo'])} if exc.get('motivo') else {})
             }
             for exc in exceptions
         ]

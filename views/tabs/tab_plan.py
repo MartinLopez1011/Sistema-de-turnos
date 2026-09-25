@@ -130,9 +130,28 @@ class TabPlan:
             selected_hover_color=P["accent"],
             unselected_color=P["bg_input"],
             unselected_hover_color=P["bg_hover"],
-            text_color=P["text"]
+            text_color=P["text"],
+            command=self._on_type_changed
         )
         self.type_segmented.grid(row=2, column=0, padx=12, pady=(0, 12), sticky="ew")
+
+        # Contenedor dinámico de motivo obligatorio para OTR
+        self.reason_frame = ctk.CTkFrame(exc_form, fg_color="transparent")
+        ctk.CTkLabel(
+            self.reason_frame, text="Motivo / Justificación (obligatorio)",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"]
+        ).pack(anchor="w", padx=12, pady=(0, 3))
+        self.reason_entry = ctk.CTkEntry(
+            self.reason_frame, placeholder_text="Ej: Comisión de servicio, Duelo...",
+            fg_color=P["bg_input"], border_color=P["border"], border_width=1,
+            height=36
+        )
+        self.reason_entry.pack(fill="x", padx=12, pady=(0, 10))
+        self.reason_entry.bind("<Return>", lambda _: self.add_exception())
+        self.reason_entry.bind("<Key>", lambda _: self.reason_entry.configure(border_color=P["border"]))
+
+        self.type_var.trace_add("write", lambda *_: self._on_type_changed())
 
         ctk.CTkButton(
             exc_form, text="＋  Añadir",
@@ -140,7 +159,7 @@ class TabPlan:
             fg_color=P["green_d"], hover_color=P["green"],
             height=36, corner_radius=6,
             font=ctk.CTkFont(family="Inter", size=13, weight="bold")
-        ).grid(row=3, column=0, padx=12, pady=(0, 12), sticky="ew")
+        ).grid(row=4, column=0, padx=12, pady=(0, 12), sticky="ew")
 
         # ── Contenido Principal ────────────────────────────────────────────────
         main = ctk.CTkFrame(self.parent, fg_color="transparent")
@@ -324,12 +343,31 @@ class TabPlan:
                 text_color=P["text_s"], anchor="w"
             ).pack(fill="x")
 
+            if tipo == "OTR" and exc.get('motivo'):
+                ctk.CTkLabel(
+                    info,
+                    text=f"📝 Motivo: {exc['motivo']}",
+                    font=ctk.CTkFont(family="Inter", size=10, slant="italic"),
+                    text_color=P["text_s"], anchor="w"
+                ).pack(fill="x")
+
             ctk.CTkButton(
                 row, text="✕", width=28, height=28,
                 fg_color=P["bg_card"], hover_color=P["red_d"],
                 font=ctk.CTkFont(size=12),
                 command=lambda i=index: self.app.remove_exception(i)
             ).grid(row=0, column=1, padx=6, pady=6)
+
+    def _on_type_changed(self, value=None):
+        if not hasattr(self, 'reason_frame') or not hasattr(self, 'type_var'):
+            return
+        val = value if value is not None else self.type_var.get()
+        if val == "OTR":
+            self.reason_frame.grid(row=3, column=0, sticky="ew")
+        else:
+            self.reason_frame.grid_forget()
+            if hasattr(self, 'reason_entry'):
+                self.reason_entry.configure(border_color=P["border"])
 
     def add_exception(self):
         person = self.person_var.get()
@@ -344,6 +382,19 @@ class TabPlan:
             self.days_entry.configure(border_color=P["red"])
             self.app.set_status("Debes ingresar al menos un día.", "error")
             return
+
+        if exc_type == "OTR":
+            motivo = self.reason_entry.get().strip() if hasattr(self, 'reason_entry') else ""
+            if len(motivo) < 3:
+                if hasattr(self, 'reason_frame'):
+                    self.reason_frame.grid(row=3, column=0, sticky="ew")
+                if hasattr(self, 'reason_entry'):
+                    self.reason_entry.configure(border_color=P["red"])
+                    self.reason_entry.focus_set()
+                self.app.set_status("Para la excepción 'OTR', debes ingresar un motivo válido (mínimo 3 caracteres).", "error")
+                return
+        else:
+            motivo = ""
 
         today = date.today()
         if date(year, month, 1) < date(today.year, today.month, 1):
@@ -398,13 +449,28 @@ class TabPlan:
                 date_obj = datetime(year, month, day).date()
                 if date_obj in existing_map:
                     item = existing_map[date_obj]
+                    changed = False
                     if item.get('tipo') != exc_type:
                         item['tipo'] = exc_type
+                        changed = True
+                    if exc_type == 'OTR':
+                        if item.get('motivo') != motivo:
+                            item['motivo'] = motivo
+                            changed = True
+                    elif 'motivo' in item:
+                        del item['motivo']
+                        changed = True
+
+                    if changed:
                         updated_exc.append(date_obj)
                     else:
                         skipped_existing.append(date_obj)
                     continue
-                new_exc.append({'persona': person, 'fecha': date_obj, 'tipo': exc_type})
+
+                item_dict = {'persona': person, 'fecha': date_obj, 'tipo': exc_type}
+                if exc_type == 'OTR' and motivo:
+                    item_dict['motivo'] = motivo
+                new_exc.append(item_dict)
 
             if not new_exc and not updated_exc:
                 self.days_entry.configure(border_color=P["orange"])
@@ -427,17 +493,21 @@ class TabPlan:
                     self.refresh_exceptions(self.app.exceptions)
 
             self.days_entry.delete(0, 'end')
+            if hasattr(self, 'reason_entry'):
+                self.reason_entry.delete(0, 'end')
+                self.reason_entry.configure(border_color=P["border"])
             self.days_entry.focus_set()
 
             msgs = []
+            motivo_suffix = f" [{motivo}]" if (exc_type == "OTR" and motivo) else ""
             if new_exc:
                 n = len(new_exc)
                 dias_str = ", ".join(e['fecha'].strftime('%d/%m') for e in new_exc)
-                msgs.append(f"✓ {n} nueva{'s' if n > 1 else ''} {exc_type} ({dias_str})")
+                msgs.append(f"✓ {n} nueva{'s' if n > 1 else ''} {exc_type}{motivo_suffix} ({dias_str})")
             if updated_exc:
                 u = len(updated_exc)
                 u_str = ", ".join(d.strftime('%d/%m') for d in updated_exc)
-                msgs.append(f"✓ {u} actualizada{'s' if u > 1 else ''} a {exc_type} ({u_str})")
+                msgs.append(f"✓ {u} actualizada{'s' if u > 1 else ''} a {exc_type}{motivo_suffix} ({u_str})")
             if skipped_existing:
                 s_str = ", ".join(d.strftime('%d/%m') for d in skipped_existing)
                 msgs.append(f"(sin cambios: {s_str})")

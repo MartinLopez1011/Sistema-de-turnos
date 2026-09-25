@@ -528,7 +528,8 @@ class TurnosApp(ctk.CTk):
                 self.controller.process_generation(
                     year, month, exceptions_snapshot,
                     manual_assignments=manual_snapshot,
-                    target_path=excel_path
+                    target_path=excel_path,
+                    manual_motives=motives_snapshot
                 )
 
                 dest_desc = f"{len(recipients)} funcionario{'s' if len(recipients) != 1 else ''}"
@@ -601,11 +602,14 @@ class TurnosApp(ctk.CTk):
         period_key = f"{year}-{month:02d}"
         exceptions = self.exceptions_by_period.get(period_key, [])
         manual_assignments = self.manual_assignments_by_period.get(period_key, {})
+        motives = self.manual_motives_by_period.get(period_key, {})
         if period_key == self.active_period_key:
             exceptions = self.exceptions
             manual_assignments = self.manual_assignments
+            motives = self.manual_motives
         exceptions_snapshot = list(exceptions)
         manual_snapshot = dict(manual_assignments)
+        motives_snapshot = dict(motives)
 
         nombre_mes = MESES[month - 1]
         default_filename = f"turnos_{nombre_mes}_{year}.xlsx"
@@ -638,7 +642,10 @@ class TurnosApp(ctk.CTk):
 
         def _thread_worker():
             result = self.controller.process_generation(
-                year, month, exceptions_snapshot, manual_assignments=manual_snapshot, target_path=target_file
+                year, month, exceptions_snapshot,
+                manual_assignments=manual_snapshot,
+                target_path=target_file,
+                manual_motives=motives_snapshot
             )
             self.after(0, lambda: _on_export_done(*result))
 

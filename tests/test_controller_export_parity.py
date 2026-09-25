@@ -53,7 +53,7 @@ class ControllerExportParityTests(unittest.TestCase):
         output_file = self.root_path / "parity_test.xlsx"
         written_shifts_holder = []
 
-        def spy_write_shifts(shifts, exceptions, year, month):
+        def spy_write_shifts(shifts, exceptions, year, month, *args, **kwargs):
             written_shifts_holder.extend(shifts)
 
         with patch.object(ExcelHandler, "write_shifts", side_effect=spy_write_shifts):

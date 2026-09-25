@@ -4,6 +4,7 @@ from datetime import timedelta
 import openpyxl
 import os
 from openpyxl.styles import PatternFill, Alignment, Border, Side, Font
+from openpyxl.comments import Comment
 
 class ExcelHandler:
     def __init__(self, output_path, personal):
@@ -125,7 +126,7 @@ class ExcelHandler:
     def __exit__(self, exc_type, exc_val, exc_tb):
         self.close()
 
-    def write_shifts(self, shifts, exceptions, year, month):
+    def write_shifts(self, shifts, exceptions, year, month, manual_changes=None):
         meses = ["ENERO", "FEBRERO", "MARZO", "ABRIL", "MAYO", "JUNIO", "JULIO", "AGOSTO", "SEPTIEMBRE", "OCTUBRE", "NOVIEMBRE", "DICIEMBRE"]
         nombre_mes = meses[month - 1]
         
@@ -255,15 +256,44 @@ class ExcelHandler:
                 cell.value = None
                 cell.fill = fill_to_apply
 
+        # Preparar mapa de cambios manuales
+        if manual_changes is None:
+            manual_changes = []
+            for sh in shifts:
+                if sh.get('es_manual') or sh.get('es_forzado'):
+                    manual_changes.append({
+                        'semana': sh.get('semana'),
+                        'nuevo': sh.get('persona', 'Sin asignar'),
+                        'anterior': sh.get('anterior', 'Rotación automática'),
+                        'motivo': sh.get('motivo', 'Cambio manual registrado')
+                    })
+
+        manual_map = {mc['semana']: mc for mc in manual_changes if mc.get('semana')}
+
         # Escribir los turnos
         for shift in shifts:
-            person = shift['persona']
+            person = shift.get('persona')
             if not person or person not in person_rows:
                 continue
             
             row_idx = person_rows[person]
             start_date, end_date = shift['semana']
             
+            mc_info = manual_map.get(shift['semana'])
+            is_manual = bool(shift.get('es_manual') or shift.get('es_forzado') or mc_info)
+            shift_fill = for_fill if is_manual else red_fill
+            
+            comment_text = None
+            if is_manual:
+                orig_p = (mc_info.get('anterior') if mc_info else None) or shift.get('anterior') or "Rotación automática"
+                mot = (mc_info.get('motivo') if mc_info else None) or shift.get('motivo') or "Cambio manual registrado"
+                comment_text = (
+                    f"CAMBIO MANUAL DE GUARDIA\n"
+                    f"Asignado: {person}\n"
+                    f"Guardia original: {orig_p}\n"
+                    f"Motivo: {mot}"
+                )
+
             current_day = start_date
             while current_day <= end_date:
                 if current_day.month == month and current_day.year == year:
@@ -271,8 +301,10 @@ class ExcelHandler:
                     if day_val in day_columns:
                         col_idx = day_columns[day_val]
                         cell = self.sheet.cell(row=row_idx, column=col_idx)
-                        cell.fill = red_fill
+                        cell.fill = shift_fill
                         cell.border = thin_border
+                        if comment_text:
+                            cell.comment = Comment(comment_text, "Sistema de Turnos")
                 current_day += timedelta(days=1)
 
         # Escribir las excepciones (DA, FL)
@@ -292,6 +324,8 @@ class ExcelHandler:
                     cell.alignment = center_align
                     cell.font = bold_font
                     cell.border = thin_border
+                    if exc.get('tipo') == 'OTR' and exc.get('motivo'):
+                        cell.comment = Comment(f"Motivo: {exc['motivo']}", "Sistema de Turnos")
 
         # 3. ESCRIBIR TOTALES POR FUNCIONARIO (COLUMNAS 33 a 37: AG, AH, AI, AJ, AK)
         summary_fill = PatternFill(start_color="F2F5F9", end_color="F2F5F9", fill_type="solid")
@@ -354,6 +388,7 @@ class ExcelHandler:
         right_items = [
             ("OTR: Otro Permiso", otr_fill, "OTR", "FFFFFF"),
             ("Fin de Semana", gray_fill, " ", "000000"),
+            ("Cambio Guardia (Manual)", for_fill, "■", "FFFFFF"),
         ]
 
         for idx, (label, fill_style, mark, text_color) in enumerate(left_items):
@@ -384,3 +419,209 @@ class ExcelHandler:
             desc = self.sheet.cell(row=r, column=11, value=label)
             desc.font = Font(size=9.5, color="374151")
             desc.alignment = Alignment(horizontal="left", vertical="center")
+
+        # 5. DIBUJAR TABLA DE REGISTRO DE CAMBIOS MANUALES (SI EXISTEN EN EL MES)
+        next_table_row = legend_title_row + max(len(left_items), len(right_items)) + 2
+
+        if manual_changes:
+            mc_title = self.sheet.cell(
+                row=next_table_row, column=1,
+                value="REGISTRO DE CAMBIOS MANUALES DE GUARDIA (PERMUTAS / ACCIDENTES)"
+            )
+            mc_title.font = Font(bold=True, size=10, color="065F46")
+            self.sheet.row_dimensions[next_table_row].height = 22
+
+            hdr_row = next_table_row + 1
+            self.sheet.row_dimensions[hdr_row].height = 20
+
+            hdr_fill_mc = PatternFill(start_color="D1FAE5", end_color="D1FAE5", fill_type="solid")
+            hdr_font_mc = Font(bold=True, size=9, color="065F46")
+
+            # Col 1: FUNCIONARIO ASIGNADO
+            c1 = self.sheet.cell(row=hdr_row, column=1, value="FUNCIONARIO ASIGNADO")
+            c1.fill = hdr_fill_mc
+            c1.font = hdr_font_mc
+            c1.alignment = Alignment(horizontal="left", vertical="center")
+            c1.border = thin_border
+
+            # Cols 2-5: SEMANA
+            self.sheet.merge_cells(start_row=hdr_row, start_column=2, end_row=hdr_row, end_column=5)
+            for c in range(2, 6):
+                ch = self.sheet.cell(row=hdr_row, column=c)
+                ch.fill = hdr_fill_mc
+                ch.font = hdr_font_mc
+                ch.border = thin_border
+            c2 = self.sheet.cell(row=hdr_row, column=2, value="SEMANA")
+            c2.alignment = center_align
+
+            # Cols 6-11: GUARDIA ORIGINAL
+            self.sheet.merge_cells(start_row=hdr_row, start_column=6, end_row=hdr_row, end_column=11)
+            for c in range(6, 12):
+                ch = self.sheet.cell(row=hdr_row, column=c)
+                ch.fill = hdr_fill_mc
+                ch.font = hdr_font_mc
+                ch.border = thin_border
+            c3 = self.sheet.cell(row=hdr_row, column=6, value="GUARDIA ORIGINAL")
+            c3.alignment = Alignment(horizontal="left", vertical="center")
+
+            # Cols 12-26: MOTIVO DEL CAMBIO / JUSTIFICACIÓN
+            self.sheet.merge_cells(start_row=hdr_row, start_column=12, end_row=hdr_row, end_column=26)
+            for c in range(12, 27):
+                ch = self.sheet.cell(row=hdr_row, column=c)
+                ch.fill = hdr_fill_mc
+                ch.font = hdr_font_mc
+                ch.border = thin_border
+            c4 = self.sheet.cell(row=hdr_row, column=12, value="MOTIVO DEL CAMBIO / JUSTIFICACIÓN")
+            c4.alignment = Alignment(horizontal="left", vertical="center")
+
+            # Filas de datos
+            data_font = Font(size=9.5, color="374151")
+            for idx, mc in enumerate(manual_changes):
+                curr_r = hdr_row + 1 + idx
+                self.sheet.row_dimensions[curr_r].height = 20
+
+                # Funcionario Asignado
+                p_cell = self.sheet.cell(row=curr_r, column=1, value=mc.get('nuevo', 'Sin asignar'))
+                p_cell.font = data_font
+                p_cell.alignment = Alignment(horizontal="left", vertical="center")
+                p_cell.border = thin_border
+
+                # Semana
+                s_d, e_d = mc.get('semana', (None, None))
+                if s_d and e_d:
+                    semana_str = f"{s_d.strftime('%d/%m')} al {e_d.strftime('%d/%m')}"
+                else:
+                    semana_str = "Semana N/A"
+                self.sheet.merge_cells(start_row=curr_r, start_column=2, end_row=curr_r, end_column=5)
+                for c in range(2, 6):
+                    self.sheet.cell(row=curr_r, column=c).border = thin_border
+                d_cell = self.sheet.cell(row=curr_r, column=2, value=semana_str)
+                d_cell.font = data_font
+                d_cell.alignment = center_align
+
+                # Guardia Original
+                self.sheet.merge_cells(start_row=curr_r, start_column=6, end_row=curr_r, end_column=11)
+                for c in range(6, 12):
+                    self.sheet.cell(row=curr_r, column=c).border = thin_border
+                orig_cell = self.sheet.cell(row=curr_r, column=6, value=mc.get('anterior', 'Rotación automática'))
+                orig_cell.font = data_font
+                orig_cell.alignment = Alignment(horizontal="left", vertical="center")
+
+                # Motivo
+                self.sheet.merge_cells(start_row=curr_r, start_column=12, end_row=curr_r, end_column=26)
+                for c in range(12, 27):
+                    self.sheet.cell(row=curr_r, column=c).border = thin_border
+                m_cell = self.sheet.cell(row=curr_r, column=12, value=mc.get('motivo', 'Sin justificación'))
+                m_cell.font = data_font
+                m_cell.alignment = Alignment(horizontal="left", vertical="center")
+
+            next_table_row = hdr_row + len(manual_changes) + 2
+
+        # 6. DIBUJAR TABLA DE DETALLE DE EXCEPCIONES OTR (SI EXISTEN EN EL MES)
+        otr_excs = [
+            e for e in exceptions
+            if e.get('tipo') == 'OTR' and e.get('fecha') and
+            e['fecha'].year == year and e['fecha'].month == month
+        ]
+
+        if otr_excs:
+            otr_start_row = next_table_row
+
+            otr_title = self.sheet.cell(row=otr_start_row, column=1, value="DETALLE DE PERMISOS Y EXCEPCIONES ESPECIALES (OTR)")
+            otr_title.font = Font(bold=True, size=10, color="1F2937")
+            self.sheet.row_dimensions[otr_start_row].height = 22
+
+            # Agrupar por (persona, motivo) para presentar rangos continuos
+            groups = {}
+            for e in sorted(otr_excs, key=lambda x: (x.get('persona', ''), x.get('fecha'))):
+                p = e.get('persona', '')
+                m = (e.get('motivo') or 'Sin justificación especificada').strip()
+                k = (p, m)
+                if k not in groups:
+                    groups[k] = []
+                groups[k].append(e['fecha'])
+
+            # Encabezados de la tabla OTR
+            hdr_row = otr_start_row + 1
+            self.sheet.row_dimensions[hdr_row].height = 20
+
+            hdr_fill = PatternFill(start_color="D9E2F3", end_color="D9E2F3", fill_type="solid")
+            hdr_font = Font(bold=True, size=9)
+
+            c1 = self.sheet.cell(row=hdr_row, column=1, value="FUNCIONARIO")
+            c1.fill = hdr_fill
+            c1.font = hdr_font
+            c1.alignment = Alignment(horizontal="left", vertical="center")
+            c1.border = thin_border
+
+            self.sheet.merge_cells(start_row=hdr_row, start_column=2, end_row=hdr_row, end_column=5)
+            for c in range(2, 6):
+                cell_h = self.sheet.cell(row=hdr_row, column=c)
+                cell_h.fill = hdr_fill
+                cell_h.font = hdr_font
+                cell_h.border = thin_border
+            c2 = self.sheet.cell(row=hdr_row, column=2, value="DÍAS / PERÍODO")
+            c2.alignment = center_align
+
+            self.sheet.merge_cells(start_row=hdr_row, start_column=6, end_row=hdr_row, end_column=22)
+            for c in range(6, 23):
+                cell_h = self.sheet.cell(row=hdr_row, column=c)
+                cell_h.fill = hdr_fill
+                cell_h.font = hdr_font
+                cell_h.border = thin_border
+            c3 = self.sheet.cell(row=hdr_row, column=6, value="MOTIVO / JUSTIFICACIÓN")
+            c3.alignment = Alignment(horizontal="left", vertical="center")
+
+            # Filas de datos
+            data_font = Font(size=9.5, color="374151")
+            for idx, ((person, motivo), dates) in enumerate(groups.items()):
+                curr_r = hdr_row + 1 + idx
+                self.sheet.row_dimensions[curr_r].height = 20
+
+                # Funcionario
+                p_cell = self.sheet.cell(row=curr_r, column=1, value=person)
+                p_cell.font = data_font
+                p_cell.alignment = Alignment(horizontal="left", vertical="center")
+                p_cell.border = thin_border
+
+                # Días formateados
+                dates_str = self._format_date_ranges(dates)
+                self.sheet.merge_cells(start_row=curr_r, start_column=2, end_row=curr_r, end_column=5)
+                for c in range(2, 6):
+                    self.sheet.cell(row=curr_r, column=c).border = thin_border
+                d_cell = self.sheet.cell(row=curr_r, column=2, value=dates_str)
+                d_cell.font = data_font
+                d_cell.alignment = center_align
+
+                # Motivo
+                self.sheet.merge_cells(start_row=curr_r, start_column=6, end_row=curr_r, end_column=22)
+                for c in range(6, 23):
+                    self.sheet.cell(row=curr_r, column=c).border = thin_border
+                m_cell = self.sheet.cell(row=curr_r, column=6, value=motivo)
+                m_cell.font = data_font
+                m_cell.alignment = Alignment(horizontal="left", vertical="center")
+
+    @staticmethod
+    def _format_date_ranges(dates):
+        """Agrupa fechas consecutivas en formato legible (ej: '01/09 al 04/09, 10/09')."""
+        if not dates:
+            return ""
+        sorted_dates = sorted(dates)
+        ranges = []
+        start = sorted_dates[0]
+        prev = sorted_dates[0]
+        for d in sorted_dates[1:]:
+            if d == prev + timedelta(days=1):
+                prev = d
+            else:
+                if start == prev:
+                    ranges.append(start.strftime("%d/%m"))
+                else:
+                    ranges.append(f"{start.strftime('%d/%m')} al {prev.strftime('%d/%m')}")
+                start = d
+                prev = d
+        if start == prev:
+            ranges.append(start.strftime("%d/%m"))
+        else:
+            ranges.append(f"{start.strftime('%d/%m')} al {prev.strftime('%d/%m')}")
+        return ", ".join(ranges)

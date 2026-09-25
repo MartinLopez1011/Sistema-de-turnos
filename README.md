@@ -76,9 +76,11 @@ para mantener compatibilidad con configuraciones y reportes existentes.
 ### 📊 3. Generación Oficial de Reportes Excel (.xlsx)
 - Construido mediante `openpyxl` directamente en memoria, sin requerir plantillas externas.
 - **Matriz Mensual de 31 Días:** Cuadrícula completa con nombres de funcionarios, días numéricos y letras de días de la semana (`L, M, X, J, V, S, D`).
-- **Identificación Visual:** Días de guardia en rojo institucional (`#FF3B30`), fines de semana en gris tenue (`#D9D9D9`) y días inválidos bloqueados (ej: 29-31 en febrero o 31 en meses de 30 días).
+- **Identificación Visual:** Días de guardia regular en rojo institucional (`#FF3B30`), cambios manuales / permutas en verde esmeralda (`#059669`), fines de semana en gris tenue (`#D9D9D9`) y días inválidos bloqueados (ej: 29-31 en febrero o 31 en meses de 30 días).
+- **Trazabilidad de Permutas en Excel:** Cada celda de cambio manual incluye una nota interactiva (`Comment`) indicando el funcionario asignado, el funcionario original y el motivo justificado. Al pie del reporte se genera automáticamente la tabla `"REGISTRO DE CAMBIOS MANUALES DE GUARDIA (PERMUTAS / ACCIDENTES)"`.
+- **Detalle de Excepciones OTR:** Genera la tabla formal `"DETALLE DE PERMISOS Y EXCEPCIONES ESPECIALES (OTR)"` con funcionario, rangos de fechas agrupados y motivo obligatorio.
 - **Columnas de Totales Acumulados:** Métricas por funcionario al costado derecho: cantidad total de `TURNOS`, `DA`, `FL`, `LIC` y `OTR`.
-- **Bloque de Convenciones y Leyenda:** Muestras de color y descripciones formales al pie de la tabla.
+- **Bloque de Convenciones y Leyenda:** Muestras de color y descripciones formales al pie de la tabla (incluyendo Turno Regular, DA, FL, LIC, OTR, Fin de Semana y Cambio Guardia Manual).
 - **Configuración de Impresión:** Orientación horizontal (Landscape Carta) autoajustada exactamente a 1 página de ancho (`fitToWidth = 1`).
 - **Respeto Histórico:** Incluye en el reporte a funcionarios que hayan tenido turnos o excepciones en ese periodo, aunque hayan sido dados de baja del personal activo posteriormente.
 
@@ -288,9 +290,9 @@ Cuando un funcionario no pueda cubrir determinados días:
    - **DA**: Día Administrativo.
    - **FL**: Feriado Legal.
    - **LIC**: Licencia Médica.
-   - **OTR**: Otro permiso o impedimento.
+   - **OTR**: Otro permiso o impedimento (exige ingresar obligatoriamente un **motivo o justificación**, el cual se visualiza en la lista y se exporta como nota/comentario en la celda de Excel).
 4. Presiona **＋ Añadir**.
-5. Comprueba en la lista de excepciones que los días y el tipo sean correctos.
+5. Comprueba en la lista de excepciones que los días, el tipo y el motivo sean correctos.
 
 El sistema recalcula la vista previa y registra como pendiente a quien haya sido
 saltado por una excepción, para que recupere su turno cuando corresponda y cumpla su descanso.

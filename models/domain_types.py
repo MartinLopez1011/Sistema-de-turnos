@@ -8,6 +8,7 @@ class ExceptionRecord:
     person: str
     date: date
     kind: str
+    reason: str = ""
 
 
 @dataclass(frozen=True)

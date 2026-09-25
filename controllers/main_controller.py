@@ -152,11 +152,37 @@ class MainController:
             year, month, exceptions, manual_assignments=manual_assignments
         )
 
-    def process_generation(self, year, month, exceptions, manual_assignments=None, target_path=None):
+    def process_generation(self, year, month, exceptions, manual_assignments=None, target_path=None, manual_motives=None):
         try:
+            period_key = f"{year}-{month:02d}"
+            active_manual = manual_assignments if manual_assignments is not None else self.shift_manager.asignaciones_manuales.get(period_key, {})
+            active_motives = manual_motives if manual_motives is not None else self.shift_manager.asignaciones_manuales_motivos.get(period_key, {})
+
             # 1. Generar los turnos usando preview_shifts para garantizar paridad exacta con la UI
-            shifts = self.preview_shifts(year, month, exceptions, manual_assignments=manual_assignments)
+            shifts = self.preview_shifts(year, month, exceptions, manual_assignments=active_manual)
             warnings = self.shift_manager.last_warnings
+
+            # 1.1 Detectar cambios manuales y determinar a quién reemplazan
+            has_manual = any(sh.get('es_manual') or sh.get('es_forzado') for sh in shifts) or bool(active_manual)
+            manual_changes = []
+            if has_manual:
+                shifts_auto = self.preview_shifts(year, month, exceptions, manual_assignments={})
+                orig_by_week = {
+                    f"{s['semana'][0].isoformat()}_{s['semana'][1].isoformat()}": s.get('persona', 'Sin asignar')
+                    for s in shifts_auto
+                }
+                for sh in shifts:
+                    s_d, e_d = sh['semana']
+                    wk = f"{s_d.isoformat()}_{e_d.isoformat()}"
+                    if sh.get('es_manual') or sh.get('es_forzado') or (active_manual and wk in active_manual):
+                        orig_p = orig_by_week.get(wk, "Rotación automática")
+                        mot = (active_motives.get(wk) if active_motives else None) or sh.get('motivo') or "No especificado"
+                        manual_changes.append({
+                            "semana": (s_d, e_d),
+                            "nuevo": sh.get('persona', 'Sin asignar'),
+                            "anterior": orig_p,
+                            "motivo": mot
+                        })
             
             # 2. Inicializar manejador de Excel garantizando paridad con personal histórico
             nombre_mes = MESES[month - 1]
@@ -180,7 +206,7 @@ class MainController:
                 excel_handler.load_template()
                 
                 # 3. Escribir los datos
-                excel_handler.write_shifts(shifts, exceptions, year, month)
+                excel_handler.write_shifts(shifts, exceptions, year, month, manual_changes=manual_changes)
                 
                 # 4. Guardar archivo
                 excel_handler.save_report()

@@ -58,6 +58,8 @@ def validate_config(data):
                     continue
                 if item.get("tipo") not in VALID_EXCEPTION_TYPES:
                     errors.append(f"Tipo de excepción inválido en {period}: {item.get('tipo')}.")
+                if "motivo" in item and not isinstance(item["motivo"], str):
+                    errors.append(f"Motivo de excepción inválido en {period}[{index}].")
                 try:
                     datetime.strptime(item.get("fecha", ""), "%Y-%m-%d")
                 except (TypeError, ValueError):

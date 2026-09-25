@@ -204,8 +204,9 @@ class TestManualAssignmentsEdgeCases(unittest.TestCase):
                 day_col = cur.day + 1
                 cell_fill = sheet.cell(row=silva_row, column=day_col).fill
                 if cell_fill and cell_fill.start_color and cell_fill.start_color.rgb:
-                    # Color rojo del turno
-                    if "FF3B30" in str(cell_fill.start_color.rgb).upper() or "3B30" in str(cell_fill.start_color.rgb).upper():
+                    # Color del turno (verde esmeralda 059669 para asignación manual, o rojo para turno regular)
+                    fill_rgb = str(cell_fill.start_color.rgb).upper()
+                    if "059669" in fill_rgb or "FF3B30" in fill_rgb or "3B30" in fill_rgb:
                         has_red_cell = True
             cur += date.resolution
         self.assertTrue(has_red_cell, "El funcionario asignado manualmente debe tener celdas de turno en Excel")

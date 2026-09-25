@@ -116,6 +116,88 @@ class CustomConfirmDialog:
         return result[0]
 
 
+class PromptOTRMotiveDialog:
+    @classmethod
+    def show(cls, parent, persona, day):
+        dialog = ctk.CTkToplevel(parent)
+        dialog.title("Motivo de Excepción OTR")
+        dialog.geometry("420x220")
+        dialog.configure(fg_color=P["bg_card"])
+        dialog.transient(parent)
+        dialog.grab_set()
+
+        dialog.update_idletasks()
+        x = parent.winfo_x() + (parent.winfo_width() - dialog.winfo_width()) // 2
+        y = parent.winfo_y() + (parent.winfo_height() - dialog.winfo_height()) // 2
+        dialog.geometry(f"+{x}+{y}")
+
+        result = [None]
+
+        ctk.CTkLabel(
+            dialog,
+            text=f"Motivo para OTR (Otro)\n{_short_name(persona, 3)} · Día {day}",
+            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+            text_color=P["text"], justify="center"
+        ).pack(pady=(16, 6))
+
+        ctk.CTkLabel(
+            dialog,
+            text="Ingresa la justificación (obligatorio, mín. 3 caracteres):",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color=P["text_s"]
+        ).pack(pady=(0, 6))
+
+        entry = ctk.CTkEntry(
+            dialog, width=340, height=36,
+            placeholder_text="Ej: Comisión de servicio, Duelo, Capacitación...",
+            fg_color=P["bg_input"], border_color=P["border"]
+        )
+        entry.pack(pady=(0, 4))
+        entry.focus()
+
+        error_lbl = ctk.CTkLabel(
+            dialog, text="",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color=P["red"]
+        )
+        error_lbl.pack(pady=(0, 6))
+
+        def submit():
+            val = entry.get().strip()
+            if len(val) < 3:
+                error_lbl.configure(text="El motivo debe contener al menos 3 caracteres.")
+                entry.configure(border_color=P["red"])
+                entry.focus()
+                return
+            result[0] = val
+            dialog.destroy()
+
+        def cancel():
+            dialog.destroy()
+
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=30, pady=(0, 14))
+
+        ctk.CTkButton(
+            btn_frame, text="Cancelar",
+            fg_color=P["bg_card2"], hover_color=P["border_h"],
+            text_color=P["text"], command=cancel, width=140, height=34
+        ).pack(side="left")
+
+        ctk.CTkButton(
+            btn_frame, text="Aceptar",
+            fg_color=P["accent_d"], hover_color=P["accent"],
+            text_color=P["text"], command=submit, width=140, height=34,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+        ).pack(side="right")
+
+        dialog.bind("<Return>", lambda e: submit())
+        dialog.bind("<Escape>", lambda e: cancel())
+
+        parent.wait_window(dialog)
+        return result[0]
+
+
 class AddExceptionDialog:
     @classmethod
     def show(cls, parent, persona, day, callback):
@@ -139,8 +221,21 @@ class AddExceptionDialog:
         ).pack(pady=(16, 8))
 
         def on_select(tipo):
-            dialog.destroy()
-            callback(tipo)
+            if tipo == "OTR":
+                motivo = PromptOTRMotiveDialog.show(dialog, persona, day)
+                if not motivo:
+                    return
+                dialog.destroy()
+                try:
+                    callback(tipo, motivo)
+                except TypeError:
+                    callback(tipo)
+            else:
+                dialog.destroy()
+                try:
+                    callback(tipo, "")
+                except TypeError:
+                    callback(tipo)
 
         btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
         btn_frame.pack(fill="both", expand=True, padx=24, pady=(0, 16))

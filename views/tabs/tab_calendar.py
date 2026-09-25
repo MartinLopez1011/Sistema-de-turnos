@@ -487,24 +487,39 @@ class TabCalendar:
             active_year, active_month = c_year, c_month
 
         if exc_tipo:
+            exc_found = None
+            exc_idx = -1
+            for i, exc in enumerate(self.app.exceptions):
+                if (exc['persona'] == persona and exc['fecha'].day == day and
+                        exc['fecha'].month == active_month and exc['fecha'].year == active_year and
+                        exc.get('tipo') == exc_tipo):
+                    exc_found = exc
+                    exc_idx = i
+                    break
+
+            motivo_str = ""
+            if exc_found and exc_found.get('motivo'):
+                motivo_str = f" (Motivo: {exc_found['motivo']})"
+
             if messagebox.askyesno(
                 "Eliminar excepción",
-                f"¿Eliminar la excepción {exc_tipo} de {_short_name(persona, 2)} el día {day}?",
+                f"¿Eliminar la excepción {exc_tipo}{motivo_str} de {_short_name(persona, 2)} el día {day}?",
                 parent=self.app
             ):
-                for i, exc in enumerate(self.app.exceptions):
-                    if (exc['persona'] == persona and exc['fecha'].day == day and
-                            exc['fecha'].month == active_month and exc['fecha'].year == active_year and
-                            exc.get('tipo') == exc_tipo):
-                        self.app.remove_exception(i)
-                        break
+                if exc_idx >= 0:
+                    self.app.remove_exception(exc_idx)
         else:
             AddExceptionDialog.show(
                 self.app, persona, day,
-                callback=lambda tipo: self._on_exception_added_from_calendar(persona, day, tipo, active_year, active_month)
+                callback=lambda tipo, motivo="": self._on_exception_added_from_calendar(
+                    persona, day, tipo, active_year, active_month, motivo=motivo
+                )
             )
 
-    def _on_exception_added_from_calendar(self, persona, day, tipo, year, month):
+    def _on_exception_added_from_calendar(self, persona, day, tipo, year, month, motivo=""):
         date_obj = date(year, month, day)
-        new_exc = [{'persona': persona, 'fecha': date_obj, 'tipo': tipo}]
+        exc_item = {'persona': persona, 'fecha': date_obj, 'tipo': tipo}
+        if tipo == 'OTR' and motivo:
+            exc_item['motivo'] = motivo
+        new_exc = [exc_item]
         self.app.add_exceptions(new_exc)
