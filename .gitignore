@@ -31,3 +31,4 @@ archives/
 *.tmp
 *.corrupted_*
 pending_notifications.json
+~$*
