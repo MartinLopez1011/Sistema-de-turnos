@@ -353,7 +353,6 @@ class ExcelHandler:
         ]
         right_items = [
             ("OTR: Otro Permiso", otr_fill, "OTR", "FFFFFF"),
-            ("FOR: Asignación Forzada", for_fill, "FOR", "FFFFFF"),
             ("Fin de Semana", gray_fill, " ", "000000"),
         ]
 

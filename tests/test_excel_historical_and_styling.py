@@ -144,11 +144,18 @@ class ExcelHistoricalAndStylingTests(unittest.TestCase):
         self.assertEqual(desc_da.value, "DA: Día Administrativo")
 
         # Verificar columna derecha de la leyenda (columna 10 chip, columna 11 texto)
-        chip_for = sheet.cell(row=r2, column=10)
-        desc_for = sheet.cell(row=r2, column=11)
-        self.assertEqual(chip_for.value, "FOR")
-        self.assertIn("059669", chip_for.fill.start_color.rgb)
-        self.assertEqual(desc_for.value, "FOR: Asignación Forzada")
+        chip_fds = sheet.cell(row=r2, column=10)
+        desc_fds = sheet.cell(row=r2, column=11)
+        self.assertEqual(chip_fds.value, " ")
+        self.assertIn("D9D9D9", chip_fds.fill.start_color.rgb)
+        self.assertEqual(desc_fds.value, "Fin de Semana")
+
+        # Asegurar que 'FOR' o 'Asignación Forzada' ya no existan en la leyenda
+        for row in range(legend_row, sheet.max_row + 1):
+            for col in range(1, sheet.max_column + 1):
+                val = str(sheet.cell(row=row, column=col).value or "")
+                self.assertNotIn("FOR", val)
+                self.assertNotIn("Asignación Forzada", val)
 
 
 if __name__ == "__main__":
