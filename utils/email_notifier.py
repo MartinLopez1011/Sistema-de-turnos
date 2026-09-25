@@ -111,8 +111,8 @@ def format_plain_text_message(mes_nombre: str, anio: int, cambios: list) -> str:
     [
         {
             "semana_texto": "07/09/2026 al 13/09/2026",
-            "anterior": "COM PEREZ JUAN",
-            "nuevo": "SBC GONZALEZ MARIA",
+            "anterior": "JUAN PEREZ",
+            "nuevo": "MARIA GONZALEZ",
             "motivo": "Permuta acordada",
             "fecha_registro": "22/09/2026 16:30" (opcional)
         },

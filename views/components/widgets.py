@@ -33,8 +33,7 @@ def _avatar_ctk(parent, initials, color, size=32):
 
 def _short_name(full, words=2):
     """
-    Retorna una versión corta del nombre omitiendo rangos institucionales conocidos.
-    Prefijos omitidos: COM, PRO, SBC, (A), (F).
+    Retorna una versión corta del nombre para visualización compacta.
     """
     if not full:
         return ""
@@ -45,7 +44,7 @@ def _short_name(full, words=2):
 
 def _initials(full):
     """
-    Retorna 2 letras iniciales para el avatar, omitiendo prefijos institucionales.
+    Retorna 2 letras iniciales para el avatar visual.
     """
     if not full:
         return "??"

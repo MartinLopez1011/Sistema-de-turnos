@@ -233,8 +233,8 @@ def main():
 
     class_headers = ["Categoría", "Elementos Comprendidos", "Nivel de Riesgo", "Medida Obligatoria de Protección"]
     class_rows = [
-        ["Datos Personales (PII)", "Nombres y apellidos, grados institucionales (COM, SBC, PRO), identificadores internos y asignaciones.", "Alto", "Prohibido almacenar en Git. En desarrollo/demos usar únicamente nombres ficticios ('Funcionario 1')."],
-        ["Datos de Contacto", "Correos electrónicos institucionales (@institucion.cl), correos particulares, teléfonos móviles.", "Crítico", "Exclusión estricta de repositorios remotos. En plantillas emplear dominios de ejemplo ('usuario@ejemplo.com')."],
+        ["Datos Personales (PII)", "Nombres y apellidos, cargos o funciones operativas, identificadores de personal y asignaciones.", "Alto", "Prohibido almacenar en Git. En desarrollo/demos usar únicamente nombres ficticios ('Funcionario 1')."],
+        ["Datos de Contacto", "Correos electrónicos corporativos (@ejemplo.com), correos particulares, teléfonos móviles.", "Crítico", "Exclusión estricta de repositorios remotos. En plantillas emplear dominios de ejemplo ('usuario@ejemplo.com')."],
         ["Datos Médicos y Personales", "Motivos de licencias médicas (LIC), duelos familiares, reposos por accidentes o situaciones personales (OTR).", "Crítico", "Confidencialidad médica reforzada. Nunca incluir texto de motivos reales en ejemplos ni archivos de prueba."],
         ["Secretos y Credenciales", "Contraseñas de Aplicación Google (16 caracteres), URLs de Webhooks Apps Script (/exec), parámetros SMTP.", "Crítico", "Custodia exclusiva en archivo local .env. Prohibido su commit o exposición en código fuente o capturas."],
         ["Historial y Auditoría", "Historial de turnos asignados, bitácora auditoria[] y archivos de registro turnos.log.", "Medio / Alto", "Almacenamiento local restringido. Exclusión del control de versiones mediante .gitignore."]

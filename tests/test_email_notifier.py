@@ -31,8 +31,8 @@ class TestEmailNotifier(unittest.TestCase):
         cambios = [
             {
                 "semana_texto": "07/09/2026 al 13/09/2026",
-                "anterior": "COM PEREZ JUAN",
-                "nuevo": "SBC GONZALEZ MARIA",
+                "anterior": "JUAN PEREZ",
+                "nuevo": "MARIA GONZALEZ",
                 "motivo": "Permuta acordada",
                 "fecha_registro": "22/09/2026 16:30"
             }
@@ -41,8 +41,8 @@ class TestEmailNotifier(unittest.TestCase):
         self.assertIn("SISTEMA DE GESTIÓN DE TURNOS", msg)
         self.assertIn("Septiembre 2026", msg)
         self.assertIn("07/09/2026 al 13/09/2026", msg)
-        self.assertIn("COM PEREZ JUAN", msg)
-        self.assertIn("SBC GONZALEZ MARIA", msg)
+        self.assertIn("JUAN PEREZ", msg)
+        self.assertIn("MARIA GONZALEZ", msg)
         self.assertIn("Permuta acordada", msg)
         self.assertIn("• CAMBIO #1", msg)
 

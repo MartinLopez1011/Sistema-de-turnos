@@ -281,14 +281,14 @@ class ImprovementsTests(unittest.TestCase):
     def test_excel_summary_totals_and_dynamic_column_width(self):
         # Personal con nombre largo para verificar ancho dinámico
         long_name_personal = [
-            {"id": 1, "nombre": "SUB-COMISARIO DEPARTAMENTO ADMINISTRATIVO PEREZ GONZALEZ JUAN CARLOS"},
-            {"id": 2, "nombre": "SGT GOMEZ ANA"},
+            {"id": 1, "nombre": "COORDINADOR GENERAL DEPARTAMENTO ADMINISTRATIVO PEREZ GONZALEZ JUAN CARLOS"},
+            {"id": 2, "nombre": "GOMEZ ANA"},
         ]
         handler = ExcelHandler(str(self.output_excel), long_name_personal)
         handler.load_template()
 
         # Verificar auto-ancho de columna A
-        expected_width = len("SUB-COMISARIO DEPARTAMENTO ADMINISTRATIVO PEREZ GONZALEZ JUAN CARLOS") + 4
+        expected_width = len("COORDINADOR GENERAL DEPARTAMENTO ADMINISTRATIVO PEREZ GONZALEZ JUAN CARLOS") + 4
         self.assertEqual(handler.sheet.column_dimensions["A"].width, expected_width)
 
         # Verificar anchos de columnas de resumen (AG a AK)

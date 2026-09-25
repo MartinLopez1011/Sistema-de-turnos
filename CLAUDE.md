@@ -76,7 +76,7 @@ main.py
 
 ```json
 {
-  "personal": [{"id": 1, "nombre": "COM APELLIDO NOMBRE"}],   // Lista ordenada de 16 personas
+  "personal": [{"id": 1, "nombre": "APELLIDO NOMBRE"}],       // Lista ordenada de personas
   "inicio": {                                                   // Semanas con asignación fija/inmutable
     "2026-08-03_2026-08-09": "NOMBRE COMPLETO"
   },
@@ -92,7 +92,7 @@ main.py
     "2026-09": [{"persona": "NOMBRE", "fecha": "2026-09-15", "tipo": "DA"}]
   },
   "asignaciones_manuales": {                                    // Asignaciones forzadas/manuales por semana
-    "2026-09": {"2026-09-07_2026-09-13": "COM PEREZ JUAN"}
+    "2026-09": {"2026-09-07_2026-09-13": "JUAN PEREZ"}
   },
   "asignaciones_manuales_motivos": {                            // Motivos obligatorios de asignación manual
     "2026-09": {"2026-09-07_2026-09-13": "Permuta acordada"}
@@ -158,8 +158,8 @@ La regla anual de feriados usa solo asignaciones confiables de `historial` o `in
 **Helper functions en gui.py:**
 - `_section_header(parent, text, row)` → encabezado de sección con línea decorativa
 - `_avatar_ctk(parent, initials, color, size)` → avatar circular con iniciales
-- `_short_name(full, words)` → nombre corto omitiendo prefijos (COM, PRO, SBC, (A), (F))
-- `_initials(full)` → 2 letras de iniciales omitiendo prefijos
+- `_short_name(full, words)` → nombre corto descriptivo para tarjetas y reportes
+- `_initials(full)` → 2 letras de iniciales para avatares visuales
 - `_make_row_hover(ref_widget, row_widgets)` → hover con debounce para evitar parpadeo
 
 ---
@@ -178,14 +178,8 @@ La regla anual de feriados usa solo asignaciones confiables de `historial` o `in
 
 ## 8. Convenciones de nombres del personal
 
-Los nombres siguen el formato: `RANGO (SUFIJO) APELLIDO1 APELLIDO2 NOMBRE`
-
-Prefijos/rangos conocidos que se omiten al mostrar nombres cortos:
-- `COM` = Comisario
-- `PRO` = Profesional
-- `SBC` = Sub-comisario
-- `(A)` = Administrativo
-- `(F)` = Femenino
+Los nombres siguen el formato estándar: `APELLIDO NOMBRE` o `NOMBRE APELLIDO`.
+El sistema extrae las iniciales para los avatares e indicadores visuales a partir de las primeras letras de las palabras del nombre.
 
 ---
 

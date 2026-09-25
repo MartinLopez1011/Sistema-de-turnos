@@ -6,82 +6,82 @@
   "personal": [
     {
       "id": 1,
-      "nombre": "COM PEREZ JUAN",
+      "nombre": "PEREZ JUAN",
       "email": "juan.perez@ejemplo.com"
     },
     {
       "id": 2,
-      "nombre": "COM GONZALEZ MARIA",
+      "nombre": "GONZALEZ MARIA",
       "email": "maria.gonzalez@ejemplo.com"
     },
     {
       "id": 3,
-      "nombre": "COM SOTO CARLOS",
+      "nombre": "SOTO CARLOS",
       "email": "carlos.soto@ejemplo.com"
     },
     {
       "id": 4,
-      "nombre": "COM SILVA CLAUDIA",
+      "nombre": "SILVA CLAUDIA",
       "email": "claudia.silva@ejemplo.com"
     },
     {
       "id": 5,
-      "nombre": "COM ROJAS CECILIA",
+      "nombre": "ROJAS CECILIA",
       "email": "cecilia.rojas@ejemplo.com"
     },
     {
       "id": 6,
-      "nombre": "SBC DIAZ CATHERINE",
+      "nombre": "DIAZ CATHERINE",
       "email": "catherine.diaz@ejemplo.com"
     },
     {
       "id": 7,
-      "nombre": "PRO MORALES JOSE",
+      "nombre": "MORALES JOSE",
       "email": "jose.morales@ejemplo.com"
     },
     {
       "id": 8,
-      "nombre": "PRO ALVAREZ SUSANA",
+      "nombre": "ALVAREZ SUSANA",
       "email": "susana.alvarez@ejemplo.com"
     },
     {
       "id": 9,
-      "nombre": "PRO CASTILLO PAMELA",
+      "nombre": "CASTILLO PAMELA",
       "email": "pamela.castillo@ejemplo.com"
     },
     {
       "id": 10,
-      "nombre": "PRO TORRES PATRICIO",
+      "nombre": "TORRES PATRICIO",
       "email": "patricio.torres@ejemplo.com"
     },
     {
       "id": 11,
-      "nombre": "PRO TAPIA KARINA",
+      "nombre": "TAPIA KARINA",
       "email": "karina.tapia@ejemplo.com"
     },
     {
       "id": 12,
-      "nombre": "PRO CONTRERAS RODRIGO",
+      "nombre": "CONTRERAS RODRIGO",
       "email": "rodrigo.contreras@ejemplo.com"
     },
     {
       "id": 13,
-      "nombre": "PRO FLORES CAMILA",
+      "nombre": "FLORES CAMILA",
       "email": "camila.flores@ejemplo.com"
     },
     {
       "id": 14,
-      "nombre": "PRO NEIRA PRISCILA",
+      "nombre": "NEIRA PRISCILA",
       "email": "priscila.neira@ejemplo.com"
     },
     {
       "id": 15,
-      "nombre": "PRO MARTINEZ BRYAN",
+      "nombre": "MARTINEZ BRYAN",
       "email": "bryan.martinez@ejemplo.com"
     },
     {
       "id": 16,
-      "nombre": "PRO VEGA NATALIA",
+      "nombre": "VEGA NATALIA",
       "email": "natalia.vega@ejemplo.com"
     }
   ],

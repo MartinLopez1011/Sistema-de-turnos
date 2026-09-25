@@ -189,17 +189,12 @@ flowchart TD
 | **`OTR`** | Otro Permiso | Gris Azulado (`#374151`) | Comisión de servicio, duelo, capacitación, etc. |
 | **`FOR`** | Asignación Forzada | Verde Esmeralda (`#059669`) | Reemplazo o asignación manual directa en la semana. |
 
-### Convenciones de Nombres del Personal
-Los nombres de los funcionarios se registran bajo el formato estandarizado:
+### Registro de Nombres del Personal
+Los nombres del personal pueden registrarse con formato estándar:
 ```
-[RANGO] [(SUFIJO)] [APELLIDO1] [APELLIDO2] [NOMBRES]
+[APELLIDO] [NOMBRES]  o  [NOMBRES] [APELLIDOS]
 ```
-Prefijos reconocidos y omitidos automáticamente en tarjetas reducidas y avatares:
-- `COM`: Comisario
-- `SBC`: Subcomisario
-- `PRO`: Profesional
-- `(A)`: Administrativo
-- `(F)`: Femenino
+El sistema genera automáticamente las iniciales para los avatares e indicadores visuales a partir de las primeras letras del nombre registrado.
 
 ---
 

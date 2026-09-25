@@ -30,8 +30,8 @@ Se define como **Información Sensible y Protegida** todo dato que permita indiv
 
 | Categoría | Elementos Incluidos | Nivel de Riesgo | Tratamiento Requerido |
 | :--- | :--- | :--- | :--- |
-| **Datos Personales (PII)** | Nombres y apellidos completos, grados institucionales (COM, SBC, PRO, etc.), IDs de funcionario, cargos y asignaciones de servicio. | **Alto** | Prohibido almacenar en repositorios remotos. En pruebas y plantillas debe usarse únicamente información sintética / ficticia. |
-| **Datos de Contacto** | Correos institucionales (`@institucion.cl`), correos particulares (`@gmail.com`, etc.), teléfonos de contacto. | **Crítico** | Prohibido exponer en GitHub o archivos versionados. En configuración de prueba usar dominios de ejemplo (`usuario@ejemplo.com`). |
+| **Datos Personales (PII)** | Nombres y apellidos completos, cargos o funciones operativas, identificadores de personal y asignaciones de servicio. | **Alto** | Prohibido almacenar en repositorios remotos. En pruebas y plantillas debe usarse únicamente información sintética / ficticia. |
+| **Datos de Contacto** | Correos electrónicos laborales o corporativos (`@ejemplo.com`), correos particulares, teléfonos de contacto. | **Crítico** | Prohibido exponer en GitHub o archivos versionados. En configuración de prueba usar dominios genéricos de ejemplo (`usuario@ejemplo.com`). |
 | **Datos Médicos y Personales** | Motivos de excepciones de guardia (licencias médicas `LIC`, duelos, accidentes, situaciones familiares `OTR`). | **Crítico** | Confidencialidad médica/laboral. Nunca incluir descripciones reales en archivos de prueba ni en el control de versiones. |
 | **Credenciales y Secretos** | Contraseñas de Aplicación de Google (16 caracteres), URLs de Webhooks de Google Apps Script (`/exec`), credenciales SMTP. | **Crítico** | Almacenar exclusivamente en variables de entorno locales (`.env`). Prohibido subirlas al repositorio. |
 | **Historial y Auditoría** | Registros de rotación de turnos, bitácora de auditoría de cierres mensuales (`auditoria[]`), archivos `turnos.log`. | **Medio / Alto** | Excluir del control de versiones. Conservar localmente bajo permisos restrictivos. |
@@ -76,7 +76,7 @@ __pycache__/
 
 ### 4.3 Política de Plantillas ("Solo la Idea")
 Para permitir la clonación, despliegue y desarrollo del proyecto sin comprometer datos reales:
-1. **Plantilla de Configuración (`config.example.json`)**: Es el único archivo de configuración que debe versionarse en Git. Contiene la estructura JSON completa (esquema v2), pero con dotación sintética e ilustrativa (ej. `COM PEREZ JUAN`, `COM GONZALEZ MARIA`), webhook deshabilitado y estructuras de historial y excepciones vacías.
+1. **Plantilla de Configuración (`config.example.json`)**: Es el único archivo de configuración que debe versionarse en Git. Contiene la estructura JSON completa (esquema v2), pero con dotación sintética e ilustrativa (ej. `JUAN PEREZ`, `MARIA GONZALEZ`), webhook deshabilitado y estructuras de historial y excepciones vacías.
 2. **Plantilla de Variables de Entorno (`.env.example`)**: Provee los nombres de las variables requeridas (`SMTP_HOST`, `SMTP_USER`, `SMTP_PASSWORD`, `WEBHOOK_URL`) con valores de ejemplo genéricos (`xxxx xxxx xxxx xxxx`, `tu_correo@gmail.com`).
 3. **Instalación en Producción**: El administrador debe copiar `config.example.json` a `config.json` y `.env.example` a `.env` en su entorno local antes de iniciar la aplicación.
 
@@ -90,7 +90,7 @@ El archivo de configuración debe estructurarse conforme a las siguientes pautas
   ```json
   {
     "id": 1,
-    "nombre": "COM PEREZ JUAN",
+    "nombre": "JUAN PEREZ",
     "email": "juan.perez@ejemplo.com"
   }
   ```
