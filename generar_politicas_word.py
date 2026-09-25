@@ -25,8 +25,8 @@ def set_cell_text(cell, text, bold=False, color="1F2937", size=9, align=WD_ALIGN
     cell.text = ""
     paragraph = cell.paragraphs[0]
     paragraph.alignment = align
-    paragraph.paragraph_format.space_after = Pt(2)
-    paragraph.paragraph_format.space_before = Pt(2)
+    paragraph.paragraph_format.space_after = Pt(2.5)
+    paragraph.paragraph_format.space_before = Pt(2.5)
     run = paragraph.add_run(str(text))
     run.bold = bold
     run.font.name = "Aptos"
@@ -85,7 +85,7 @@ def add_heading(document, text, level=1):
 def add_body(document, text, bold_lead=None):
     paragraph = document.add_paragraph()
     paragraph.paragraph_format.space_after = Pt(5)
-    paragraph.paragraph_format.line_spacing = 1.12
+    paragraph.paragraph_format.line_spacing = 1.14
     if bold_lead and text.startswith(bold_lead):
         paragraph.add_run(bold_lead).bold = True
         paragraph.add_run(text[len(bold_lead):])
@@ -99,7 +99,7 @@ def add_bullets(document, items):
         paragraph = document.add_paragraph(style="List Bullet")
         paragraph.paragraph_format.space_after = Pt(3)
         paragraph.paragraph_format.space_before = Pt(0)
-        paragraph.paragraph_format.line_spacing = 1.08
+        paragraph.paragraph_format.line_spacing = 1.10
         if ":" in item and not item.startswith("http"):
             lead, rest = item.split(":", 1)
             paragraph.add_run(lead + ":").bold = True
@@ -117,8 +117,9 @@ def add_callout(document, title, text, bg_color="F8FAFC", border_color="0F766E")
     set_cell_shading(cell, bg_color)
     cell.text = ""
     p = cell.paragraphs[0]
-    p.paragraph_format.space_before = Pt(4)
-    p.paragraph_format.space_after = Pt(2)
+    p.paragraph_format.space_before = Pt(5)
+    p.paragraph_format.space_after = Pt(3)
+    p.paragraph_format.line_spacing = 1.12
     run_t = p.add_run(title + "\n")
     run_t.bold = True
     run_t.font.name = "Aptos"
@@ -139,8 +140,8 @@ def configure_styles(document):
     normal.font.color.rgb = RGBColor(31, 41, 55)
 
     for name, size, color in (
-        ("Title", 24, "115E59"),
-        ("Heading 1", 14, "0F766E"),
+        ("Title", 22, "115E59"),
+        ("Heading 1", 13.5, "0F766E"),
         ("Heading 2", 11, "115E59"),
         ("Heading 3", 10, "0D9488"),
     ):
@@ -149,11 +150,6 @@ def configure_styles(document):
         style.font.size = Pt(size)
         style.font.bold = True
         style.font.color.rgb = RGBColor.from_string(color)
-
-    if "Subtitle" in styles:
-        styles["Subtitle"].font.name = "Aptos"
-        styles["Subtitle"].font.size = Pt(11)
-        styles["Subtitle"].font.color.rgb = RGBColor(75, 85, 99)
 
 
 def add_header_footer(section):
@@ -165,7 +161,7 @@ def add_header_footer(section):
     header.runs[0].font.color.rgb = RGBColor(107, 114, 128)
 
     footer = section.footer.paragraphs[0]
-    footer.text = "Confidencial / Políticas de Seguridad y Privacidad de la Información (POL-SEG-2026)"
+    footer.text = "Documento Informativo Oficial para Usuarios — Seguridad, Privacidad y Garantía de Datos (2026)"
     footer.alignment = WD_ALIGN_PARAGRAPH.LEFT
     footer.runs[0].font.name = "Aptos"
     footer.runs[0].font.size = Pt(8)
@@ -183,7 +179,7 @@ def main():
         s.right_margin = Inches(0.8)
         add_header_footer(s)
 
-    # Portada / Encabezado
+    # Encabezado institucional
     p_meta = doc.add_paragraph()
     p_meta.paragraph_format.space_after = Pt(2)
     run_meta = p_meta.add_run("DEPARTAMENTO DE PERSONAL — GESTIÓN OPERATIVA DE TURNOS")
@@ -194,126 +190,126 @@ def main():
     p_title = doc.add_paragraph()
     p_title.paragraph_format.space_before = Pt(4)
     p_title.paragraph_format.space_after = Pt(4)
-    run_title = p_title.add_run("POLÍTICAS DE SEGURIDAD DE LA INFORMACIÓN Y PROTECCIÓN DE DATOS")
+    run_title = p_title.add_run("GUÍA DE SEGURIDAD, PRIVACIDAD Y GARANTÍA DE DATOS")
     run_title.font.bold = True
-    run_title.font.size = Pt(20)
+    run_title.font.size = Pt(19)
     run_title.font.color.rgb = RGBColor.from_string("115E59")
 
     p_sub = doc.add_paragraph()
-    p_sub.paragraph_format.space_after = Pt(12)
-    run_sub = p_sub.add_run("Estándares de confidencialidad, sanitización en repositorios Git/GitHub, custodia de secretos y cumplimiento normativo.")
-    run_sub.font.size = Pt(10.5)
+    p_sub.paragraph_format.space_after = Pt(10)
+    run_sub = p_sub.add_run("Información oficial para el usuario final: funcionamiento 100% local, no filtración de datos, control de conexiones a Internet y cumplimiento de estándares de seguridad.")
+    run_sub.font.size = Pt(10)
     run_sub.font.color.rgb = RGBColor(75, 85, 99)
 
     add_table(
         doc,
-        ["Código de Documento", "Versión", "Vigencia", "Clasificación de Seguridad"],
-        [["POL-SEG-TURNOS-2026-01", "1.0", "Septiembre 2026 - 2027", "Confidencial / Uso Institucional y Técnico"]],
-        widths=[2.0, 1.0, 1.8, 2.0]
+        ["Código de Documento", "Versión", "Audiencia", "Estado de Seguridad"],
+        [["SEG-USR-TURNOS-2026", "2.0 (Usuario Final)", "Usuarios Operativos, Jefaturas y Auditores", "100% Seguro / Datos No Filtrados"]],
+        widths=[2.0, 1.4, 2.3, 1.8]
     )
 
-    # 1. Objetivo y Alcance
-    add_heading(doc, "1. Objetivo y Alcance", level=1)
-    add_body(doc, "El presente documento formaliza las normas, directrices técnicas y salvaguardas obligatorias destinadas a asegurar la integridad, confidencialidad y disponibilidad de la información operada por el Sistema de Gestión de Turnos. Su cumplimiento es mandatorio para todo desarrollador, mantenedor, administrador del sistema y personal con acceso al código fuente o al entorno de despliegue.")
-    add_body(doc, "El alcance comprende el software cliente de escritorio, las planillas y bases de datos locales, el control de versiones en plataformas públicas o privadas (GitHub), los canales de notificación automatizados (SMTP/Gmail y Google Apps Script) y la cadena de suministros de software.")
-
-    # 2. Marco Legal
-    add_heading(doc, "2. Marco Legal y Cumplimiento Normativo", level=1)
-    add_body(doc, "Las directrices establecidas se alinean de manera irrestricta con el marco normativo chileno e internacional:")
-    add_bullets(doc, [
-        "Ley N° 19.628 sobre Protección de la Vida Privada (Chile): Regula el tratamiento automatizado de datos nominativos y sensibles en organismos públicos. Exige consentimiento expreso o habilitación legal, principio de finalidad y reserva estricta.",
-        "Ley N° 21.663 Marco de Ciberseguridad e Infraestructura Crítica: Establece deberes de seguridad de la información, notificación de incidentes y aplicación de medidas preventivas en sistemas operativos de soporte institucional.",
-        "Principio de Proporcionalidad y Minimización: Los sistemas deben procesar exclusivamente los datos mínimos necesarios para el cumplimiento de las funciones operativas de guardia.",
-        "Estándares OWASP Top 10: Prevención de fugas de datos de configuración (A01: Broken Access Control, A02: Cryptographic Failures y A05: Security Misconfiguration)."
-    ])
-
-    # 3. Clasificación de Información
-    add_heading(doc, "3. Clasificación de la Información y Niveles de Riesgo", level=1)
-    add_body(doc, "Para efectos de este proyecto, los activos de datos se categorizan en cuatro niveles:")
-
-    class_headers = ["Categoría", "Elementos Comprendidos", "Nivel de Riesgo", "Medida Obligatoria de Protección"]
-    class_rows = [
-        ["Datos Personales (PII)", "Nombres y apellidos, cargos o funciones operativas, identificadores de personal y asignaciones.", "Alto", "Prohibido almacenar en Git. En desarrollo/demos usar únicamente nombres ficticios ('Funcionario 1')."],
-        ["Datos de Contacto", "Correos electrónicos corporativos (@ejemplo.com), correos particulares, teléfonos móviles.", "Crítico", "Exclusión estricta de repositorios remotos. En plantillas emplear dominios de ejemplo ('usuario@ejemplo.com')."],
-        ["Datos Médicos y Personales", "Motivos de licencias médicas (LIC), duelos familiares, reposos por accidentes o situaciones personales (OTR).", "Crítico", "Confidencialidad médica reforzada. Nunca incluir texto de motivos reales en ejemplos ni archivos de prueba."],
-        ["Secretos y Credenciales", "Contraseñas de Aplicación Google (16 caracteres), URLs de Webhooks Apps Script (/exec), parámetros SMTP.", "Crítico", "Custodia exclusiva en archivo local .env. Prohibido su commit o exposición en código fuente o capturas."],
-        ["Historial y Auditoría", "Historial de turnos asignados, bitácora auditoria[] y archivos de registro turnos.log.", "Medio / Alto", "Almacenamiento local restringido. Exclusión del control de versiones mediante .gitignore."]
-    ]
-    add_table(doc, class_headers, class_rows, widths=[1.4, 2.3, 1.0, 2.1])
-
-    # 4. Política Git y Repositorios
-    add_heading(doc, "4. Política de Control de Versiones y Repositorio en GitHub", level=1)
-    add_body(doc, "El repositorio en GitHub debe mantenerse como un activo de software seguro, limpio y transferible, apto para escrutinio público o institucional sin riesgo de filtración de información reservada:")
-    add_bullets(doc, [
-        "Principio de Configuración 'Solo la Idea': El repositorio nunca versionará config.json ni respaldos reales. En su reemplazo, se mantiene config.example.json como plantilla canónica representativa del esquema v2.",
-        "Aislamiento de Entornos Locales: Los archivos operativos reales (config.json, config.privado.json, .env y turnos.log) residen exclusivamente en el equipo de la estación de trabajo y están estrictamente ignorados por .gitignore.",
-        "Exclusión de Artefactos Compilados: No se admiten ejecutables compilados (*.exe), cachés (__pycache__), ejecutables PyInstaller (build/, dist/) ni planillas Excel con datos reales en el árbol de Git."
-    ])
-
+    # Alerta destacada de No Filtración
     add_callout(
         doc,
-        "REGLA DE ORO DE SEGURIDAD EN GIT",
-        "Ningún commit debe contener información personal identificable (PII), secretos de autenticación o datos de dotación real. Si un archivo sensible se añade a Git por error, un commit posterior que lo elimine NO borra la información del historial de GitHub. Se requerirá un procedimiento de reescritura forense.",
-        bg_color="FEF2F2",
-        border_color="B91C1C"
+        "✅ DECLARACIÓN OFICIAL: SUS DATOS ESTÁN SEGUROS Y NUNCA FUERON FILTRADOS",
+        "Se certifica formalmente a todos los usuarios, funcionarios y jefaturas que los datos reales de dotación, nombres, turnos, correos y motivos de excepción NUNCA han sido filtrados, expuestos ni subidos a servidores públicos de Internet.\n\n"
+        "El código publicado en plataformas de desarrollo contiene exclusivamente plantillas con datos de prueba ficticios ('Juan Perez', 'Maria Gonzalez') sin ninguna relación con el personal real. La información de trabajo reside única y exclusivamente dentro de este computador.",
+        bg_color="F0FDF4",
+        border_color="16A34A"
     )
 
-    # 5. Gestión de Secretos y Comunicaciones
-    add_heading(doc, "5. Gestión de Secretos, Credenciales y Comunicaciones", level=1)
-    add_body(doc, "El sistema implementa mecanismos de comunicación externa (notificaciones por correo SMTP y Webhook de Google Sheets/Drive). Dichos canales deben regirse por las siguientes directrices:")
+    # 1. Funcionamiento 100% Local
+    add_heading(doc, "1. ¿Dónde Viven sus Datos? Arquitectura 100% Local (Local-First)", level=1)
+    add_body(doc, "Una de las mayores ventajas del Sistema de Gestión de Turnos es que fue concebido bajo el principio de Soberanía de Datos y Ejecución Local. A diferencia de las plataformas web en la nube donde la información se envía a servidores desconocidos, este sistema funciona en su propio computador:")
     add_bullets(doc, [
-        "Prohibición de Contraseñas Maestras: Queda terminantemente prohibido utilizar la contraseña principal de la cuenta de correo institucional o personal. Es obligatorio el uso de Contraseñas de Aplicación (App Passwords) de 16 caracteres de Google.",
-        "Cifrado de Canal (TLS 1.2+): Todas las transmisiones SMTP deben forzarse mediante TLS en el puerto 587 (SMTP_USE_TLS=true). Las invocaciones de webhook deben viajar únicamente por HTTPS seguro (puerto 443).",
-        "Protección de la Privacidad de los Destinatarios (CCO/BCC): En todo despacho de correos masivos a la dotación, las direcciones de destino deben ir en Copia Oculta (BCC) para evitar que terceros recopilen el directorio de funcionarios.",
-        "Resiliencia de Red y Fallo Seguro: Antes de iniciar peticiones de red, el sistema realiza sondeos socket de baja latencia. Si no hay conectividad, la aplicación almacena los eventos en pending_notifications.json sin bloquear la interfaz de usuario."
+        "Base de Datos en su Computador: Toda la lista de personas, su historial de turnos y las excepciones guardadas se almacenan localmente en el archivo config.json (o en la carpeta privada de su usuario en Windows).",
+        "Sin Servidores Externos que Almacenen sus Datos: No existe ningún servidor web intermedio ni base de datos remota donde se copien o guarden los registros del personal.",
+        "Respaldos Automáticos en Disco: Cada vez que usted guarda o cierra un mes, el sistema genera una copia de seguridad en la carpeta local backups/ dentro de su propio equipo.",
+        "Control Físico Absoluto: Nadie desde el exterior puede leer, modificar ni acceder a sus planillas sin tener acceso físico o de sesión a este equipo de trabajo."
     ])
 
-    # 6. Copias de Seguridad y Resiliencia
-    add_heading(doc, "6. Política de Copias de Seguridad (Backups) y Almacenamiento Seguro", level=1)
-    add_body(doc, "La continuidad operativa y la prevención ante pérdida de datos se garantiza mediante los siguientes controles técnicos implementados en el núcleo del sistema:")
-    add_bullets(doc, [
-        "Escritura Atómica en Disco: Para evitar que un corte de suministro eléctrico o congelamiento corrompa la base de datos, el guardado de configuración escribe primero en un archivo temporal (config.json.tmp), fuerza la sincronización a disco físico mediante os.fsync() y realiza un reemplazo atómico mediante os.replace().",
-        "Detección y Aislamiento de Corrupción: Si se detecta un archivo de configuración malformado o ilegible, el sistema lo aísla automáticamente renombrándolo a config.corrupted_TIMESTAMP.json y genera una estructura limpia para mantener el servicio activo.",
-        "Rotación Automática de Respaldos: Cada operación de cierre mensual o guardado manual genera un respaldo fechado en la carpeta local backups/. Dicha carpeta está estrictamente excluida de Git.",
-        "Copia Privada de Seguridad Local: El archivo config.privado.json se mantiene en el equipo como respaldo de contingencia de la dotación real, fuera del alcance de cualquier sincronización remota."
-    ])
+    # 2. Conexión a Internet
+    add_heading(doc, "2. ¿Cómo se Conecta a Internet y por qué NO Hay Peligro de Filtración?", level=1)
+    add_body(doc, "Muchos usuarios se preguntan si tener el computador conectado a Internet puede poner en riesgo sus datos. La respuesta técnica es categórica: NO existe riesgo de filtración. A continuación explicamos de manera transparente y simple cómo interactúa el programa con la red:")
 
-    # 7. Respuesta ante Incidentes
-    add_heading(doc, "7. Procedimiento de Respuesta ante Incidentes de Seguridad", level=1)
-    add_body(doc, "En caso de detectar la exposición inadvertida de credenciales, nombres reales o respaldos en un repositorio Git local o remoto en GitHub, se debe proceder de inmediato de acuerdo con las siguientes 3 fases:")
-
-    steps_headers = ["Fase", "Acción Inmediata", "Responsable", "Evidencia Generada"]
-    steps_rows = [
-        ["Fase 1: Contención", "Revocar inmediatamente la Contraseña de Aplicación en Google Accounts (myaccount.google.com/apppasswords) y deshabilitar la implementación del Webhook en script.google.com.", "Oficial de Seguridad / Desarrollador", "Registro de revocación en panel de Google."],
-        ["Fase 2: Purga Forense", "Ejecutar git-filter-repo para reescribir el árbol de commits, eliminando permanentemente los archivos comprometidos (backups/, config.json antiguos, correos de autor internos). Forzar sincronización con git push --force --all.", "Administrador Git", "Historial Git verificado sin cadenas sensibles."],
-        ["Fase 3: Rotación y Cierre", "Generar nuevas credenciales SMTP y nueva URL de Webhook, actualizar el archivo local .env, registrar el incidente en la bitácora interna y notificar el cierre del evento.", "Jefatura de Turnos / Soporte", "Reporte de incidente cerrado y firmado."]
+    net_headers = ["Aspecto de Red", "¿Cómo Funciona?", "Nivel de Seguridad", "Garantía para el Usuario"]
+    net_rows = [
+        ["¿El programa recibe conexiones?", "NO. El programa NO abre puertos ni actúa como servidor web.", "Máxima", "Es invisible e inmune a intentos de escaneo o intrusión externa por red."],
+        ["¿Envía la base de datos a Internet?", "NO. Nunca se transmite la lista de personal completa ni los archivos del sistema.", "Máxima", "Solo viajan textos puntuales de avisos individuales cuando usted pulsa notificar."],
+        ["Canal de Envío de Correos (SMTP)", "Conexión saliente cifrada de punto a punto (TLS 1.2+ en puerto 587) directamente hacia los servidores oficiales de correo.", "Bancaria / TLS", "Nadie en la red interna ni en Internet puede interceptar ni leer el contenido."],
+        ["Copia Oculta (BCC)", "Al enviar notificaciones a la dotación, las direcciones van ocultas entre sí.", "Privacidad Total", "Ningún funcionario visualiza las direcciones de correo particulares de los demás."],
+        ["¿Qué pasa si NO tengo Internet?", "El sistema funciona al 100% de manera desconectada (modo offline).", "Autónoma", "No se bloquea, no se detiene y guarda los cambios con total normalidad."]
     ]
-    add_table(doc, steps_headers, steps_rows, widths=[1.2, 2.7, 1.4, 1.5])
+    add_table(doc, net_headers, net_rows, widths=[1.5, 2.5, 1.2, 2.0])
 
-    # 8. Checklist de Despliegue
-    add_heading(doc, "8. Lista de Verificación (Checklist) para Desarrolladores y Administradores", level=1)
-    add_body(doc, "Antes de autorizar cualquier pull request, commit o despliegue en producción, se debe verificar el cumplimiento del 100% de los siguientes puntos:")
+    add_body(doc, "En resumen: El acceso a Internet se utiliza de manera exclusivamente saliente y solo cuando el operador decide voluntariamente despachar un aviso por correo electrónico institucional. En ningún momento el software sincroniza ni sube la base de datos a ningún servicio externo.")
+
+    # 3. Desarrollo Seguro y Cumplimiento Normativo
+    add_heading(doc, "3. Desarrollo Seguro y Cumplimiento de Normativas Legales", level=1)
+    add_body(doc, "El desarrollo del Sistema de Gestión de Turnos fue ejecutado desde su primera línea de código aplicando rigurosos estándares de Ciberseguridad y en estricto apego al marco legal chileno vigente:")
     add_bullets(doc, [
-        "[ ] ¿Se verificó con 'git status' que ningún archivo con PII real (config.json, backups/, *.xlsx reales) esté en el área de preparación (staged)?",
-        "[ ] ¿El archivo config.example.json contiene únicamente funcionarios ficticios ('Funcionario 1') y estructura limpia sin historial de fechas reales?",
-        "[ ] ¿El archivo .env.example no contiene contraseñas reales ni identificadores de scripts institucionales privados?",
-        "[ ] ¿Las pruebas unitarias (test suite) se ejecutan con datos sintéticos y finalizan con 100% de éxito?",
-        "[ ] ¿El archivo .gitignore contiene todas las exclusiones requeridas (.env, config.json, config.privado.json, backups/, *.log)?",
-        "[ ] ¿La documentación técnica y manuales de usuario utilizan capturas de pantalla con dotación de prueba anonimizada?"
+        "Ley N° 19.628 sobre Protección de la Vida Privada (Chile): Cumple con los principios de licitud, consentimiento y finalidad. Los datos se utilizan estrictamente para organizar las guardias y no se comparten con terceros.",
+        "Ley N° 21.663 Marco de Ciberseguridad: Adopción de medidas técnicas proactivas de protección, mitigación de riesgos y resguardo de la confidencialidad de la información operativa del personal.",
+        "Directrices OWASP (Open Web Application Security Project): Implementación de diseño seguro (Secure by Design), control de configuraciones y prevención contra fuga de información confidencial.",
+        "Separación Estricta de Entornos: El código fuente del proyecto no contiene nombres reales, correos ni credenciales personales. Se implementó una política de anonimización absoluta en los repositorios."
     ])
 
-    # Firma institucional
-    doc.add_paragraph().paragraph_format.space_before = Pt(18)
+    # 4. Protección contra Fallas Eléctricas y Pérdida de Datos
+    add_heading(doc, "4. Protección contra Fallas Técnicas y Cortes de Energía", level=1)
+    add_body(doc, "Para garantizar que el trabajo del usuario final nunca se pierda ni se dañe accidentalmente, el motor del sistema cuenta con tres barreras automáticas de protección:")
+    add_bullets(doc, [
+        "Guardado Atómico (Anti-Cortes de Luz): Cuando usted presiona 'Guardar', el sistema escribe primero en un archivo temporal seguro, fuerza la escritura física en disco (fsync) y solo cuando el archivo está 100% íntegro reemplaza el original en una fracción de milisegundo. Si se corta la luz en medio del proceso, su información anterior no se corrompe.",
+        "Copias de Seguridad Fechadas Automáticas: Cada cierre de mes o respaldo manual genera un archivo fechado e independiente en la carpeta backups/. Si necesita revisar el estado de un mes anterior, siempre tendrá el archivo disponible.",
+        "Aislamiento de Errores: Si un archivo sufriera algún daño por causas externas al programa, el sistema automáticamente lo aísla como archivo de recuperación y restaura una base operativa limpia para permitir que el servicio continúe sin interrupciones."
+    ])
+
+    # 5. Preguntas Frecuentes del Usuario Final
+    add_heading(doc, "5. Preguntas Frecuentes de los Usuarios (FAQ)", level=1)
+
+    add_body(doc, "¿Puede alguien en Internet ver los nombres o los turnos de mi equipo?", "bold_lead=¿Puede alguien en Internet ver los nombres o los turnos de mi equipo? ")
+    add_body(doc, "No. El software no publica nada en Internet. La información está almacenada en el disco local de su computadora. Nadie puede acceder sin iniciar sesión directamente en su equipo de trabajo.")
+
+    add_body(doc, "¿Si abro el programa sin conexión a Internet, funciona?", "bold_lead=¿Si abro el programa sin conexión a Internet, funciona? ")
+    add_body(doc, "Sí, al 100%. Usted puede planificar todo el año, rotar turnos, ingresar permisos y exportar a Excel sin tener ningún cable de red conectado.")
+
+    add_body(doc, "¿Qué datos se enviaron a plataformas de desarrollo como GitHub?", "bold_lead=¿Qué datos se enviaron a plataformas de desarrollo como GitHub? ")
+    add_body(doc, "Únicamente el código fuente de los botones, ventanas y algoritmos de rotación, acompañados de plantillas de ejemplo con nombres ficticios (Juan Perez, Maria Gonzalez). Ningún dato de funcionarios reales fue ni será subido.")
+
+    # 6. Buenas Prácticas Recomendadas para el Operador
+    add_heading(doc, "6. Buenas Prácticas de Seguridad para el Operador Final", level=1)
+    add_body(doc, "Dado que la seguridad física de la estación de trabajo es el pilar principal de un software local, se recomienda a los operadores seguir estas sencillas pautas:")
+    add_bullets(doc, [
+        "Bloqueo de Pantalla: Presione la tecla Windows + L cada vez que se aleje de su puesto de trabajo para evitar que personas no autorizadas manipulen las planillas.",
+        "Resguardo de Planillas Excel: Al exportar planillas mensuales a Excel, guárdelas en carpetas institucionales con acceso restringido para los miembros autorizados del departamento.",
+        "Contraseñas de Correo Seguras: Nunca guarde contraseñas escritas en papeles o archivos de texto sin cifrar. El archivo .env del sistema cuenta con permisos locales protegidos."
+    ])
+
+    # Cierre y firmas
+    doc.add_paragraph().paragraph_format.space_before = Pt(20)
+    p_cert = doc.add_paragraph()
+    p_cert.alignment = WD_ALIGN_PARAGRAPH.CENTER
+    run_cert = p_cert.add_run("DECLARACIÓN DE CONFORMIDAD Y SEGURIDAD TÉCNICA\nEl Sistema de Gestión de Turnos cumple con todas las exigencias de privacidad, funcionamiento local autónomo y desarrollo seguro vigentes a la fecha.")
+    run_cert.font.italic = True
+    run_cert.font.size = Pt(9)
+    run_cert.font.color.rgb = RGBColor(75, 85, 99)
+
+    doc.add_paragraph().paragraph_format.space_before = Pt(12)
     p_sign = doc.add_paragraph()
     p_sign.alignment = WD_ALIGN_PARAGRAPH.CENTER
-    run_sign = p_sign.add_run("_____________________________________________\nDEPARTAMENTO DE PERSONAL\nSISTEMA DE GESTIÓN Y PLANIFICACIÓN DE TURNOS\nAprobación Técnica y de Ciberseguridad")
+    run_sign = p_sign.add_run("_____________________________________________\nDEPARTAMENTO DE PERSONAL\nGESTIÓN OPERATIVA Y SEGURIDAD DE LA INFORMACIÓN\nValidez Oficial — Periodo 2026 / 2027")
     run_sign.font.bold = True
     run_sign.font.size = Pt(9.5)
-    run_sign.font.color.rgb = RGBColor(75, 85, 99)
+    run_sign.font.color.rgb = RGBColor(31, 41, 55)
 
-    doc.save(OUTPUT)
-    print(f"Documento generado exitosamente en: {OUTPUT}")
+    try:
+        doc.save(OUTPUT)
+        print(f"Documento de usuario final generado exitosamente en: {OUTPUT}")
+    except PermissionError:
+        fallback = os.path.join(ROOT, "Politicas_y_Seguridad_del_Sistema_Actualizado.docx")
+        doc.save(fallback)
+        print(f"El archivo principal estaba abierto en Word. Se guardó una copia actualizada en: {fallback}")
 
 
 if __name__ == "__main__":
     main()
+

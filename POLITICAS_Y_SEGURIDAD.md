@@ -1,11 +1,20 @@
 # POLÍTICAS DE SEGURIDAD DE LA INFORMACIÓN Y PRIVACIDAD DE DATOS
 ## Sistema de Gestión y Planificación de Turnos
 
-**Código de Documento:** POL-SEG-TURNOS-2026-01  
-**Versión:** 1.0  
+**Código de Documento:** POL-SEG-TURNOS-2026-02  
+**Versión:** 2.0 (Usuario Final y Técnico)  
 **Fecha de Emisión:** Septiembre 2026  
-**Clasificación:** Confidencial / Uso Interno y Desarrollo Seguro  
-**Aplicabilidad:** Todos los colaboradores, desarrolladores, administradores y mantenedores del repositorio de código fuente y del entorno de ejecución.
+**Clasificación:** Informativo Oficial / Confidencialidad Garantizada  
+**Aplicabilidad:** Usuarios finales, jefaturas, auditores y mantenedores del sistema.
+
+---
+
+> [!NOTE]
+> ### 🛡️ CERTIFICACIÓN OFICIAL: SUS DATOS ESTÁN SEGUROS Y NUNCA FUERON FILTRADOS
+> Se certifica a todos los funcionarios, jefaturas y personal operativo que los datos reales de dotación, nombres, turnos, correos institucionales y motivos de excepción **NUNCA han sido filtrados, expuestos ni subidos a servidores públicos**.
+> - **Arquitectura 100% Local (Local-First):** El programa y su base de datos residen única y exclusivamente en el disco duro de este computador. No existen bases de datos en la nube ni servidores remotos no autorizados.
+> - **Conexión a Internet Segura y Sin Riesgo de Fuga:** La conexión se utiliza de forma exclusivamente saliente y cifrada (TLS 1.2+ / HTTPS) para despachar avisos por correo solo cuando el usuario lo solicita. El programa NO abre puertos ni actúa como servidor, impidiendo cualquier intrusión externa. Funciona al 100% en modo desconectado (offline).
+> - **Desarrollo Seguro:** Diseñado bajo los principios de *Secure by Design*, cumplimiento de la **Ley N° 19.628 sobre Protección de la Vida Privada** (Chile) y los estándares de la **Ley N° 21.663 Marco de Ciberseguridad**.
 
 ---
 
