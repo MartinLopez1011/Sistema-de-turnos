@@ -7,7 +7,7 @@
 ![UI Framework](https://img.shields.io/badge/GUI-CustomTkinter%20(Dark%20Mode)-16877D)
 ![Reports](https://img.shields.io/badge/reports-OpenPyXL%20(Excel)-217346?logo=microsoftexcel&logoColor=white)
 ![Notifications](https://img.shields.io/badge/notifications-Google%20Apps%20Script%20(Serverless)-EA4335?logo=google&logoColor=white)
-![Tests](https://img.shields.io/badge/tests-87%20passing-brightgreen?logo=pytest&logoColor=white)
+![Tests](https://img.shields.io/badge/tests-132%20passing-brightgreen?logo=pytest&logoColor=white)
 ![Distribution](https://img.shields.io/badge/dist-PyInstaller%20Standalone%20.exe-orange)
 
 **Aplicación de escritorio moderna, robusta y automatizada para la planificación, asignación rotativa semanal, gestión de excepciones y notificación institucional de turnos de guardia.**

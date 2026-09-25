@@ -32,6 +32,9 @@ class TabSettings:
         self.btn_test_smtp = None
         self.smtp_lock_label = None
         self._smtp_editing = False
+        self._advanced_expanded = False
+        self.btn_toggle_advanced = None
+        self.advanced_container = None
 
         self._build_ui()
 
@@ -57,12 +60,102 @@ class TabSettings:
             text_color=P["text_s"], anchor="w"
         ).grid(row=1, column=0, pady=(4, 20), sticky="w")
 
-        # ── Card 1: Persona inicial de la rotación ───────────────────────────
-        card1 = ctk.CTkFrame(
+        # ── Card 1 (Principal): Gestión de Personal ───────────────────────────
+        person_card = ctk.CTkFrame(
             wrapper, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        card1.grid(row=2, column=0, sticky="ew")
+        person_card.grid(row=2, column=0, sticky="ew")
+        person_card.grid_columnconfigure(0, weight=1)
+
+        header_p = ctk.CTkFrame(person_card, fg_color="transparent")
+        header_p.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 4))
+        header_p.grid_columnconfigure(0, weight=1)
+
+        title_box = ctk.CTkFrame(header_p, fg_color="transparent")
+        title_box.pack(side="left")
+
+        ctk.CTkLabel(
+            title_box, text="Gestión de Personal",
+            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            text_color=P["text"], anchor="w"
+        ).pack(side="left")
+
+        self.person_count_badge = ctk.CTkLabel(
+            title_box, text="",
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            text_color=P["text_a"], anchor="w"
+        )
+        self.person_count_badge.pack(side="left", padx=(12, 0))
+
+        btn_add = ctk.CTkButton(
+            header_p, text="＋  Añadir Persona",
+            command=self._on_add_person,
+            height=32, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            fg_color=P["green_d"], hover_color=P["green"]
+        )
+        btn_add.pack(side="right")
+
+        self.person_list_frame = ctk.CTkScrollableFrame(
+            person_card, fg_color="transparent", height=340,
+            scrollbar_button_color=P["border_h"]
+        )
+        self.person_list_frame.grid(row=1, column=0, padx=10, pady=(10, 20), sticky="nsew")
+
+        # ── Barra Desplegable: Ajustes Avanzados ───────────────────────────────
+        advanced_bar = ctk.CTkFrame(
+            wrapper, fg_color=P["bg_card"], corner_radius=12,
+            border_width=1, border_color=P["border"]
+        )
+        advanced_bar.grid(row=3, column=0, sticky="ew", pady=(20, 0))
+        advanced_bar.grid_columnconfigure(0, weight=1)
+
+        bar_inner = ctk.CTkFrame(advanced_bar, fg_color="transparent")
+        bar_inner.grid(row=0, column=0, sticky="ew", padx=20, pady=16)
+        bar_inner.grid_columnconfigure(0, weight=1)
+
+        adv_text_box = ctk.CTkFrame(bar_inner, fg_color="transparent")
+        adv_text_box.grid(row=0, column=0, sticky="w")
+
+        adv_title_lbl = ctk.CTkLabel(
+            adv_text_box, text="⚙️  Ajustes Avanzados",
+            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            text_color=P["text"], anchor="w"
+        )
+        adv_title_lbl.grid(row=0, column=0, sticky="w")
+
+        adv_sub_lbl = ctk.CTkLabel(
+            adv_text_box,
+            text="Punto de inicio de rotación, configuración de correo SMTP, auditoría, respaldos y GitHub.",
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], anchor="w"
+        )
+        adv_sub_lbl.grid(row=1, column=0, pady=(2, 0), sticky="w")
+
+        self.btn_toggle_advanced = ctk.CTkButton(
+            bar_inner, text="Mostrar  ▼",
+            command=self._toggle_advanced,
+            height=34, width=120, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            fg_color=P["bg_card2"], hover_color=P["border_h"]
+        )
+        self.btn_toggle_advanced.grid(row=0, column=1, sticky="e")
+
+        for w in (advanced_bar, bar_inner, adv_text_box, adv_title_lbl, adv_sub_lbl):
+            w.bind("<Button-1>", lambda e: self._toggle_advanced())
+
+        # Contenedor de todas las secciones avanzadas (oculto por defecto)
+        self.advanced_container = ctk.CTkFrame(wrapper, fg_color="transparent")
+        self.advanced_container.grid_columnconfigure(0, weight=1)
+        self._advanced_expanded = False
+
+        # ── Card Avanzada 1: Persona inicial de la rotación ───────────────────
+        card1 = ctk.CTkFrame(
+            self.advanced_container, fg_color=P["bg_card"], corner_radius=12,
+            border_width=1, border_color=P["border"]
+        )
+        card1.grid(row=0, column=0, sticky="ew", pady=(12, 0))
         card1.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -103,64 +196,19 @@ class TabSettings:
         self.settings_status_label.grid(row=4, column=0, padx=20, pady=(0, 18), sticky="w")
 
         ctk.CTkLabel(
-            wrapper,
+            self.advanced_container,
             text="Nota: este ajuste no cambia el historial ni los meses ya guardados.\n"
                  "Si hay personas pendientes, esas se atienden antes de iniciar la rotación normal.",
             font=ctk.CTkFont(family="Inter", size=12),
             text_color=P["text_s"], justify="left", anchor="w"
-        ).grid(row=3, column=0, pady=(14, 0), sticky="w")
+        ).grid(row=1, column=0, pady=(10, 0), sticky="w")
 
-        # ── Card 2: Gestión de Personal ───────────────────────────────────────
-        person_card = ctk.CTkFrame(
-            wrapper, fg_color=P["bg_card"], corner_radius=12,
-            border_width=1, border_color=P["border"]
-        )
-        person_card.grid(row=4, column=0, sticky="ew", pady=(20, 0))
-        person_card.grid_columnconfigure(0, weight=1)
-
-        header_p = ctk.CTkFrame(person_card, fg_color="transparent")
-        header_p.grid(row=0, column=0, sticky="ew", padx=20, pady=(20, 4))
-        header_p.grid_columnconfigure(0, weight=1)
-
-        title_box = ctk.CTkFrame(header_p, fg_color="transparent")
-        title_box.pack(side="left")
-
-        ctk.CTkLabel(
-            title_box, text="Gestión de Personal",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
-            text_color=P["text"], anchor="w"
-        ).pack(side="left")
-
-        self.person_count_badge = ctk.CTkLabel(
-            title_box, text="",
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            text_color=P["text_a"], anchor="w"
-        )
-        self.person_count_badge.pack(side="left", padx=(12, 0))
-
-        btn_add = ctk.CTkButton(
-            header_p, text="＋  Añadir Persona",
-            command=self._on_add_person,
-            height=32, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            fg_color=P["green_d"], hover_color=P["green"]
-        )
-        btn_add.pack(side="right")
-
-        self.person_list_frame = ctk.CTkScrollableFrame(
-            person_card, fg_color="transparent", height=340,
-            scrollbar_button_color=P["border_h"]
-        )
-        self.person_list_frame.grid(row=1, column=0, padx=10, pady=(10, 20), sticky="nsew")
-
-        self.refresh_person_list()
-
-        # ── Card 3: Configuración de Notificaciones por Correo ────────────────
+        # ── Card Avanzada 2: Configuración de Notificaciones por Correo ───────
         notif_card = ctk.CTkFrame(
-            wrapper, fg_color=P["bg_card"], corner_radius=12,
+            self.advanced_container, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        notif_card.grid(row=5, column=0, sticky="ew", pady=(20, 0))
+        notif_card.grid(row=2, column=0, sticky="ew", pady=(20, 0))
         notif_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -334,12 +382,12 @@ class TabSettings:
         )
         self.notif_status_label.grid(row=2, column=0, columnspan=2, padx=14, pady=(0, 10), sticky="w")
 
-        # ── Card 4: Backups, auditoría y recuperación ───────────────────────
+        # ── Card Avanzada 3: Backups, auditoría y recuperación ────────────────
         operations_card = ctk.CTkFrame(
-            wrapper, fg_color=P["bg_card"], corner_radius=12,
+            self.advanced_container, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        operations_card.grid(row=6, column=0, sticky="ew", pady=(20, 0))
+        operations_card.grid(row=3, column=0, sticky="ew", pady=(20, 0))
         operations_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -393,12 +441,12 @@ class TabSettings:
         self.audit_textbox.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
         self._refresh_audit()
 
-        # ── Card 5: Repositorio GitHub ───────────────────────────────────────
+        # ── Card Avanzada 4: Repositorio GitHub ───────────────────────────────
         github_card = ctk.CTkFrame(
-            wrapper, fg_color=P["bg_card"], corner_radius=12,
+            self.advanced_container, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        github_card.grid(row=7, column=0, sticky="ew", pady=(20, 24))
+        github_card.grid(row=4, column=0, sticky="ew", pady=(20, 24))
         github_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -449,6 +497,25 @@ class TabSettings:
             fg_color=P["accent_d"], hover_color=P["accent"]
         )
         btn_open_github.pack(side="left")
+
+        self.refresh_person_list()
+
+    def _toggle_advanced(self):
+        self._advanced_expanded = not self._advanced_expanded
+        if self._advanced_expanded:
+            self.advanced_container.grid(row=4, column=0, sticky="ew", pady=(10, 24))
+            if self.btn_toggle_advanced:
+                self.btn_toggle_advanced.configure(
+                    text="Ocultar  ▲",
+                    fg_color=P["accent_d"], hover_color=P["accent"]
+                )
+        else:
+            self.advanced_container.grid_remove()
+            if self.btn_toggle_advanced:
+                self.btn_toggle_advanced.configure(
+                    text="Mostrar  ▼",
+                    fg_color=P["bg_card2"], hover_color=P["border_h"]
+                )
 
     def _create_backup(self):
         path = self.controller.create_backup("respaldo_manual")
@@ -660,14 +727,16 @@ class TabSettings:
 
             _make_row_hover(row_f, [(row_f, row_f.cget("fg_color"))])
 
-        personal_names = self.controller.get_personal_list()
-        if personal_names:
-            self.starting_person_dropdown.configure(values=personal_names)
-            if self.starting_person_var.get() not in personal_names:
-                self.starting_person_var.set(personal_names[0])
-        else:
-            self.starting_person_dropdown.configure(values=["Sin personal disponible"])
-            self.starting_person_var.set("Sin personal disponible")
+        if hasattr(self, 'starting_person_dropdown') and self.starting_person_dropdown:
+            personal_names = self.controller.get_personal_list()
+            if personal_names:
+                self.starting_person_dropdown.configure(values=personal_names)
+                if hasattr(self, 'starting_person_var') and self.starting_person_var and self.starting_person_var.get() not in personal_names:
+                    self.starting_person_var.set(personal_names[0])
+            else:
+                self.starting_person_dropdown.configure(values=["Sin personal disponible"])
+                if hasattr(self, 'starting_person_var') and self.starting_person_var:
+                    self.starting_person_var.set("Sin personal disponible")
 
     def _on_move_up(self, person_id):
         success, _ = self.controller.move_person_up(person_id)

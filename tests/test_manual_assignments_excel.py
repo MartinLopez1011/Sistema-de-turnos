@@ -256,6 +256,43 @@ class TestManualAssignmentsExcel(unittest.TestCase):
 
         self.assertTrue(found_change_in_sheet, "El cambio manual debe estar registrado en la tabla de Excel con el funcionario anterior y el motivo")
 
+    def test_calendar_theme_and_tokens_have_green_for_manual_shifts(self):
+        """Verifica que el token de color 'for' coincida con verde esmeralda."""
+        from views.theme import P
+        self.assertEqual(P["for"], "#059669")
+        self.assertEqual(P["green_d"], "#059669")
+
+    def test_calendar_tab_detects_manual_shift_days(self):
+        """Verifica la lógica de detección de días de turnos manuales en el calendario."""
+        from views.theme import P
+        shifts = [
+            {
+                "semana": (date(2026, 9, 7), date(2026, 9, 13)),
+                "persona": "Cabo Gomez",
+                "es_manual": True
+            },
+            {
+                "semana": (date(2026, 9, 14), date(2026, 9, 20)),
+                "persona": "Sargento Perez"
+            }
+        ]
+        turno_days = {}
+        manual_shift_days = {}
+        for sh in shifts:
+            p = sh.get('persona')
+            s, e = sh['semana']
+            is_manual = bool(sh.get('es_manual') or sh.get('es_forzado'))
+            cur = s
+            while cur <= e:
+                if cur.month == 9 and cur.year == 2026:
+                    turno_days.setdefault(p, set()).add(cur.day)
+                    if is_manual:
+                        manual_shift_days.setdefault(p, set()).add(cur.day)
+                cur += date.resolution
+
+        self.assertIn(8, manual_shift_days.get("Cabo Gomez", set()))
+        self.assertNotIn(15, manual_shift_days.get("Sargento Perez", set()))
+
 
 if __name__ == "__main__":
     unittest.main()

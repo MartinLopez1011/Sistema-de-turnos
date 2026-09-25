@@ -83,6 +83,7 @@ class TabCalendar:
         legend.grid(row=0, column=6, padx=(8, 6), sticky="e", pady=10)
         items = [
             ("■ Turno", P["turno"]),
+            ("■ Cambio", P["for"]),
             ("DA", P["da"]),
             ("FL", P["fl"]),
             ("LIC", P["lic"]),
@@ -188,21 +189,46 @@ class TabCalendar:
             self.app.set_status(f"⚠ {len(generation_warnings)} feriado repetido por falta de alternativa.", "warn")
 
         exc_map = {}
+        exc_motives = {}
         for exc in exceptions:
             if exc['fecha'].month == month and exc['fecha'].year == year:
                 exc_map[(exc['persona'], exc['fecha'].day)] = exc['tipo']
+                if exc.get('motivo'):
+                    exc_motives[(exc['persona'], exc['fecha'].day)] = exc['motivo']
 
         turno_days = {}
         warning_days = {}
+        manual_shift_days = {}
+        manual_shift_motives = {}
+
+        # Identificar motivos manuales del periodo
+        manual_motives = self.app.manual_motives_by_period.get(viewing_key, {})
+        if viewing_key == self.app.active_period_key:
+            manual_motives = self.app.manual_motives
+        if not manual_motives and hasattr(self.controller, 'get_all_manual_motives'):
+            manual_motives = self.controller.get_all_manual_motives(viewing_key)
+
         for sh in shifts:
-            p = sh['persona']
+            p = sh.get('persona')
             if not p:
                 continue
             s, e = sh['semana']
+            wk = f"{s.isoformat()}_{e.isoformat()}"
+            is_manual = bool(
+                sh.get('es_manual') or
+                sh.get('es_forzado') or
+                (manual_assignments and wk in manual_assignments)
+            )
+            mot = (manual_motives.get(wk) if manual_motives else None) or sh.get('motivo')
+
             cur = s
             while cur <= e:
                 if cur.month == month and cur.year == year:
                     turno_days.setdefault(p, set()).add(cur.day)
+                    if is_manual:
+                        manual_shift_days.setdefault(p, set()).add(cur.day)
+                        if mot:
+                            manual_shift_motives[(p, cur.day)] = mot
                     if sh.get('advertencias'):
                         warning_days.setdefault(p, set()).add(cur.day)
                 cur += timedelta(days=1)
@@ -210,6 +236,7 @@ class TabCalendar:
         for exc in exceptions:
             if exc['fecha'].month == month and exc['fecha'].year == year:
                 turno_days.get(exc['persona'], set()).discard(exc['fecha'].day)
+                manual_shift_days.get(exc['persona'], set()).discard(exc['fecha'].day)
 
         cur_week_days = set()
         if is_cur_mo:
@@ -268,7 +295,7 @@ class TabCalendar:
         ).grid(row=0, column=0, sticky="w")
         ctk.CTkLabel(
             hl,
-            text="■ Turno  ·  DA Día Admin  ·  FL Feriado  ·  Sombreado = fin de semana  ·  Azul = semana actual",
+            text="■ Turno Regular  ·  ■ Cambio Guardia (Manual)  ·  DA Día Admin  ·  FL Feriado  ·  Sombreado = fin de semana  ·  Azul = semana actual",
             font=ctk.CTkFont(family="Inter", size=11),
             text_color=P["text_s"]
         ).grid(row=1, column=0, sticky="w")
@@ -419,6 +446,8 @@ class TabCalendar:
                 has_t = d in p_turno
                 in_cw = d in cur_week_days
 
+                is_man = d in manual_shift_days.get(persona, set())
+
                 if exc_tipo == "DA":
                     bg, txt, tc, bold = P["da"], "DA", "#FFF", True
                 elif exc_tipo == "FL":
@@ -432,6 +461,13 @@ class TabCalendar:
                 elif has_t:
                     if d in warning_days.get(persona, set()):
                         bg = P["orange"]
+                    elif is_man:
+                        if is_past_mo:
+                            bg = "#064E3B"
+                        elif in_cw:
+                            bg = "#10B981"
+                        else:
+                            bg = P["for"]
                     elif is_past_mo:
                         bg = "#5A1010"
                     elif in_cw:
@@ -459,6 +495,36 @@ class TabCalendar:
                         font=("Inter", 10, "bold" if bold else "normal")
                     )
                     lbl.place(relx=0.5, rely=0.5, anchor="center")
+
+                # Mensaje explicativo en la barra inferior al posar el cursor
+                if has_t and is_man:
+                    m_text = manual_shift_motives.get((persona, d), "Cambio manual registrado")
+                    def make_status_enter(p=persona, day_num=d, mot_val=m_text):
+                        return lambda e: self.app.set_status(
+                            f"📌 Cambio manual de guardia: {p} (Día {day_num}) — Motivo: {mot_val}", "info"
+                        )
+                    def on_status_leave(e):
+                        self.app.set_status("Listo", "ok")
+                    status_fn = make_status_enter()
+                    cf.bind("<Enter>", status_fn, add="+")
+                    cf.bind("<Leave>", on_status_leave, add="+")
+                    if lbl:
+                        lbl.bind("<Enter>", status_fn, add="+")
+                        lbl.bind("<Leave>", on_status_leave, add="+")
+                elif exc_tipo == "OTR" and (persona, d) in exc_motives:
+                    otr_mot = exc_motives[(persona, d)]
+                    def make_otr_enter(p=persona, day_num=d, mot_val=otr_mot):
+                        return lambda e: self.app.set_status(
+                            f"📌 Permiso especial OTR: {p} (Día {day_num}) — Motivo: {mot_val}", "info"
+                        )
+                    def on_otr_leave(e):
+                        self.app.set_status("Listo", "ok")
+                    otr_fn = make_otr_enter()
+                    cf.bind("<Enter>", otr_fn, add="+")
+                    cf.bind("<Leave>", on_otr_leave, add="+")
+                    if lbl:
+                        lbl.bind("<Enter>", otr_fn, add="+")
+                        lbl.bind("<Leave>", on_otr_leave, add="+")
 
                 if not is_deleted and not is_past_mo and not is_closed:
                     def make_handler(p, day, exc, y=year, m=month):
