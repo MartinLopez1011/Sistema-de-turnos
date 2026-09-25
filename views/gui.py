@@ -10,8 +10,12 @@ from views.theme import P, MESES
 from views.tabs.tab_plan import TabPlan
 from views.tabs.tab_calendar import TabCalendar
 from views.tabs.tab_settings import TabSettings
+from views.components.dialogs import LoadingModal
 from utils.logger import get_logger
-from utils.email_notifier import check_internet_connection, format_plain_text_message, send_notification_webhook
+from utils.email_notifier import (
+    check_internet_connection, format_plain_text_message, format_save_month_message,
+    send_notification_webhook, send_email_smtp, is_smtp_configured
+)
 from utils.notification_queue import NotificationQueue
 
 logger = get_logger("gui")
@@ -336,6 +340,7 @@ class TurnosApp(ctk.CTk):
         motives_snapshot = dict(self.manual_motives)
 
         has_manual = len(manual_snapshot) > 0
+        smtp_available = is_smtp_configured()
         webhook_url = ""
 
         validation_errors = self.controller.validate_month(
@@ -350,16 +355,16 @@ class TurnosApp(ctk.CTk):
             return
 
         if has_manual:
-            # 1. Validar Webhook configurado
+            # 1. Validar que haya un medio de envío configurado (SMTP o Webhook)
             notif_cfg = self.controller.get_notification_settings()
             webhook_url = notif_cfg.get("webhook_url", "").strip()
-            if not webhook_url:
+            if not smtp_available and not webhook_url:
                 messagebox.showerror(
                     "Configuración Requerida",
                     "Existen asignaciones manuales en este mes.\n\n"
                     "Para guardar un cambio manual de turno es obligatorio notificar a todos los funcionarios, "
-                    "pero no hay ninguna URL de Webhook configurada en la pestaña 'Ajustes'.\n\n"
-                    "Por favor configura el Webhook en Ajustes antes de guardar.",
+                    "pero no hay ningún servicio de correo configurado.\n\n"
+                    "Configura las credenciales SMTP en la pestaña 'Ajustes' o en el archivo .env.",
                     parent=self
                 )
                 return
@@ -388,7 +393,14 @@ class TurnosApp(ctk.CTk):
                 )
                 return
 
-        aviso_correo = "\n\n⚠ Se enviará una notificación por correo a TODOS los funcionarios." if has_manual else ""
+        # Determinar si se enviará correo (SMTP disponible = siempre enviar; si no, solo con cambios manuales)
+        will_send_email = smtp_available or has_manual
+        aviso_correo = ""
+        if will_send_email and smtp_available:
+            aviso_correo = "\n\n📧 Se enviará el Excel por correo a TODOS los funcionarios."
+        elif has_manual:
+            aviso_correo = "\n\n⚠ Se enviará una notificación por correo a TODOS los funcionarios."
+
         confirmed = messagebox.askyesno(
             "Guardar mes",
             f"¿Guardar {MESES[month-1]} {year} en el historial?\n\n"
@@ -404,6 +416,14 @@ class TurnosApp(ctk.CTk):
         self.is_exporting = True
         self._set_ui_locked(True)
         self.tab_plan.save_btn.configure(state="disabled", text="⏳  Guardando...")
+
+        # Modal de carga animado que acompaña todo el proceso
+        loading = LoadingModal(
+            self,
+            title="Guardando mes",
+            message=f"Registrando {MESES[month - 1]} {year} en el historial...",
+            icon="💾"
+        )
 
         def _commit_and_advance():
             try:
@@ -438,62 +458,136 @@ class TurnosApp(ctk.CTk):
                 self.tab_plan.refresh_exceptions(self.exceptions)
                 self.refresh_plan_views()
                 self.set_status("Mes guardado en el historial y cola avanzada.", "ok")
+                return True
             except Exception as e:
                 logger.error("Error en _commit_and_advance: %s", e, exc_info=True)
                 self.set_status(f"Error inesperado al guardar: {e}", "error")
                 return False
+
+        # Preparar datos del correo
+        recipients = [p['email'].strip() for p in self.controller.get_all_persons() if p.get('email')]
+
+        if has_manual:
+            shifts_auto = self.controller.preview_shifts(year, month, exceptions_snapshot, manual_assignments={})
+            cambios_detalle = []
+            for sh in shifts_auto:
+                s_d, e_d = sh['semana']
+                wk = f"{s_d.isoformat()}_{e_d.isoformat()}"
+                if wk in manual_snapshot:
+                    cambios_detalle.append({
+                        "semana_texto": f"{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}",
+                        "anterior": sh.get('persona', 'Sin asignar'),
+                        "nuevo": manual_snapshot[wk],
+                        "motivo": motives_snapshot.get(wk, "No especificado"),
+                        "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M")
+                    })
+            subject = f"[Sistema de Turnos] Modificación de Guardia - {MESES[month - 1]} {year}"
+            body_text = format_plain_text_message(MESES[month - 1], year, cambios_detalle)
+        else:
+            subject = f"[Sistema de Turnos] Planificación {MESES[month - 1]} {year}"
+            body_text = format_save_month_message(MESES[month - 1], year)
+
+        # El cierre local es la fuente de verdad.
+        self.set_status("Guardando el mes en el historial...", "warn")
+        if not _commit_and_advance():
+            loading.close()
+            self.is_exporting = False
+            self._set_ui_locked(False)
+            self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
+            return
+
+        if not will_send_email or not recipients:
+            loading.close()
+            self.is_exporting = False
+            self._set_ui_locked(False)
+            self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
+            messagebox.showinfo(
+                "Mes guardado",
+                f"El mes {MESES[month - 1]} {year} ha sido guardado exitosamente en el historial.",
+                parent=self
+            )
+            return
+
+        self.set_status("Mes guardado. Generando Excel y enviando correo...", "warn")
+        loading.update_status(
+            icon="📊",
+            title="Preparando archivo Excel",
+            message="Generando la planilla oficial de turnos..."
+        )
+
+        def _worker():
+            import tempfile
+            excel_path = None
+            success_send = False
+            send_msg = ""
+            try:
+                # Generar Excel temporal para adjuntar
+                nombre_mes = MESES[month - 1]
+                temp_dir = tempfile.mkdtemp(prefix="turnos_")
+                excel_path = os.path.join(temp_dir, f"turnos_{nombre_mes}_{year}.xlsx")
+                self.controller.process_generation(
+                    year, month, exceptions_snapshot,
+                    manual_assignments=manual_snapshot,
+                    target_path=excel_path
+                )
+
+                dest_desc = f"{len(recipients)} funcionario{'s' if len(recipients) != 1 else ''}"
+                loading.update_status(
+                    icon="📧",
+                    title="Enviando correos",
+                    message=f"Enviando correo con Excel adjunto a {dest_desc}..."
+                )
+
+                # Intentar envío por SMTP (preferido) o Webhook (fallback)
+                if smtp_available:
+                    success_send, send_msg = send_email_smtp(
+                        recipients, subject, body_text,
+                        attachment_path=excel_path
+                    )
+                else:
+                    success_send, send_msg = send_notification_webhook(
+                        webhook_url, recipients, subject, body_text
+                    )
+            except Exception as gen_err:
+                logger.error("Error en proceso de generación/envío de correos: %s", gen_err, exc_info=True)
+                success_send = False
+                send_msg = f"Error en generación o envío: {gen_err}"
             finally:
+                # Limpiar archivo temporal
+                if excel_path:
+                    try:
+                        os.remove(excel_path)
+                        os.rmdir(os.path.dirname(excel_path))
+                    except OSError:
+                        pass
+
+            def _on_finish():
+                loading.close()
                 self.is_exporting = False
                 self._set_ui_locked(False)
                 self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
-            return True
 
-        if not has_manual:
-            self.set_status("Guardando el mes en el historial...", "warn")
-            _commit_and_advance()
-            return
-
-        shifts_auto = self.controller.preview_shifts(year, month, exceptions_snapshot, manual_assignments={})
-        cambios_detalle = []
-        for sh in shifts_auto:
-            s_d, e_d = sh['semana']
-            wk = f"{s_d.isoformat()}_{e_d.isoformat()}"
-            if wk in manual_snapshot:
-                cambios_detalle.append({
-                    "semana_texto": f"{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}",
-                    "anterior": sh.get('persona', 'Sin asignar'),
-                    "nuevo": manual_snapshot[wk],
-                    "motivo": motives_snapshot.get(wk, "No especificado"),
-                    "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M")
-                })
-
-        recipients = [p['email'].strip() for p in self.controller.get_all_persons() if p.get('email')]
-        subject = f"[Sistema de Turnos] Modificación de Guardia - {MESES[month - 1]} {year}"
-        body_text = format_plain_text_message(MESES[month - 1], year, cambios_detalle)
-
-        # El cierre local es la fuente de verdad. La notificación no puede
-        # bloquear ni revertir un mes ya persistido.
-        self.set_status("Guardando el mes en el historial...", "warn")
-        if not _commit_and_advance():
-            return
-        self.set_status("Mes guardado. Enviando notificación...", "warn")
-
-        def _worker():
-            success_send, send_msg = send_notification_webhook(webhook_url, recipients, subject, body_text)
-            def _on_finish():
                 if not success_send:
+                    notif_cfg_inner = self.controller.get_notification_settings()
+                    wh_url = notif_cfg_inner.get("webhook_url", "").strip()
                     self.notification_queue.enqueue(
-                        webhook_url, recipients, subject, body_text, send_msg
+                        wh_url, recipients, subject, body_text, send_msg
                     )
                     self.set_status(f"Error al enviar correo: {send_msg}", "error")
                     messagebox.showwarning(
                         "Mes guardado; notificación pendiente",
-                        f"El mes fue guardado correctamente, pero no se pudo enviar el aviso:\n\n{send_msg}",
+                        f"El mes {MESES[month - 1]} {year} fue guardado correctamente, pero no se pudo enviar el aviso:\n\n{send_msg}",
                         parent=self
                     )
                     return
 
-                self.set_status("Mes guardado y notificación enviada a todos los funcionarios.", "ok")
+                self.set_status("Mes guardado y correo enviado a todos los funcionarios.", "ok")
+                messagebox.showinfo(
+                    "Mes guardado y notificado",
+                    f"✓ El mes {MESES[month - 1]} {year} fue guardado correctamente en el historial.\n\n"
+                    f"✓ Se envió la planilla Excel por correo a {len(recipients)} funcionario{'s' if len(recipients) != 1 else ''}.",
+                    parent=self
+                )
 
             self.after(0, _on_finish)
 

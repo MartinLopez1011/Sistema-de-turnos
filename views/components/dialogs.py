@@ -446,3 +446,120 @@ class ChangeShiftDialog:
 
         parent.wait_window(dialog)
         return result[0]
+
+
+class LoadingModal:
+    """
+    Modal de carga no bloqueante para operaciones en segundo plano
+    (ej: guardar mes, generar planilla Excel y enviar correos).
+    Muestra título, icono de estado, mensaje descriptivo y barra de progreso animada.
+    """
+    def __init__(self, parent, title="Procesando...", message="Por favor, espere un momento...", icon="⏳"):
+        self.parent = parent
+        self.dialog = ctk.CTkToplevel(parent)
+        self.dialog.title(title)
+        self.dialog.geometry("440x220")
+        self.dialog.configure(fg_color=P["bg_card"])
+        self.dialog.resizable(False, False)
+        self.dialog.transient(parent)
+
+        # Evitar cerrar con la 'X' mientras se ejecuta la tarea
+        self.dialog.protocol("WM_DELETE_WINDOW", lambda: None)
+
+        try:
+            self.dialog.lift()
+            self.dialog.attributes("-topmost", True)
+        except Exception:
+            pass
+
+        try:
+            self.dialog.grab_set()
+        except Exception:
+            pass
+
+        # Centrar sobre la ventana padre
+        self.dialog.update_idletasks()
+        try:
+            x = parent.winfo_x() + (parent.winfo_width() - 440) // 2
+            y = parent.winfo_y() + (parent.winfo_height() - 220) // 2
+            self.dialog.geometry(f"+{max(0, x)}+{max(0, y)}")
+        except Exception:
+            pass
+
+        # Contenedor interior estilizado
+        inner = ctk.CTkFrame(
+            self.dialog, fg_color=P["bg_card2"],
+            corner_radius=12, border_width=1, border_color=P["border"]
+        )
+        inner.pack(fill="both", expand=True, padx=14, pady=14)
+
+        self.lbl_icon = ctk.CTkLabel(
+            inner, text=icon,
+            font=ctk.CTkFont(size=28),
+            text_color=P["accent"]
+        )
+        self.lbl_icon.pack(pady=(16, 4))
+
+        self.lbl_title = ctk.CTkLabel(
+            inner, text=title,
+            font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
+            text_color=P["text"]
+        )
+        self.lbl_title.pack(pady=(0, 4))
+
+        self.lbl_message = ctk.CTkLabel(
+            inner, text=message,
+            font=ctk.CTkFont(family="Inter", size=12),
+            text_color=P["text_s"], wraplength=380, justify="center"
+        )
+        self.lbl_message.pack(pady=(0, 16))
+
+        self.progressbar = ctk.CTkProgressBar(
+            inner, mode="indeterminate",
+            width=340, height=8, corner_radius=4,
+            fg_color=P["bg_input"], progress_color=P["accent"]
+        )
+        self.progressbar.pack(pady=(0, 14))
+        self.progressbar.start()
+
+        try:
+            self.dialog.update()
+        except Exception:
+            pass
+
+    def update_status(self, message=None, title=None, icon=None):
+        """Actualiza el texto y estado del modal de forma segura entre hilos."""
+        def _apply():
+            try:
+                if not self.dialog.winfo_exists():
+                    return
+                if icon is not None:
+                    self.lbl_icon.configure(text=icon)
+                if title is not None:
+                    self.lbl_title.configure(text=title)
+                if message is not None:
+                    self.lbl_message.configure(text=message)
+                self.dialog.update_idletasks()
+            except Exception:
+                pass
+
+        if self.parent:
+            self.parent.after(0, _apply)
+
+    def close(self):
+        """Cierra el modal de forma segura."""
+        def _destroy():
+            try:
+                self.progressbar.stop()
+            except Exception:
+                pass
+            try:
+                if self.dialog.winfo_exists():
+                    self.dialog.grab_release()
+                    self.dialog.destroy()
+            except Exception:
+                pass
+
+        if self.parent:
+            self.parent.after(0, _destroy)
+

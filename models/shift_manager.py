@@ -19,6 +19,11 @@ from models.rotation_engine import RotationEngine
 
 logger = get_logger("shift_manager")
 
+MESES_LOWER = [
+    "enero", "febrero", "marzo", "abril", "mayo", "junio",
+    "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"
+]
+
 DEFAULT_WEBHOOK_URL = ""
 
 
@@ -275,7 +280,7 @@ class ShiftManager:
             errors = validate_config(payload)
             if errors:
                 return False, "El respaldo no es válido: " + "; ".join(errors)
-            self.create_backup("pre_restore")
+            self.create_backup("antes_de_restaurar")
             temporary_path = self.config_path + ".tmp"
             with open(temporary_path, "w", encoding="utf-8") as target:
                 json.dump(payload, target, indent=2, ensure_ascii=False)
@@ -358,7 +363,7 @@ class ShiftManager:
         }
 
         try:
-            self.create_backup("pre_archive")
+            self.create_backup("antes_de_archivar")
             with open(archive_path, 'w', encoding='utf-8') as f:
                 json.dump(archive_payload, f, indent=2, ensure_ascii=False)
 
@@ -1157,7 +1162,7 @@ class ShiftManager:
             "asignaciones_manuales_motivos": copy.deepcopy(self.asignaciones_manuales_motivos),
             "auditoria": copy.deepcopy(self.auditoria),
         }
-        self.create_backup(f"pre_advance_{year}_{month:02d}")
+        self.create_backup(f"guardar_{MESES_LOWER[month - 1]}_{year}")
         period_key = f"{year}-{month:02d}"
         if manual_assignments is None:
             manual_assignments = self.asignaciones_manuales.get(period_key, {})
@@ -1477,7 +1482,7 @@ class ShiftManager:
 
     def reset_historial(self, preserve_inicio=True):
         """Limpia historial, snapshots y excepciones, preservando personal e inicio por defecto."""
-        self.create_backup("pre_reset")
+        self.create_backup("antes_de_reiniciar")
         if not preserve_inicio:
             self.inicio = {}
         self.historial = {}

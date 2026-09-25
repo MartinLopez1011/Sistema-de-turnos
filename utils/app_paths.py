@@ -17,7 +17,8 @@ def get_application_data_dir() -> str:
         exe_dir = os.path.dirname(os.path.abspath(sys.executable))
         portable_marker = os.path.join(exe_dir, ".portable")
         local_config = os.path.join(exe_dir, "config.json")
-        if os.path.exists(portable_marker) or os.path.exists(local_config):
+        local_env = os.path.join(exe_dir, ".env")
+        if os.path.exists(portable_marker) or os.path.exists(local_config) or os.path.exists(local_env):
             path = exe_dir
         else:
             base_dir = os.environ.get("APPDATA") or os.path.expanduser("~")

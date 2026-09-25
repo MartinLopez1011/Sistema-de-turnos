@@ -55,6 +55,18 @@ class TestAppPaths(unittest.TestCase):
             path = get_application_data_dir()
             self.assertEqual(path, exe_dir)
 
+    def test_frozen_mode_detects_portable_env(self):
+        exe_dir = os.path.join(self.temp_dir.name, "FolderWithEnv")
+        os.makedirs(exe_dir, exist_ok=True)
+        env_file = os.path.join(exe_dir, ".env")
+        with open(env_file, "w", encoding="utf-8") as f:
+            f.write("SMTP_HOST=smtp.gmail.com")
+
+        with patch.object(sys, "frozen", True, create=True), \
+             patch.object(sys, "executable", os.path.join(exe_dir, "Sistema de Turnos.exe")):
+            path = get_application_data_dir()
+            self.assertEqual(path, exe_dir)
+
     def test_shift_manager_loads_bundled_template_when_frozen(self):
         bundle_dir = os.path.join(self.temp_dir.name, "meipass_mock")
         os.makedirs(bundle_dir, exist_ok=True)

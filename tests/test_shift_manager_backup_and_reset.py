@@ -70,7 +70,7 @@ class ShiftManagerBackupAndResetTests(unittest.TestCase):
         # Se debe haber generado un backup
         backups_dir = Path(self.temp_dir.name) / "backups"
         self.assertTrue(backups_dir.exists())
-        backups = list(backups_dir.glob("config_*pre_reset.json"))
+        backups = list(backups_dir.glob("config_*antes_de_reiniciar.json"))
         self.assertGreaterEqual(len(backups), 1)
 
     def test_reset_historial_can_wipe_inicio_when_explicitly_requested(self):

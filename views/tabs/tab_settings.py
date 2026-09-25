@@ -6,7 +6,11 @@ from views.components.widgets import _short_name, _make_row_hover
 from views.components.dialogs import (
     CustomConfirmDialog, PersonFormDialog, SelectPersonDialog
 )
-from utils.email_notifier import send_notification_webhook, is_valid_email
+from utils.email_notifier import (
+    send_notification_webhook, send_email_smtp, is_valid_email,
+    is_smtp_configured, test_smtp_connection, get_smtp_config
+)
+from utils.env_helper import get_env_var, set_env_var
 
 class TabSettings:
     def __init__(self, parent_tab, app):
@@ -23,6 +27,11 @@ class TabSettings:
         self.btn_copy_github = None
         self.backup_status_label = None
         self.audit_textbox = None
+        self.btn_edit_smtp = None
+        self.btn_save_smtp = None
+        self.btn_test_smtp = None
+        self.smtp_lock_label = None
+        self._smtp_editing = False
 
         self._build_ui()
 
@@ -155,32 +164,32 @@ class TabSettings:
         notif_card.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
-            notif_card, text="📧  Notificaciones por Correo (Webhook Serverless)",
+            notif_card, text="📧  Notificaciones por Correo (SMTP)",
             font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
             text_color=P["text"], anchor="w"
         ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
 
         ctk.CTkLabel(
             notif_card,
-            text="Cuando se realicen cambios manuales en un turno y se guarde el mes, el sistema avisará\n"
-                 "automáticamente a todos los funcionarios vía Google Apps Script (Gmail).",
+            text="Al guardar el mes se enviará automáticamente el Excel con la planificación a todos\n"
+                 "los funcionarios. Para Gmail, usa una Contraseña de Aplicación (no tu contraseña normal).",
             font=ctk.CTkFont(family="Inter", size=12),
             text_color=P["text_s"], anchor="w", justify="left"
         ).grid(row=1, column=0, padx=20, pady=(0, 12), sticky="w")
 
-        notif_cfg = self.controller.get_notification_settings()
-        has_webhook = bool(notif_cfg.get("webhook_url", "").strip()) and notif_cfg.get("activo", True)
+        smtp_cfg = get_smtp_config()
+        smtp_ok = is_smtp_configured()
 
         # Indicador de estado de conexión
         status_box = ctk.CTkFrame(notif_card, fg_color="transparent")
         status_box.grid(row=2, column=0, padx=20, pady=(0, 14), sticky="w")
 
-        dot_text = "● Conectado" if has_webhook else "○ No configurado"
-        dot_color = P["text_ok"] if has_webhook else P["text_w"]
+        dot_text = "● SMTP Configurado" if smtp_ok else "○ SMTP No configurado"
+        dot_color = P["text_ok"] if smtp_ok else P["text_w"]
         desc_text = (
-            "Servicio de Google Apps Script vinculado en config.json."
-            if has_webhook
-            else "Falta configurar webhook_url en config.json para habilitar envíos."
+            f"Servidor: {smtp_cfg['host']}:{smtp_cfg['port']} — Usuario: {smtp_cfg['user']}"
+            if smtp_ok
+            else "Configura las credenciales SMTP en los campos de abajo o en el archivo .env"
         )
 
         self.notif_badge_label = ctk.CTkLabel(
@@ -196,12 +205,104 @@ class TabSettings:
             text_color=P["text_s"]
         ).pack(side="left")
 
-        # Caja interactiva para probar con un correo
+        # Campos de configuración SMTP
+        smtp_form = ctk.CTkFrame(
+            notif_card, fg_color=P["bg_card2"], corner_radius=8,
+            border_width=1, border_color=P["border"]
+        )
+        smtp_form.grid(row=3, column=0, padx=20, pady=(0, 10), sticky="ew")
+        smtp_form.grid_columnconfigure(1, weight=1)
+        smtp_form.grid_columnconfigure(3, weight=1)
+
+        lbl_font = ctk.CTkFont(family="Inter", size=12)
+        entry_h = 34
+
+        ctk.CTkLabel(smtp_form, text="Host SMTP:", font=lbl_font, text_color=P["text_s"]
+        ).grid(row=0, column=0, padx=(14, 6), pady=(12, 4), sticky="w")
+        self.smtp_host_entry = ctk.CTkEntry(
+            smtp_form, height=entry_h, fg_color=P["bg_input"], border_color=P["border"],
+            placeholder_text="smtp.gmail.com"
+        )
+        self.smtp_host_entry.grid(row=0, column=1, padx=(0, 14), pady=(12, 4), sticky="ew")
+        if smtp_cfg["host"]:
+            self.smtp_host_entry.insert(0, smtp_cfg["host"])
+
+        ctk.CTkLabel(smtp_form, text="Puerto:", font=lbl_font, text_color=P["text_s"]
+        ).grid(row=0, column=2, padx=(14, 6), pady=(12, 4), sticky="w")
+        self.smtp_port_entry = ctk.CTkEntry(
+            smtp_form, height=entry_h, width=80, fg_color=P["bg_input"], border_color=P["border"],
+            placeholder_text="587"
+        )
+        self.smtp_port_entry.grid(row=0, column=3, padx=(0, 14), pady=(12, 4), sticky="w")
+        if smtp_cfg["port"]:
+            self.smtp_port_entry.insert(0, str(smtp_cfg["port"]))
+
+        ctk.CTkLabel(smtp_form, text="Usuario:", font=lbl_font, text_color=P["text_s"]
+        ).grid(row=1, column=0, padx=(14, 6), pady=4, sticky="w")
+        self.smtp_user_entry = ctk.CTkEntry(
+            smtp_form, height=entry_h, fg_color=P["bg_input"], border_color=P["border"],
+            placeholder_text="tu_correo@gmail.com"
+        )
+        self.smtp_user_entry.grid(row=1, column=1, columnspan=3, padx=(0, 14), pady=4, sticky="ew")
+        if smtp_cfg["user"]:
+            self.smtp_user_entry.insert(0, smtp_cfg["user"])
+
+        ctk.CTkLabel(smtp_form, text="Contraseña:", font=lbl_font, text_color=P["text_s"]
+        ).grid(row=2, column=0, padx=(14, 6), pady=4, sticky="w")
+        self.smtp_pass_entry = ctk.CTkEntry(
+            smtp_form, height=entry_h, fg_color=P["bg_input"], border_color=P["border"],
+            placeholder_text="Contraseña de Aplicación (16 caracteres)", show="•"
+        )
+        self.smtp_pass_entry.grid(row=2, column=1, columnspan=3, padx=(0, 14), pady=4, sticky="ew")
+        if smtp_cfg["password"]:
+            self.smtp_pass_entry.insert(0, smtp_cfg["password"])
+
+        smtp_actions = ctk.CTkFrame(smtp_form, fg_color="transparent")
+        smtp_actions.grid(row=3, column=0, columnspan=4, padx=14, pady=(8, 4), sticky="w")
+
+        self.btn_edit_smtp = ctk.CTkButton(
+            smtp_actions, text="✏️  Editar", command=self._toggle_edit_smtp,
+            height=34, width=110, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            fg_color=P["accent_d"], hover_color=P["accent"]
+        )
+        self.btn_edit_smtp.pack(side="left", padx=(0, 8))
+
+        self.btn_save_smtp = ctk.CTkButton(
+            smtp_actions, text="💾  Guardar", command=self._save_smtp_config,
+            height=34, width=120, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            fg_color=P["green_d"], hover_color=P["green"],
+            state="disabled"
+        )
+        self.btn_save_smtp.pack(side="left", padx=(0, 8))
+
+        self.btn_test_smtp = ctk.CTkButton(
+            smtp_actions, text="🔌  Probar Conexión", command=self._test_smtp_connection,
+            height=34, width=150, corner_radius=8,
+            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            fg_color=P["bg_card"], hover_color=P["border_h"]
+        )
+        self.btn_test_smtp.pack(side="left", padx=(0, 8))
+
+        self.smtp_lock_label = ctk.CTkLabel(
+            smtp_form,
+            text="🔒 Configuración protegida. Pulsa 'Editar' para modificar los datos del servidor.",
+            font=ctk.CTkFont(family="Inter", size=11),
+            text_color=P["text_s"], anchor="w"
+        )
+        self.smtp_lock_label.grid(row=4, column=0, columnspan=4, padx=14, pady=(0, 10), sticky="w")
+
+        # Iniciar con los campos bloqueados para evitar modificaciones accidentales
+        self._smtp_editing = False
+        self._set_smtp_fields_state(enabled=False)
+
+        # Caja interactiva para probar envío con un correo
         test_box = ctk.CTkFrame(
             notif_card, fg_color=P["bg_card2"], corner_radius=8,
             border_width=1, border_color=P["border"]
         )
-        test_box.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="ew")
+        test_box.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
         test_box.grid_columnconfigure(0, weight=1)
 
         test_title = ctk.CTkLabel(
@@ -350,7 +451,7 @@ class TabSettings:
         btn_open_github.pack(side="left")
 
     def _create_backup(self):
-        path = self.controller.create_backup("manual")
+        path = self.controller.create_backup("respaldo_manual")
         if path:
             self.backup_status_label.configure(
                 text=f"Respaldo creado: {os.path.basename(path)}",
@@ -361,6 +462,27 @@ class TabSettings:
                 text="No se pudo crear el respaldo.", text_color=P["text_e"]
             )
 
+    @staticmethod
+    def _format_backup_display_name(filename):
+        """Formats a backup filename into a human-readable display name.
+        
+        Example: config_20260925_103900_guardar_septiembre_2026.json
+                → 📁 25/09/2026 10:39 — Guardar Septiembre 2026
+        """
+        import re
+        name = filename.replace("config_", "").replace(".json", "")
+        # Extract timestamp: YYYYMMDD_HHMMSS
+        match = re.match(r"(\d{4})(\d{2})(\d{2})_(\d{2})(\d{2})(\d{2})(?:_(.+))?", name)
+        if not match:
+            return filename
+        y, mo, d, h, mi, _, tag = match.groups()
+        date_str = f"{d}/{mo}/{y} {h}:{mi}"
+        if tag:
+            tag_display = tag.replace("_", " ").title()
+        else:
+            tag_display = "Respaldo"
+        return f"📁 {date_str} — {tag_display}"
+
     def _restore_backup(self):
         backups = self.controller.list_backups()
         if not backups:
@@ -368,16 +490,26 @@ class TabSettings:
                 text="No existen respaldos disponibles.", text_color=P["text_w"]
             )
             return
-        names = [os.path.basename(path) for path in backups]
+        # Build display names and mapping
+        display_names = []
+        display_to_path = {}
+        for path in backups:
+            basename = os.path.basename(path)
+            display = self._format_backup_display_name(basename)
+            display_names.append(display)
+            display_to_path[display] = path
+
         selected = SelectPersonDialog.show(
             self.app,
             "Restaurar respaldo",
             "Selecciona el respaldo que deseas restaurar:",
-            names,
+            display_names,
         )
         if not selected:
             return
-        selected_path = next(path for path in backups if os.path.basename(path) == selected)
+        selected_path = display_to_path.get(selected)
+        if not selected_path:
+            return
         if not CustomConfirmDialog.show(
             self.app,
             "Confirmar restauración",
@@ -549,16 +681,157 @@ class TabSettings:
             self.refresh_person_list()
             self.app.load_personal()
 
-    def _test_webhook(self):
-        notif_cfg = self.controller.get_notification_settings()
-        url = notif_cfg.get("webhook_url", "").strip()
-        if not url:
+    def _set_smtp_fields_state(self, enabled: bool):
+        """Habilita o deshabilita los campos de edición SMTP."""
+        state = "normal" if enabled else "disabled"
+        self.smtp_host_entry.configure(state=state)
+        self.smtp_port_entry.configure(state=state)
+        self.smtp_user_entry.configure(state=state)
+        self.smtp_pass_entry.configure(state=state)
+
+    def _toggle_edit_smtp(self):
+        """Alterna entre el modo de solo lectura y el modo de edición de SMTP."""
+        if not self._smtp_editing:
+            self._smtp_editing = True
+            self._set_smtp_fields_state(enabled=True)
+            self.btn_edit_smtp.configure(
+                text="❌  Cancelar",
+                fg_color=P["red_d"],
+                hover_color=P["red"]
+            )
+            self.btn_save_smtp.configure(state="normal")
+            self.smtp_lock_label.configure(
+                text="🔓 Modo edición activo. Modifica los campos y pulsa 'Guardar'.",
+                text_color=P["text_w"]
+            )
+            self.smtp_host_entry.focus()
+        else:
+            self._smtp_editing = False
+            self._restore_smtp_fields()
+            self._set_smtp_fields_state(enabled=False)
+            self.btn_edit_smtp.configure(
+                text="✏️  Editar",
+                fg_color=P["accent_d"],
+                hover_color=P["accent"]
+            )
+            self.btn_save_smtp.configure(state="disabled")
+            self.smtp_lock_label.configure(
+                text="🔒 Configuración protegida. Pulsa 'Editar' para modificar los datos del servidor.",
+                text_color=P["text_s"]
+            )
+
+    def _restore_smtp_fields(self):
+        """Restaura los valores de los campos SMTP desde la configuración guardada."""
+        smtp_cfg = get_smtp_config()
+        self._set_smtp_fields_state(enabled=True)
+        self.smtp_host_entry.delete(0, "end")
+        if smtp_cfg.get("host"):
+            self.smtp_host_entry.insert(0, smtp_cfg["host"])
+
+        self.smtp_port_entry.delete(0, "end")
+        if smtp_cfg.get("port"):
+            self.smtp_port_entry.insert(0, str(smtp_cfg["port"]))
+
+        self.smtp_user_entry.delete(0, "end")
+        if smtp_cfg.get("user"):
+            self.smtp_user_entry.insert(0, smtp_cfg["user"])
+
+        self.smtp_pass_entry.delete(0, "end")
+        if smtp_cfg.get("password"):
+            self.smtp_pass_entry.insert(0, smtp_cfg["password"])
+        self._set_smtp_fields_state(enabled=False)
+
+    def _save_smtp_config(self):
+        """Guarda las credenciales SMTP en el archivo .env."""
+        host = self.smtp_host_entry.get().strip()
+        port = self.smtp_port_entry.get().strip()
+        user = self.smtp_user_entry.get().strip()
+        password = self.smtp_pass_entry.get().strip()
+
+        if not host or not port or not user or not password:
             self.notif_status_label.configure(
-                text="⚠ El Webhook no está configurado en config.json.",
+                text="⚠ Completa todos los campos SMTP antes de guardar.",
+                text_color=P["text_w"]
+            )
+            return
+
+        try:
+            int(port)
+        except ValueError:
+            self.notif_status_label.configure(
+                text="⚠ El puerto debe ser un número (ej: 587).",
                 text_color=P["text_e"]
             )
             return
 
+        set_env_var("SMTP_HOST", host)
+        set_env_var("SMTP_PORT", port)
+        set_env_var("SMTP_USER", user)
+        set_env_var("SMTP_PASSWORD", password)
+        set_env_var("SMTP_USE_TLS", "true")
+
+        # Bloquear nuevamente los campos tras guardar exitosamente
+        self._smtp_editing = False
+        self._set_smtp_fields_state(enabled=False)
+        self.btn_edit_smtp.configure(
+            text="✏️  Editar",
+            fg_color=P["accent_d"],
+            hover_color=P["accent"]
+        )
+        self.btn_save_smtp.configure(state="disabled")
+        self.smtp_lock_label.configure(
+            text="🔒 Configuración protegida y guardada correctamente.",
+            text_color=P["text_ok"]
+        )
+
+        self.notif_status_label.configure(
+            text="✓ Configuración SMTP guardada en .env correctamente.",
+            text_color=P["text_ok"]
+        )
+        self.notif_badge_label.configure(
+            text="● SMTP Configurado",
+            text_color=P["text_ok"]
+        )
+
+    def _test_smtp_connection(self):
+        """Prueba la conexión SMTP sin enviar correo."""
+        # Si estaba en modo edición, guardamos primero
+        if getattr(self, "_smtp_editing", False):
+            self._save_smtp_config()
+
+        if not is_smtp_configured():
+            self.notif_status_label.configure(
+                text="⚠ Configura las credenciales SMTP primero.",
+                text_color=P["text_w"]
+            )
+            return
+
+        import threading
+        self.btn_test_smtp.configure(state="disabled", text="⏳  Probando...")
+        self.notif_status_label.configure(
+            text="Verificando conexión SMTP...",
+            text_color=P["text_w"]
+        )
+
+        def run_test():
+            ok, msg = test_smtp_connection()
+            def update_ui():
+                self.btn_test_smtp.configure(state="normal", text="🔌  Probar Conexión")
+                if ok:
+                    self.notif_status_label.configure(
+                        text=f"✓ {msg}",
+                        text_color=P["text_ok"]
+                    )
+                else:
+                    self.notif_status_label.configure(
+                        text=f"Error: {msg}",
+                        text_color=P["text_e"]
+                    )
+            self.app.after(0, update_ui)
+
+        threading.Thread(target=run_test, daemon=True).start()
+
+    def _test_webhook(self):
         test_email = self.test_email_entry.get().strip()
         if not test_email:
             self.notif_status_label.configure(
@@ -574,6 +847,17 @@ class TabSettings:
             )
             return
 
+        use_smtp = is_smtp_configured()
+        if not use_smtp:
+            notif_cfg = self.controller.get_notification_settings()
+            url = notif_cfg.get("webhook_url", "").strip()
+            if not url:
+                self.notif_status_label.configure(
+                    text="⚠ No hay SMTP ni Webhook configurado.",
+                    text_color=P["text_e"]
+                )
+                return
+
         import threading
         self.btn_test_webhook.configure(state="disabled", text="⏳  Enviando...")
         self.notif_status_label.configure(
@@ -582,12 +866,27 @@ class TabSettings:
         )
 
         def run_test():
-            ok, msg = send_notification_webhook(
-                url,
-                recipients=[test_email],
-                subject="[Sistema de Turnos] Prueba de Notificación Exitosa",
-                body_text="Hola,\n\nEste es un correo de prueba enviado desde el Sistema de Turnos para verificar la correcta integración con Google Apps Script.\n\nEl servicio está funcionando correctamente."
+            subject = "[Sistema de Turnos] Prueba de Notificación Exitosa"
+            body = (
+                "Hola,\n\nEste es un correo de prueba enviado desde el Sistema de Turnos "
+                "para verificar la correcta configuración del servicio de correo.\n\n"
+                "El servicio está funcionando correctamente."
             )
+            if use_smtp:
+                ok, msg = send_email_smtp(
+                    recipients=[test_email],
+                    subject=subject,
+                    body_text=body
+                )
+            else:
+                notif_cfg = self.controller.get_notification_settings()
+                url = notif_cfg.get("webhook_url", "").strip()
+                ok, msg = send_notification_webhook(
+                    url,
+                    recipients=[test_email],
+                    subject=subject,
+                    body_text=body
+                )
             def update_ui():
                 self.btn_test_webhook.configure(state="normal", text="✉  Probar Envío")
                 if ok:
