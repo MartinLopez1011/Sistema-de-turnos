@@ -8,10 +8,11 @@ __pycache__/
 *.pyc
 .pytest_cache/
 
-# Archivos de configuración locales
+# Archivos de configuración locales y respaldos con datos operativos
 config.json
 temp_config.json
 .env
+backups/
 
 # Archivos de logs
 *.log

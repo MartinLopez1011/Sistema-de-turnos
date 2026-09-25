@@ -1,0 +1,98 @@
+{
+  "notificaciones": {
+    "webhook_url": "https://script.google.com/macros/s/TU_WEBHOOK_URL_AQUI/exec",
+    "activo": false
+  },
+  "personal": [
+    {
+      "id": 1,
+      "nombre": "COM PEREZ JUAN",
+      "email": "juan.perez@ejemplo.com"
+    },
+    {
+      "id": 2,
+      "nombre": "COM GONZALEZ MARIA",
+      "email": "maria.gonzalez@ejemplo.com"
+    },
+    {
+      "id": 3,
+      "nombre": "COM SOTO CARLOS",
+      "email": "carlos.soto@ejemplo.com"
+    },
+    {
+      "id": 4,
+      "nombre": "COM SILVA CLAUDIA",
+      "email": "claudia.silva@ejemplo.com"
+    },
+    {
+      "id": 5,
+      "nombre": "COM ROJAS CECILIA",
+      "email": "cecilia.rojas@ejemplo.com"
+    },
+    {
+      "id": 6,
+      "nombre": "SBC DIAZ CATHERINE",
+      "email": "catherine.diaz@ejemplo.com"
+    },
+    {
+      "id": 7,
+      "nombre": "PRO MORALES JOSE",
+      "email": "jose.morales@ejemplo.com"
+    },
+    {
+      "id": 8,
+      "nombre": "PRO ALVAREZ SUSANA",
+      "email": "susana.alvarez@ejemplo.com"
+    },
+    {
+      "id": 9,
+      "nombre": "PRO CASTILLO PAMELA",
+      "email": "pamela.castillo@ejemplo.com"
+    },
+    {
+      "id": 10,
+      "nombre": "PRO TORRES PATRICIO",
+      "email": "patricio.torres@ejemplo.com"
+    },
+    {
+      "id": 11,
+      "nombre": "PRO TAPIA KARINA",
+      "email": "karina.tapia@ejemplo.com"
+    },
+    {
+      "id": 12,
+      "nombre": "PRO CONTRERAS RODRIGO",
+      "email": "rodrigo.contreras@ejemplo.com"
+    },
+    {
+      "id": 13,
+      "nombre": "PRO FLORES CAMILA",
+      "email": "camila.flores@ejemplo.com"
+    },
+    {
+      "id": 14,
+      "nombre": "PRO NEIRA PRISCILA",
+      "email": "priscila.neira@ejemplo.com"
+    },
+    {
+      "id": 15,
+      "nombre": "PRO MARTINEZ BRYAN",
+      "email": "bryan.martinez@ejemplo.com"
+    },
+    {
+      "id": 16,
+      "nombre": "PRO VEGA NATALIA",
+      "email": "natalia.vega@ejemplo.com"
+    }
+  ],
+  "inicio": {},
+  "historial": {},
+  "siguiente_id": 1,
+  "pendientes": [],
+  "snapshots": {},
+  "excepciones": {},
+  "asignaciones_manuales": {},
+  "asignaciones_manuales_motivos": {},
+  "auditoria": [],
+  "schema_version": 2
+}

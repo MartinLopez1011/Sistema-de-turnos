@@ -269,7 +269,7 @@ El generador del Word se ejecuta desde el entorno virtual del proyecto:
 ## 14. Estado actual (Septiembre 2026)
 
 - Personal: 16 personas activas (IDs 1–16)
-- Siguiente en turnar: ID 1 (COM PEREZ JUAN)
+- Siguiente en turnar: ID 1 (Funcionario ID 1)
 - Historial: semanas desde el 7 de septiembre hasta el 4 de octubre de 2026
 - Snapshots: datos de inicio disponibles para septiembre y octubre de 2026
 - Excepciones guardadas: periodo septiembre de 2026 sin excepciones registradas
