@@ -168,15 +168,17 @@ class MainController:
     def get_audit_entries(self, limit=20):
         return list(reversed(self.shift_manager.auditoria[-limit:]))
 
-    def preview_shifts(self, year, month, exceptions, manual_assignments=None):
+    def preview_shifts(self, year, month, exceptions=None, manual_assignments=None):
+        if exceptions is None:
+            exceptions = self.get_exceptions_for_period(year, month)
         target_key = f"{year}-{month:02d}"
 
         def exception_signature(items):
             return sorted(
-                (item['persona'], item['fecha'].isoformat(), item['tipo'])
+                (item['persona'], (item['fecha'].isoformat() if hasattr(item['fecha'], 'isoformat') else str(item['fecha'])), item['tipo'])
                 for item in items)
 
-        saved_exceptions = self.shift_manager.get_exceptions(target_key)
+        saved_exceptions = self.get_exceptions_for_period(year, month)
         saved_manual = self.shift_manager.get_manual_assignments(target_key)
         active_manual = manual_assignments if manual_assignments is not None else saved_manual
         exceptions_changed = (
@@ -184,18 +186,22 @@ class MainController:
             active_manual != saved_manual)
 
         initial_state = self.shift_manager.get_initial_state_for_period(year, month)
+        virtual_historial = initial_state.get("virtual_historial", {}) if isinstance(initial_state, dict) else {}
 
         # Un mes cerrado puede editarse: si cambiaron sus excepciones o asignaciones manuales,
         # recalcular desde el estado guardado al inicio del periodo.
-        if target_key in self.shift_manager.snapshots and exceptions_changed:
+        is_closed = self.shift_manager.is_month_closed(year, month)
+        if is_closed and target_key in self.shift_manager.snapshots and exceptions_changed:
             shifts, _, _ = self.shift_manager.generate_shifts(
                 year, month, exceptions, state=initial_state,
-                recalculate_history=True, manual_assignments=active_manual)
+                recalculate_history=True, manual_assignments=active_manual,
+                virtual_historial=virtual_historial)
             return shifts
 
         shifts, _, _ = self.shift_manager.generate_shifts(
             year, month, exceptions, state=initial_state,
-            manual_assignments=active_manual)
+            manual_assignments=active_manual,
+            virtual_historial=virtual_historial)
         return shifts
 
     def validate_month(self, year, month, exceptions, manual_assignments=None):

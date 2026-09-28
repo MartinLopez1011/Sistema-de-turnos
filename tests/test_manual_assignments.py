@@ -99,8 +99,9 @@ class TestManualAssignments(unittest.TestCase):
         shifts = self.controller.preview_shifts(2026, 10, for_exception)
         
         # Debe haber asignado a Eve en esa semana
-        matched_shift = next((sh for sh in shifts if sh['persona'] == 'Eve'), None)
+        matched_shift = next((sh for sh in shifts if sh['semana'][0] <= date(2026, 10, 6) <= sh['semana'][1]), None)
         self.assertIsNotNone(matched_shift)
+        self.assertEqual(matched_shift['persona'], 'Eve')
         self.assertTrue(matched_shift.get('es_forzado'))
 
 if __name__ == '__main__':

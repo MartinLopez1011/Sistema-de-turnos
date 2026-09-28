@@ -237,9 +237,10 @@ class TabCalendar:
             else:
                 self.btn_hoy.configure(state="normal", fg_color=P["accent_d"], hover_color=P["accent"])
 
-        exceptions = self.app.exceptions_by_period.get(viewing_key, [])
         if viewing_key == self.app.active_period_key:
             exceptions = self.app.exceptions
+        else:
+            exceptions = self.controller.get_exceptions_for_period(year, month)
 
         manual_assignments = self.app.manual_assignments_by_period.get(viewing_key, {})
         if viewing_key == self.app.active_period_key:

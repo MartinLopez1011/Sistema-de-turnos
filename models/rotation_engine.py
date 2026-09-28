@@ -20,6 +20,7 @@ class RotationEngine:
         state: dict[str, Any] | None = None,
         recalculate_history: bool = False,
         manual_assignments: dict[str, str] | None = None,
+        virtual_historial: dict[str, str] | None = None,
     ):
         return self._manager._generate_shifts_legacy(
             year,
@@ -28,4 +29,5 @@ class RotationEngine:
             state=state,
             recalculate_history=recalculate_history,
             manual_assignments=manual_assignments,
+            virtual_historial=virtual_historial,
         )

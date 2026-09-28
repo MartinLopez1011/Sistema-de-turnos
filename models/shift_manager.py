@@ -124,7 +124,41 @@ class ShiftManager:
         self.pendientes = data.get('pendientes', [])
         self.snapshots = data.get('snapshots', {})
         saved_exceptions = data.get('excepciones', {})
-        self.excepciones = saved_exceptions if isinstance(saved_exceptions, dict) else {}
+        if isinstance(saved_exceptions, dict):
+            clean_exceptions = {}
+            for period, items in saved_exceptions.items():
+                if not isinstance(items, list):
+                    continue
+                for item in items:
+                    if not isinstance(item, dict) or 'fecha' not in item or 'persona' not in item:
+                        continue
+                    f_val = item['fecha']
+                    if isinstance(f_val, (date, datetime)):
+                        f_str = f_val.strftime('%Y-%m-%d')
+                    else:
+                        f_str = str(f_val)[:10]
+                    parts = f_str.split('-')
+                    if len(parts) == 3:
+                        try:
+                            true_pkey = f"{int(parts[0])}-{int(parts[1]):02d}"
+                        except ValueError:
+                            true_pkey = period
+                    else:
+                        true_pkey = period
+
+                    if true_pkey not in clean_exceptions:
+                        clean_exceptions[true_pkey] = []
+
+                    norm_item = dict(item)
+                    norm_item['fecha'] = f_str
+                    if not any(x['persona'] == norm_item['persona'] and x['fecha'] == norm_item['fecha'] for x in clean_exceptions[true_pkey]):
+                        clean_exceptions[true_pkey].append(norm_item)
+
+            for pkey in clean_exceptions:
+                clean_exceptions[pkey].sort(key=lambda x: (x.get('fecha', ''), x.get('persona', '')))
+            self.excepciones = clean_exceptions
+        else:
+            self.excepciones = {}
         saved_manual = data.get('asignaciones_manuales', {})
         self.asignaciones_manuales = saved_manual if isinstance(saved_manual, dict) else {}
         saved_motivos = data.get('asignaciones_manuales_motivos', {})
@@ -692,8 +726,12 @@ class ShiftManager:
 
     def validate_month(self, year, month, exceptions, manual_assignments=None):
         """Validate a month before committing it to history."""
+        initial_state = self.get_initial_state_for_period(year, month)
         shifts, _, _ = self.generate_shifts(
-            year, month, exceptions, manual_assignments=manual_assignments
+            year, month, exceptions,
+            state=initial_state,
+            manual_assignments=manual_assignments,
+            virtual_historial=initial_state.get("virtual_historial") if isinstance(initial_state, dict) else None
         )
         errors = []
         if not shifts:
@@ -768,7 +806,7 @@ class ShiftManager:
         return "Desconocido"
 
     def _did_recently(self, nombre, before_date, shifts_so_far,
-                      min_gap_weeks=4, ignored_period=None):
+                      min_gap_weeks=4, ignored_period=None, effective_historial=None):
         """
         Devuelve True si 'nombre' ya hizo turno en las últimas min_gap_weeks semanas
         antes de before_date, considerando el historial guardado y los turnos
@@ -778,19 +816,21 @@ class ShiftManager:
         """
         cutoff = before_date - timedelta(weeks=min_gap_weeks)
         last_date = self._last_shift_date(
-            nombre, before_date, shifts_so_far, ignored_period=ignored_period
+            nombre, before_date, shifts_so_far, ignored_period=ignored_period,
+            effective_historial=effective_historial
         )
         return last_date >= cutoff
 
-    def _last_shift_date(self, nombre, before_date, shifts_so_far, ignored_period=None):
+    def _last_shift_date(self, nombre, before_date, shifts_so_far, ignored_period=None, effective_historial=None):
         """
         Devuelve la fecha de fin del turno más reciente de 'nombre' antes de before_date,
         o date.min si no tiene turnos previos registrados.
         """
         latest = date.min
+        hist = effective_historial if effective_historial is not None else self.historial
 
-        # Revisar historial guardado
-        for week_key, person in self.historial.items():
+        # Revisar historial guardado o efectivo
+        for week_key, person in hist.items():
             if person != nombre:
                 continue
             week_start, week_end = _parse_week_range(week_key)
@@ -817,8 +857,6 @@ class ShiftManager:
         for sh in shifts_so_far:
             if sh.get('persona') == nombre:
                 sh_start, sh_end = sh['semana']
-                if ignored_period and sh_start <= ignored_period[1] and sh_end >= ignored_period[0]:
-                    continue
                 if sh_end < before_date and sh_end > latest:
                     latest = sh_end
 
@@ -960,23 +998,45 @@ class ShiftManager:
             return snap["siguiente_id"], snap["pendientes"].copy()
         return self.siguiente_id, self.pendientes.copy()
 
+    def is_month_closed(self, year, month):
+        """
+        Determina si el mes (year, month) ya fue cerrado formalmente en el historial.
+        Un mes está cerrado si al menos una semana que inicia en dicho mes está en historial.
+        """
+        for wk in self.historial.keys():
+            w_start, _ = _parse_week_range(wk)
+            if w_start and w_start.year == year and w_start.month == month:
+                return True
+        return False
+
     def get_initial_state_for_period(self, year, month):
         """
-        Determina el estado de rotación {'siguiente_id', 'pendientes'}
+        Determina el estado de rotación {'siguiente_id', 'pendientes', 'virtual_historial'}
         con el que debe iniciar el periodo (year, month).
         
         1. Si ya existe un snapshot guardado para (year, month), lo retorna.
         2. Si (year, month) <= mes actual, retorna el puntero global actual.
         3. Si (year, month) es un mes futuro sin snapshot:
            Encadena y proyecta la rotación desde el último snapshot válido
-           o mes actual hasta el inicio de (year, month).
+           o mes actual hasta el inicio de (year, month), arrastrando las
+           asignaciones proyectadas de semanas limítrofes en virtual_historial.
         """
         target_key = f"{year}-{month:02d}"
         if target_key in self.snapshots:
-            return {
-                "siguiente_id": self.snapshots[target_key]["siguiente_id"],
-                "pendientes": self.snapshots[target_key]["pendientes"].copy(),
-            }
+            weeks = self._build_weeks(year, month)
+            w0_start = weeks[0][0] if weeks else None
+            needs_projection_for_bridge = False
+            if w0_start and w0_start < date(year, month, 1):
+                w0_key = f"{w0_start.isoformat()}_{weeks[0][1].isoformat()}"
+                if w0_key not in self.historial:
+                    needs_projection_for_bridge = True
+
+            if not needs_projection_for_bridge:
+                return {
+                    "siguiente_id": self.snapshots[target_key]["siguiente_id"],
+                    "pendientes": self.snapshots[target_key]["pendientes"].copy(),
+                    "virtual_historial": {},
+                }
 
         today = date.today()
         target_is_future = (year, month) > (today.year, today.month)
@@ -984,6 +1044,7 @@ class ShiftManager:
             return {
                 "siguiente_id": self.siguiente_id,
                 "pendientes": self.pendientes.copy(),
+                "virtual_historial": {},
             }
 
         best_snapshot_key = None
@@ -1012,13 +1073,20 @@ class ShiftManager:
             }
             preview_year, preview_month = today.year, today.month
 
+        virtual_historial = {}
         while (preview_year, preview_month) < (year, month):
             preview_key = f"{preview_year}-{preview_month:02d}"
-            period_exceptions = self.get_exceptions(preview_key)
+            period_exceptions = self.get_exceptions_for_period(preview_year, preview_month)
             period_manual = self.get_manual_assignments(preview_key)
-            _, final_id, final_pending = self.generate_shifts(
+            shifts, final_id, final_pending = self.generate_shifts(
                 preview_year, preview_month, period_exceptions, state=state,
-                manual_assignments=period_manual)
+                manual_assignments=period_manual,
+                virtual_historial=virtual_historial)
+            for shift in shifts:
+                if shift.get('persona'):
+                    s, e = shift['semana']
+                    wk = f"{s.isoformat()}_{e.isoformat()}"
+                    virtual_historial[wk] = shift['persona']
             state = {
                 "siguiente_id": final_id,
                 "pendientes": final_pending,
@@ -1029,6 +1097,7 @@ class ShiftManager:
             else:
                 preview_month += 1
 
+        state["virtual_historial"] = virtual_historial
         return state
 
     def _check_week_exception(self, nombre, start_date, end_date, exceptions):
@@ -1074,28 +1143,37 @@ class ShiftManager:
         return shift, current_person_index, current_siguiente_id, current_pendientes
 
     def _try_forced_assignment(self, start_date, end_date, exceptions,
-                               skipped, current_pendientes):
+                               skipped, current_pendientes, personal_ids=None,
+                               current_person_index=0, current_siguiente_id=None):
         """Intenta asignación forzada legacy (FOR en excepciones)."""
         for exc in exceptions:
             if start_date <= exc['fecha'] <= end_date and exc['tipo'] == "FOR":
                 nombre_forzado = exc['persona']
-                current_pendientes = [
-                    p for p in current_pendientes
-                    if self.get_person_by_id(p) != nombre_forzado
-                ]
+                forced_id = next((p['id'] for p in self.personal if p['nombre'] == nombre_forzado), None)
+                if forced_id:
+                    current_pendientes = [p for p in current_pendientes if p != forced_id]
+                    if personal_ids and personal_ids[current_person_index] == forced_id:
+                        current_person_index = (current_person_index + 1) % len(personal_ids)
+                        current_siguiente_id = personal_ids[current_person_index]
+                else:
+                    current_pendientes = [
+                        p for p in current_pendientes
+                        if self.get_person_by_id(p) != nombre_forzado
+                    ]
                 shift = {
                     'semana': (start_date, end_date),
                     'persona': nombre_forzado,
                     'saltados': skipped.copy(),
                     'es_forzado': True
                 }
-                return shift, current_pendientes
-        return None, current_pendientes
+                return shift, current_person_index, current_siguiente_id, current_pendientes
+        return None, current_person_index, current_siguiente_id, current_pendientes
 
     # ── Método principal de generación ─────────────────────────────────────
 
     def generate_shifts(self, year, month, exceptions, state=None,
-                        recalculate_history=False, manual_assignments=None):
+                        recalculate_history=False, manual_assignments=None,
+                        virtual_historial=None):
         return self.rotation_engine.generate(
             year,
             month,
@@ -1103,11 +1181,17 @@ class ShiftManager:
             state=state,
             recalculate_history=recalculate_history,
             manual_assignments=manual_assignments,
+            virtual_historial=virtual_historial,
         )
 
     def _generate_shifts_legacy(self, year, month, exceptions, state=None,
-                                recalculate_history=False, manual_assignments=None):
+                                recalculate_history=False, manual_assignments=None,
+                                virtual_historial=None):
         self.last_warnings = []
+        if virtual_historial is None and state and isinstance(state, dict) and "virtual_historial" in state:
+            virtual_historial = state["virtual_historial"]
+
+        effective_historial = {**self.historial, **(virtual_historial or {})}
 
         exceptions = self._normalize_exceptions(exceptions)
         weeks = self._build_weeks(year, month)
@@ -1148,12 +1232,19 @@ class ShiftManager:
             # 2. Respetar inicio inmutable
             immutable_shift = self._try_immutable(week_key, start_date, end_date)
             if immutable_shift:
+                imm_person = immutable_shift['persona']
+                imm_id = next((p['id'] for p in self.personal if p['nombre'] == imm_person), None)
+                if imm_id:
+                    current_pendientes = [p for p in current_pendientes if p != imm_id]
+                    if personal_ids and personal_ids[current_person_index] == imm_id:
+                        current_person_index = (current_person_index + 1) % len(personal_ids)
+                        current_siguiente_id = personal_ids[current_person_index]
                 shifts.append(immutable_shift)
                 continue
                 
             # 3. Un mes cerrado debe conservar exactamente su asignación.
-            if week_key in self.historial:
-                historical_person = self.historial[week_key]
+            if week_key in effective_historial:
+                historical_person = effective_historial[week_key]
                 historical_exception = any(
                     exc['persona'] == historical_person and
                     start_date <= exc['fecha'] <= end_date and
@@ -1165,7 +1256,9 @@ class ShiftManager:
                     week_key in manual_assignments and
                     manual_assignments[week_key] != historical_person
                 )
-                if not historical_exception and not history_recalculated and not has_manual_override:
+                is_prev_month_bridge = (start_date < date(year, month, 1))
+                recalc_this_week = history_recalculated and not is_prev_month_bridge
+                if not historical_exception and not recalc_this_week and not has_manual_override:
                     # Avanzar el puntero para que la rotación refleje quién ya hizo turno
                     hist_idx = next(
                         (i for i, p in enumerate(self.personal)
@@ -1187,8 +1280,10 @@ class ShiftManager:
                             current_person_index = next_idx
                             current_siguiente_id = personal_ids[current_person_index]
 
+                    prev_period_key = f"{start_date.year}-{start_date.month:02d}"
                     is_hist_manual = bool(
                         (self.asignaciones_manuales.get(snapshot_key, {}).get(week_key) == historical_person) or
+                        (self.asignaciones_manuales.get(prev_period_key, {}).get(week_key) == historical_person) or
                         (manual_assignments and manual_assignments.get(week_key) == historical_person)
                     )
                     shifts.append({
@@ -1245,9 +1340,14 @@ class ShiftManager:
 
             # 3.0b Intentar asignación forzada legacy (FOR en excepciones)
             if not assigned:
-                forced_shift, current_pendientes = self._try_forced_assignment(
-                    start_date, end_date, exceptions,
-                    skipped_this_week, current_pendientes
+                forced_shift, current_person_index, current_siguiente_id, current_pendientes = (
+                    self._try_forced_assignment(
+                        start_date, end_date, exceptions,
+                        skipped_this_week, current_pendientes,
+                        personal_ids=personal_ids,
+                        current_person_index=current_person_index,
+                        current_siguiente_id=current_siguiente_id
+                    )
                 )
                 if forced_shift:
                     shifts.append(forced_shift)
@@ -1332,7 +1432,8 @@ class ShiftManager:
                     self._did_recently(
                         nombre, start_date, shifts,
                         min_gap_weeks=effective_gap,
-                        ignored_period=recalculated_period)
+                        ignored_period=recalculated_period,
+                        effective_historial=effective_historial)
                 )
                         
                 if has_exception:
@@ -1392,7 +1493,10 @@ class ShiftManager:
                 if available_candidates:
                     best_person = min(
                         available_candidates,
-                        key=lambda p: self._last_shift_date(p['nombre'], start_date, shifts)
+                        key=lambda p: self._last_shift_date(
+                            p['nombre'], start_date, shifts,
+                            effective_historial=effective_historial
+                        )
                     )
                     best_id = best_person['id']
                     best_name = best_person['nombre']
@@ -1483,10 +1587,10 @@ class ShiftManager:
         if latest_recorded_period is not None and (year, month) < latest_recorded_period:
             is_past_period = True
 
-        previous_exceptions = self.get_exceptions(period_key)
+        previous_exceptions = self.get_exceptions_for_period(year, month)
         previous_manual = self.get_manual_assignments(period_key)
         exception_signature = lambda items: sorted(
-            (item['persona'], item['fecha'].isoformat(), item['tipo'])
+            (item['persona'], (item['fecha'].isoformat() if hasattr(item['fecha'], 'isoformat') else str(item['fecha'])), item['tipo'])
             for item in items)
         manual_assignments_dict = dict(manual_assignments) if manual_assignments is not None else {}
         exceptions_changed = (
@@ -1513,8 +1617,15 @@ class ShiftManager:
             if person:
                 week_key = f"{start_date.isoformat()}_{end_date.isoformat()}"
                 # No sobrescribir el inicio
-                if not (hasattr(self, 'inicio') and week_key in self.inicio):
-                    self.historial[week_key] = person
+                if hasattr(self, 'inicio') and week_key in self.inicio:
+                    continue
+                # Si es una semana limítrofe del mes anterior y dicho mes ya fue cerrado formalmente,
+                # proteger su asignación a menos que el usuario haya establecido una asignación manual explícita en este mes.
+                if (start_date < date(year, month, 1) and
+                        self.is_month_closed(start_date.year, start_date.month) and
+                        not (manual_assignments and week_key in manual_assignments)):
+                    continue
+                self.historial[week_key] = person
                 
         # Crear snapshot para el MES SIGUIENTE
         next_month = month + 1
@@ -1539,15 +1650,37 @@ class ShiftManager:
                 period_key, self.siguiente_id
             )
 
-        self.excepciones[period_key] = [
-            {
+        # Guardar en excepciones: particionar limpiamente por mes de fecha
+        # para nunca mezclar fechas de meses limítrofes en la clave de este periodo.
+        current_month_items = []
+        other_month_items = {}
+        for exc in exceptions:
+            f_val = exc['fecha']
+            f_date = f_val.date() if isinstance(f_val, datetime) else (f_val if isinstance(f_val, date) else datetime.strptime(str(f_val)[:10], '%Y-%m-%d').date())
+            item_dict = {
                 'persona': exc['persona'],
-                'fecha': exc['fecha'].isoformat(),
+                'fecha': f_date.isoformat(),
                 'tipo': exc['tipo'],
                 **({'motivo': str(exc['motivo'])} if exc.get('motivo') else {})
             }
-            for exc in exceptions
-        ]
+            if f_date.year == year and f_date.month == month:
+                current_month_items.append(item_dict)
+            else:
+                other_key = f"{f_date.year}-{f_date.month:02d}"
+                other_month_items.setdefault(other_key, []).append(item_dict)
+
+        self.excepciones[period_key] = current_month_items
+
+        for other_key, items in other_month_items.items():
+            if other_key not in self.excepciones:
+                self.excepciones[other_key] = []
+            for item in items:
+                existing = next((x for x in self.excepciones[other_key] if x['persona'] == item['persona'] and x['fecha'] == item['fecha']), None)
+                if existing:
+                    existing.update(item)
+                else:
+                    self.excepciones[other_key].append(item)
+            self.excepciones[other_key].sort(key=lambda x: (x['fecha'], x['persona']))
         if manual_assignments is not None:
             if manual_assignments:
                 self.asignaciones_manuales[period_key] = dict(manual_assignments)
