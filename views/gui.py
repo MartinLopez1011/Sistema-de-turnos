@@ -439,6 +439,8 @@ class TurnosApp(ctk.CTk):
         self.plan_period_dirty = True
         self.tab_plan.refresh_exceptions()
         self.refresh_plan_views()
+        if hasattr(self.tab_plan, 'update_date_placeholders'):
+            self.tab_plan.update_date_placeholders(year, month)
 
     def load_personal(self):
         self.exceptions_by_period = self.controller.get_saved_exceptions()
@@ -454,6 +456,8 @@ class TurnosApp(ctk.CTk):
         self.tab_plan.refresh_personal(personal)
         self.tab_plan.refresh_exceptions()
         self.refresh_plan_views()
+        if hasattr(self.tab_plan, 'update_date_placeholders'):
+            self.tab_plan.update_date_placeholders(year, month)
 
     def add_exceptions(self, new_exceptions):
         """Método compatible para agregar una lista de excepciones individuales."""

@@ -693,7 +693,7 @@ class LoadingModal:
 
 class DatePickerDialog:
     @classmethod
-    def show(cls, parent, initial_date=None, callback=None, title="Seleccionar Fecha"):
+    def show(cls, parent, initial_date=None, callback=None, title="Seleccionar Fecha", default_period=None):
         """
         Muestra un diálogo de calendario interactivo en Dark Mode.
         Permite navegar meses y años y hacer clic en un día para seleccionarlo.
@@ -720,7 +720,18 @@ class DatePickerDialog:
                     except ValueError:
                         pass
         if not curr_selected:
-            curr_selected = date.today()
+            if default_period:
+                try:
+                    def_y, def_m = default_period
+                    today = date.today()
+                    if today.year == def_y and today.month == def_m:
+                        curr_selected = today
+                    else:
+                        curr_selected = date(def_y, def_m, 1)
+                except Exception:
+                    curr_selected = date.today()
+            else:
+                curr_selected = date.today()
 
         state = {
             "year": curr_selected.year,

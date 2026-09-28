@@ -372,12 +372,38 @@ class TabPlan:
             self.person_dropdown.configure(values=["Sin personal disponible"])
             self.person_var.set("Sin personal disponible")
 
+    def _resolve_initial_picker_date(self, val):
+        year, month = self.app.get_selected_period()
+        today = date.today()
+
+        if val:
+            for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+                try:
+                    return datetime.strptime(val.strip(), fmt).date()
+                except ValueError:
+                    pass
+
+            import re
+            m = re.search(r"\b(\d{1,2})\b", val)
+            if m:
+                d_num = int(m.group(1))
+                _, last_day = calendar.monthrange(year, month)
+                if 1 <= d_num <= last_day:
+                    return date(year, month, d_num)
+
+        if today.year == year and today.month == month:
+            return today
+        return date(year, month, 1)
+
     def _open_from_picker(self):
         val = self.from_entry.get().strip() if self.from_entry else ""
+        year, month = self.app.get_selected_period()
+        init_d = self._resolve_initial_picker_date(val)
         DatePickerDialog.show(
-            self.app, initial_date=val,
+            self.app, initial_date=init_d,
             callback=lambda d: self._set_from_date(d),
-            title="Seleccionar Fecha Inicio (Desde)"
+            title="Seleccionar Fecha Inicio (Desde)",
+            default_period=(year, month)
         )
 
     def _set_from_date(self, d_obj):
@@ -390,10 +416,13 @@ class TabPlan:
         val = self.to_entry.get().strip() if self.to_entry else ""
         if not val and hasattr(self, 'from_entry') and self.from_entry:
             val = self.from_entry.get().strip()
+        year, month = self.app.get_selected_period()
+        init_d = self._resolve_initial_picker_date(val)
         DatePickerDialog.show(
-            self.app, initial_date=val,
+            self.app, initial_date=init_d,
             callback=lambda d: self._set_to_date(d),
-            title="Seleccionar Fecha Fin (Hasta)"
+            title="Seleccionar Fecha Fin (Hasta)",
+            default_period=(year, month)
         )
 
     def _set_to_date(self, d_obj):
@@ -401,6 +430,14 @@ class TabPlan:
             self.to_entry.delete(0, 'end')
             self.to_entry.insert(0, d_obj.strftime("%d/%m/%Y"))
             self.to_entry.configure(border_color=P["border"])
+
+    def update_date_placeholders(self, year=None, month=None):
+        if year is None or month is None:
+            year, month = self.app.get_selected_period()
+        if hasattr(self, 'from_entry') and self.from_entry:
+            self.from_entry.configure(placeholder_text=f"Ej: 05/{month:02d}/{year}")
+        if hasattr(self, 'to_entry') and self.to_entry:
+            self.to_entry.configure(placeholder_text=f"Ej: 12/{month:02d}/{year}")
 
     def refresh_exceptions(self, exceptions=None):
         if not hasattr(self, 'exception_list') or self.exception_list is None:

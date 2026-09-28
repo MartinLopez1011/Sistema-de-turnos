@@ -61,5 +61,25 @@ class TabPlanRangeParsingTests(unittest.TestCase):
         self.assertEqual(added_days, [1, 3, 4])
 
 
+    def test_resolve_initial_picker_date_uses_planned_period(self):
+        mock_app = MagicMock()
+        mock_app.get_selected_period.return_value = (2026, 11)  # Noviembre 2026
+
+        tab_plan = TabPlan.__new__(TabPlan)
+        tab_plan.app = mock_app
+
+        # 1. Si el input está vacío, debe devolver el mes planificado (Noviembre 2026, día 1)
+        res_empty = tab_plan._resolve_initial_picker_date("")
+        self.assertEqual(res_empty, date(2026, 11, 1))
+
+        # 2. Si el usuario ingresó sólo el día "15", debe resolver a 15/11/2026
+        res_day = tab_plan._resolve_initial_picker_date("15")
+        self.assertEqual(res_day, date(2026, 11, 15))
+
+        # 3. Si ingresó una fecha explícita, debe respetarla
+        res_explicit = tab_plan._resolve_initial_picker_date("20/12/2026")
+        self.assertEqual(res_explicit, date(2026, 12, 20))
+
+
 if __name__ == "__main__":
     unittest.main()
