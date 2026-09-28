@@ -500,15 +500,17 @@ El ejecutable resultante se creará en el directorio `dist/Sistema de Turnos.exe
 
 ## 🧪 Pruebas Automatizadas (Testing)
 
-El proyecto cuenta con una batería de **87 pruebas unitarias y de integración** automatizadas desarrolladas con `pytest` y `pytest-mock`, cubriendo:
-- Rotación pura y ciclo circular.
-- Asignación de pendientes y reglas de espaciado (gap de 4 semanas).
-- Restricciones anuales de feriados patrios y festivos de diciembre.
-- Asignaciones manuales, reversiones y motivos obligatorios.
-- Resiliencia y atomicidad en `config.json`, creación y rotación de backups.
-- Validación y paridad de exportación a Excel (.xlsx).
-- Webhook de notificación por correo, reintentos y redirecciones 302.
-- CRUD de funcionarios y preservación de registros históricos.
+El proyecto cuenta con una batería exhaustiva de **132 pruebas unitarias y de integración** automatizadas desarrolladas con `pytest` y `pytest-mock`, cubriendo:
+- Rotación pura, ciclo circular y equidad matemática.
+- Asignación de pendientes y reglas de espaciado (gap mínimo de 4 semanas).
+- Restricciones anuales de feriados patrios y festivos de diciembre (`holidays.countries.chile`).
+- Asignaciones manuales (permutas), justificaciones obligatorias y reversión rápida (`↺ Auto`).
+- Excepciones justificadas (DA, FL, LIC, OTR) y motivo obligatorio en OTR.
+- Resiliencia y atomicidad en `config.json`, creación y rotación de backups fechados.
+- Validación y paridad de exportación a Excel (.xlsx) con tablas de permutas y OTR.
+- Webhook de notificación por correo, reintentos, cola de pendientes y redirecciones 302.
+- CRUD de funcionarios, reordenamiento de rotación (⬆/⬇) y preservación de registros históricos.
+- Comportamiento de interfaz gráfica, bloqueo SMTP y prevención de cierre accidental.
 
 Para ejecutar todas las pruebas:
 
@@ -516,9 +518,9 @@ Para ejecutar todas las pruebas:
 .\.venv\Scripts\python.exe -m pytest -v
 ```
 
-Resultado esperado:
+Resultado obtenido:
 ```text
-============================= 87 passed in ~1.6s =============================
+============================ 132 passed in ~2.5s ============================
 ```
 
 ---
@@ -527,7 +529,7 @@ Resultado esperado:
 
 ```text
 Sistema de turnos/
-├── assets/                          # Recursos gráficos (íconos PNG de estado)
+├── assets/                          # Recursos gráficos (íconos PNG de estado y ventana)
 │   ├── error.png
 │   ├── save.png
 │   └── success.png
@@ -535,7 +537,10 @@ Sistema de turnos/
 ├── controllers/                     # Capa de control (MVC)
 │   └── main_controller.py          # Coordinador entre GUI, ShiftManager y ExcelHandler
 ├── models/                          # Capa de datos y lógica de negocio (MVC)
-│   └── shift_manager.py             # Motor algorítmico, rotación, backups y atomicidad
+│   ├── shift_manager.py             # Fachada principal del motor, rotación, backups y atomicidad
+│   ├── config_repository.py         # Persistencia atómica y validación de esquema
+│   ├── domain_types.py              # Tipos y dataclasses del dominio
+│   └── rotation_engine.py           # Algoritmo determinista de rotación y reglas
 ├── views/                           # Capa de presentación gráfica (MVC)
 │   ├── components/                  # Componentes reutilizables y modales
 │   │   ├── dialogs.py               # Diálogos modales personalizados (Formularios, Cambios)
@@ -554,14 +559,33 @@ Sistema de turnos/
 │   └── logger.py                    # Logger rotativo en consola y archivo turnos.log
 ├── scripts/                         # Scripts de backend y soporte
 │   └── google_apps_script.js        # Webhook serverless para Google Apps Script
-├── tests/                           # Suite de 87 pruebas automatizadas con pytest
+├── tests/                           # Suite de 132 pruebas automatizadas con pytest
 ├── .env.example                     # Plantilla de variables de entorno
 ├── config.json                      # Estado actual de personal, historial y rotación
 ├── main.py                          # Punto de entrada de la aplicación
-├── requirements.txt                 # Dependencias Python requeridas
+├── requirements.txt                 # Dependencias Python de producción
+├── requirements-dev.txt             # Dependencias de desarrollo y testing
 ├── Sistema de Turnos.spec           # Archivo de especificación para PyInstaller
 └── README.md                        # Documentación principal del repositorio
 ```
+
+---
+
+## 💾 Persistencia, Auditoría y Recuperación de Datos
+
+En la versión empaquetada (`Sistema de Turnos.exe`), la configuración operativa se gestiona en:
+```text
+%APPDATA%\Sistema de Turnos\
+├── config.json                  # Estado actual y fuente de verdad operativa
+├── backups\                     # Respaldos automáticos fechados y preventivos (pre_advance / pre_restore)
+├── archives\                    # Historial archivado de períodos anteriores
+├── pending_notifications.json   # Cola de notificaciones retenidas por falta de internet
+└── turnos.log                   # Registro técnico rotativo de operaciones
+```
+
+*Nota:* Si se detecta un archivo `.portable` o `config.json` en la misma carpeta del ejecutable, el sistema opera automáticamente en **Modo Portable** junto al binario.
+
+El modelo valida la estructura de datos al cargarla, estampa `schema_version` al guardar y registra los eventos críticos en el historial de `auditoria`. Antes de cerrar un mes se validan estrictamente las semanas y las asignaciones manuales. Si una notificación por correo no puede despacharse por corte de conexión, el mes permanece guardado de forma segura y el aviso queda almacenado en la cola de reintentos para su posterior envío.
 
 ---
 
@@ -569,36 +593,14 @@ Sistema de turnos/
 
 Encuentra los manuales y documentos técnicos generados en la raíz del proyecto:
 
-- 📄 **[Manual de Usuario Oficial (PDF)](./Manual_de_Usuario_Sistema_de_Turnos.pdf):** Manual interactivo a todo color con capturas, instrucciones detalladas de uso, paso a paso para funcionarios y supervisores.
-- 📝 **[Requerimientos y Alcance del Sistema (Word)](./Requerimientos_del_Sistema_Turnos.docx):** Especificación funcional formal con requerimientos funcionales (RF), no funcionales (RNF) y matriz de alcance.
-- 📊 **[Documento Ejecutivo del Proyecto (Word)](./Sistema_de_Gestion_de_Turnos.docx):** Informe ejecutivo con diagramas editables, análisis de retorno operativo y propuesta de valor institucional.
+- 📄 **[Manual de Usuario Oficial (PDF)](./Manual_de_Usuario_Sistema_de_Turnos.pdf):** Manual interactivo a todo color con capturas, instrucciones detalladas de uso, paso a paso para funcionarios y coordinadores.
+- 📝 **[Requerimientos y Alcance del Sistema (Word)](./Requerimientos_del_Sistema_Turnos.docx):** Especificación funcional formal en lenguaje claro con 17 requerimientos funcionales (RF), 7 requerimientos de operación (RNF), reglas de negocio y ficha de conformidad institucional.
+- 📊 **[Documento Ejecutivo y Resumen del Proyecto (Word)](./Sistema_de_Gestion_de_Turnos.docx):** Informe ejecutivo con diagramas editables, análisis de retorno operativo, arquitectura MVC y resumen integral.
+- 🛡️ **[Políticas y Seguridad del Sistema (Word y Markdown)](./POLITICAS_Y_SEGURIDAD.md):** Manual formal de cumplimiento normativo, privacidad de datos de funcionarios, soberanía local y certificación institucional ([versión Word](./Politicas_y_Seguridad_del_Sistema_Actualizado.docx)).
 
 ---
 
 ## 📄 Licencia y Créditos
 
-Desarrollado para optimizar la gestión operativa de turnos de guardia.  
+Desarrollado para optimizar la gestión operativa y garantizar la máxima equidad en la asignación de turnos de guardia institucional.  
 Código abierto bajo los términos establecidos en la organización institucional.
-# Datos de ejecución y recuperación
-
-En la versión empaquetada, la configuración operativa se guarda en
-`%APPDATA%\Sistema de Turnos` y no junto al ejecutable. Esto permite actualizar
-el `.exe` sin sobrescribir turnos, excepciones ni respaldos.
-
-La carpeta contiene:
-
-- `config.json`: estado actual.
-- `backups\`: respaldos automáticos y respaldos previos a restauraciones.
-- `archives\`: historial archivado.
-- `turnos.log`: registro técnico.
-
-El modelo valida la configuración al cargarla, agrega `schema_version` al guardar
-y registra cambios relevantes en `auditoria`. Antes de cerrar un mes se validan
-las semanas y las asignaciones manuales. Si una notificación falla después del
-cierre, el mes permanece guardado y el error se informa por separado.
-
-Para compilar el ejecutable standalone (`.exe`):
-
-```powershell
-.\.venv\Scripts\python.exe -m PyInstaller "Sistema de Turnos.spec"
-```

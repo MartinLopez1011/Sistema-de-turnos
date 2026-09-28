@@ -27,6 +27,17 @@ if sys.platform == "win32":
 ROOT = os.path.dirname(os.path.abspath(__file__))
 OUTPUT = os.path.join(ROOT, "Requerimientos_del_Sistema_Turnos.docx")
 
+MESES_ESPANOL = {
+    1: "enero", 2: "febrero", 3: "marzo", 4: "abril", 5: "mayo", 6: "junio",
+    7: "julio", 8: "agosto", 9: "septiembre", 10: "octubre", 11: "noviembre", 12: "diciembre"
+}
+
+
+def fecha_en_espanol(d=None):
+    if d is None:
+        d = date.today()
+    return f"{d.day} de {MESES_ESPANOL.get(d.month, 'septiembre')} de {d.year}"
+
 
 def set_cell_shading(cell, fill_hex):
     """Aplica color de fondo a una celda de tabla."""
@@ -114,7 +125,6 @@ def add_callout_box(document, title, text, box_type="info"):
     cell = table.rows[0].cells[0]
     cell.width = Inches(7.0)
 
-    # Colores según tipo
     cfg = {
         "info": ("F0FDF4", "10B981", "065F46"),   # Verde menta
         "warn": ("FFFBEB", "F59E0B", "92400E"),   # Amarillo/Naranja
@@ -124,21 +134,20 @@ def add_callout_box(document, title, text, box_type="info"):
 
     set_cell_shading(cell, bg_color)
 
-    # Configurar borde izquierdo grueso y sin bordes en los otros lados
     properties = cell._tc.get_or_add_tcPr()
     borders = properties.find(qn("w:tcBorders"))
     if borders is None:
         borders = OxmlElement("w:tcBorders")
         properties.append(borders)
-    
+
     for edge in ("top", "bottom", "right"):
         el = OxmlElement(f"w:{edge}")
         el.set(qn("w:val"), "none")
         borders.append(el)
-    
+
     left = OxmlElement("w:left")
     left.set(qn("w:val"), "single")
-    left.set(qn("w:sz"), "24") # Grueso
+    left.set(qn("w:sz"), "24")
     left.set(qn("w:color"), border_color)
     borders.append(left)
 
@@ -248,8 +257,7 @@ def add_header_footer(section):
         run.font.name = "Segoe UI"
         run.font.size = Pt(8.5)
         run.font.color.rgb = RGBColor(107, 114, 128)
-    
-    # Campo de página Word
+
     field = OxmlElement("w:fldSimple")
     field.set(qn("w:instr"), "PAGE")
     footer._p.append(field)
@@ -292,10 +300,13 @@ def build_word_document():
     # Ficha Técnica
     ficha_data = [
         ("Nombre del Sistema", "Sistema de Gestión de Turnos (TurnosApp)"),
-        ("Tipo de Aplicación", "Programa de escritorio para computador (Windows)"),
-        ("Destinatarios", "Jefaturas de Servicio, Coordinadores de Guardia y Funcionarios"),
+        ("Tipo de Aplicación", "Programa de escritorio autónomo para computador (Windows 10 / 11)"),
+        ("Versión del Software", "1.0.0 (Producción)"),
+        ("Despliegue y Distribución", "Ejecutable Standalone (.exe) sin instalación ni privilegios de administrador"),
+        ("Destinatarios", "Jefaturas de Servicio, Coordinadores de Guardia y Funcionarios del Equipo"),
         ("Objetivo Principal", "Calcular y ordenar las guardias semanales de forma automática, justa y transparente"),
-        ("Fecha de Documento", date.today().strftime("%d/%m/%Y")),
+        ("Aseguramiento de Calidad", "132 pruebas automatizadas unitarias y de integración (100% aprobadas)"),
+        ("Fecha de Emisión", fecha_en_espanol()),
     ]
     ficha_table = document.add_table(rows=len(ficha_data), cols=2)
     ficha_table.alignment = WD_TABLE_ALIGNMENT.CENTER
@@ -306,8 +317,8 @@ def build_word_document():
         set_cell_shading(ficha_table.rows[idx].cells[0], "0F766E")
         set_cell_text(ficha_table.rows[idx].cells[1], v, size=9.5)
         set_cell_shading(ficha_table.rows[idx].cells[1], "F8FAFC")
-        ficha_table.rows[idx].cells[0].width = Inches(2.0)
-        ficha_table.rows[idx].cells[1].width = Inches(5.0)
+        ficha_table.rows[idx].cells[0].width = Inches(2.2)
+        ficha_table.rows[idx].cells[1].width = Inches(4.8)
 
     p_sp = document.add_paragraph()
     p_sp.paragraph_format.space_after = Pt(6)
@@ -320,13 +331,13 @@ def build_word_document():
     )
     add_body(
         document,
-        "El Sistema de Gestión de Turnos es un programa para el computador que automatiza completamente este proceso. Actúa como un árbitro neutral: lleva la lista ordenada de todo el equipo, calcula a quién le corresponde cada semana, salta de manera automática a quien tenga un permiso justificado y genera la planilla oficial de Excel lista para imprimir y firmar."
+        "El Sistema de Gestión de Turnos es un programa para el computador que automatiza completamente este proceso. Actúa como un árbitro neutral: lleva la lista ordenada de todo el equipo, calcula a quién le corresponde cada semana, salta de manera automática a quien tenga un permiso justificado, respeta una ventana de descanso mínimo de 4 semanas para evitar sobrecargas y genera la planilla oficial de Excel lista para imprimir y firmar."
     )
 
     add_callout_box(
         document,
         "Principio de Equidad y Transparencia",
-        "El programa garantiza que la carga de trabajo se reparta de forma equitativa entre todos los funcionarios. Nadie trabaja turnos seguidos injustamente y nadie queda exento sin justificación.",
+        "El programa garantiza que la carga de trabajo se reparta de forma equitativa entre todos los funcionarios. Nadie trabaja turnos seguidos injustamente, nadie queda exento sin justificación y todas las permutas quedan documentadas con motivo y aviso por correo.",
         "info"
     )
 
@@ -342,24 +353,27 @@ def build_word_document():
             "Lo que SÍ hace el sistema\n(Dentro del Alcance)",
             "• Asignación Semanal de Guardias: Calcula quién cubre la guardia de lunes a domingo para cada semana del mes.\n"
             "• Rotación Circular Equitativa: Sigue el orden estricto de la lista de personal para que todos hagan turno por igual.\n"
-            "• Gestión de Permisos y Ausencias: Registra Días Administrativos (DA), Vacaciones (FL), Licencias Médicas (LIC) u Otros Permisos (OTR) e inhabilita al funcionario durante su ausencia.\n"
+            "• Gestión de Permisos y Ausencias: Registra Días Administrativos (DA), Vacaciones (FL), Licencias Médicas (LIC) u Otros Permisos (OTR con motivo obligatorio) e inhabilita al funcionario durante su ausencia.\n"
             "• Sistema de Compensación (Lista de Pendientes): Si un funcionario no pudo hacer su guardia por permiso, el sistema no le 'perdona' el turno: lo anota en una lista de espera prioritaria para que recupere la guardia en cuanto vuelva a estar disponible.\n"
-            "• Cuidado de Fiestas de Diciembre: Revisa automáticamente si la persona ya trabajó en Navidad o Año Nuevo el año anterior para evitar que repita el mismo feriado.\n"
-            "• Cambios Manuales (Permutas de palabra): Permite al coordinador cambiar a mano una guardia solicitando obligatoriamente el motivo del cambio.\n"
-            "• Previsualización no destructiva: Permite mirar y jugar con los meses futuros sin alterar el orden guardado.\n"
-            "• Cierre Definitivo del Mes: Guarda el historial consolidado y hace girar la lista para el mes siguiente.\n"
-            "• Planilla Oficial en Excel (.xlsx): Exporta el calendario mensual completo con colores, leyenda y totales de turnos por persona, listo para imprimir.\n"
-            "• Administración del Personal: Permite agregar nuevos compañeros, corregir nombres, actualizar correos, cambiar el orden de la fila y retirar a quienes se trasladan sin borrar su historial pasado.\n"
-            "• Aviso por Correo Electrónico: Si se hace un cambio manual a última hora, al cerrar el mes envía automáticamente un correo a todo el equipo informando el cambio.\n"
-            "• Copias de Seguridad Automáticas: Guarda respaldos continuos en una carpeta /backups para que nunca se pierda la información si se corta la luz."
+            "• Descanso Mínimo y Prevención de Fatiga: Aplica una regla de enfriamiento de 4 semanas de separación entre turnos regulares para evitar sobrecargas laborales.\n"
+            "• Cuidado de Festivos y Fiestas de Fin de Año: Revisa automáticamente el calendario chileno (holidays) para evitar que una persona repita Navidad, Año Nuevo o Fiestas Patrias dos años consecutivos.\n"
+            "• Cambios Manuales (Permutas de palabra): Permite al coordinador cambiar a mano una guardia solicitando obligatoriamente el motivo del cambio, con etiqueta visual MANUAL y botón para revertir a cálculo automático (↺ Auto).\n"
+            "• Previsualización No Destructiva y Fecha Estimada: Permite consultar cualquier mes futuro y proyectar la fecha del próximo turno por funcionario sin alterar el orden guardado.\n"
+            "• Cierre Definitivo del Mes: Guarda el historial consolidado inmutable, genera snapshots de continuidad y hace girar la lista para el mes siguiente.\n"
+            "• Planilla Oficial en Excel (.xlsx): Exporta el calendario mensual completo en memoria con colores, leyenda, tabla de permutas con motivos, tabla de permisos OTR y totales acumulados por persona.\n"
+            "• Administración Integral del Personal: Permite agregar nuevos compañeros con su correo, corregir nombres, actualizar datos, reordenar la fila con flechas (⬆/⬇) y retirar a quienes se trasladen sin borrar su historial pasado.\n"
+            "• Aviso por Correo Electrónico: Si se hace un cambio manual a última hora, al cerrar el mes envía automáticamente un correo formal a todo el equipo vía Google Apps Script (serverless, seguro y gratuito).\n"
+            "• Cola de Reintentos Offline: Si se corta internet al cerrar el mes, guarda la notificación en cola sin perder el cierre local, permitiendo reintentar el envío con un clic al volver la red.\n"
+            "• Copias de Seguridad Automáticas: Guarda respaldos continuos en /backups antes de cada cierre y permite restaurar creando un respaldo preventivo pre_restore.\n"
+            "• Persistencia Atómica: Guarda los datos de forma atómica (.tmp -> fsync -> replace) para garantizar inmunidad total ante cortes de energía eléctrica."
         ),
         (
             "Lo que NO hace el sistema\n(Fuera del Alcance)",
-            "• No es un reloj control de asistencia diaria: No registra horas de llegada ni de salida del personal.\n"
+            "• No es un reloj control de asistencia diaria: No registra horas de llegada ni de salida del personal (no es marcación biométrica).\n"
             "• No aprueba permisos administrativos ni vacaciones: El coordinador debe ingresar los permisos al sistema una vez que hayan sido autorizados por la jefatura.\n"
-            "• No requiere internet para el cálculo: El programa funciona 100% de forma local y desconectada en el computador (solo usa internet si se envía el correo por cambio manual).\n"
-            "• No es un sistema multiusuario en red con contraseñas: Está pensado para ser operado por el encargado o coordinador de la unidad en su equipo de trabajo.\n"
-            "• No envía mensajes de WhatsApp ni SMS: La comunicación oficial de cambios manuales se realiza exclusivamente por correo electrónico vía Gmail institucional.\n"
+            "• No requiere internet para el cálculo: El programa funciona 100% de forma local y desconectada en el computador (solo usa internet para el despacho de correos informativos).\n"
+            "• No es un sistema multiusuario concurrente en red: Está pensado para ser operado por el encargado o coordinador en su computador de trabajo.\n"
+            "• No envía mensajes de WhatsApp ni SMS: La comunicación oficial de cambios manuales se realiza exclusivamente por correo institucional vía Gmail.\n"
             "• No modifica meses pasados por error: Un mes cerrado queda protegido como historial inmutable."
         )
     ]
@@ -368,9 +382,9 @@ def build_word_document():
     # ── 3. QUIÉNES USAN EL SISTEMA (ACTORES) ─────────────────────────────────────
     add_heading(document, "3. Usuarios del Sistema (Roles)", level=1)
     add_bullets(document, [
-        "El Coordinador o Encargado de Turnos: Es la persona que maneja el programa. Elige el mes, ingresa los permisos conocidos, revisa que las semanas estén correctas, saca la planilla en Excel para firmar y guarda el mes definitivo.",
-        "La Jefatura de la Unidad: Recibe la planilla Excel mensual oficial para su visado, firma y publicación.",
-        "Los Funcionarios del Equipo: Son los beneficiarios de la rotación justa. Pueden consultar sus turnos en el calendario Excel y reciben un correo de aviso si su guardia fue modificada de mutuo acuerdo."
+        "El Coordinador o Encargado de Turnos: Es la persona que opera el programa. Elige el mes, ingresa los permisos conocidos, revisa que las semanas estén correctas, gestiona permutas justificadas, saca la planilla en Excel para firmar y guarda el mes definitivo.",
+        "La Jefatura de la Unidad / Servicio: Recibe la planilla Excel mensual oficial para su visado, firma y publicación institucional.",
+        "Los Funcionarios del Equipo: Son los beneficiarios de la rotación justa. Pueden consultar sus turnos en el calendario Excel y reciben un correo de aviso formal si su guardia fue modificada de mutuo acuerdo."
     ])
 
     # ── 4. REQUERIMIENTOS FUNCIONALES (LO QUE HACE LA PANTALLA) ─────────────────
@@ -382,29 +396,36 @@ def build_word_document():
 
     rf_tabla = [
         ("RF-01", "Elegir Mes y Año", "El usuario puede seleccionar libremente cualquier mes y año en pantalla. El sistema carga de inmediato las semanas correspondientes a ese período."),
-        ("RF-02", "Rotación Automática", "El sistema reparte las semanas de guardia en orden secuencial entre todos los funcionarios de la lista, asegurando que a todos les toque la misma cantidad."),
-        ("RF-03", "Ingresar Ausencias", "El usuario puede ingresar días o períodos de ausencia para cualquier funcionario escribiendo los números (ej. '1-5' o '12, 19') y seleccionando si es Día Administrativo (DA), Vacaciones (FL), Licencia Médica (LIC) u Otro (OTR)."),
-        ("RF-04", "Salto y Devolución Justa", "Si alguien tiene permiso, el programa no le da turno esa semana, le asigna al siguiente compañero libre y guarda a la persona ausente en una 'lista de pendientes' para devolverle la guardia apenas regrese."),
-        ("RF-05", "Cambio Manual de Guardia", "Si dos personas cambiaron turno entre ellas, el usuario puede pulsar 'Cambiar' en la semana, seleccionar al reemplazante y escribir obligatoriamente el motivo del cambio (queda marcado con la etiqueta verde MANUAL)."),
-        ("RF-06", "Botón para Volver a Auto", "Si el usuario se equivoca al cambiar una guardia a mano, puede pulsar el botón '↺ Auto' para que el sistema vuelva a calcular la persona original que le tocaba por lista."),
-        ("RF-07", "Protección Fiestas de Diciembre", "En diciembre, el sistema consulta los feriados nacionales de Chile para evitar que un funcionario repita Navidad o Año Nuevo si ya le tocó hacer guardia en esa misma fiesta el año anterior."),
-        ("RF-08", "Calendario Mensual a Color", "En la pestaña 'Ver Turnos del Mes', el usuario puede ver la cuadrícula completa del mes: días de turno en rojo, ausencias en sus colores y fines de semana sombreados."),
-        ("RF-09", "Exportar a Excel Oficial", "El usuario puede pulsar 'Exportar Excel' para generar un archivo .xlsx con título institucional, nombres completos, días coloreados, tabla de totales por persona y leyenda de colores."),
-        ("RF-10", "Guardar Mes Definitivo", "Al pulsar 'Guardar mes' en Planificación, el programa guarda el período en el historial, avanza la cola de rotación para el siguiente mes y deja todo listo para continuar."),
-        ("RF-11", "Administrar la Lista del Equipo", "En la pestaña Ajustes, el usuario puede agregar nuevas personas con su correo, corregir nombres, reordenar la fila con flechas (⬆/⬇) y dar de baja a quienes dejen la unidad."),
-        ("RF-12", "Avisos por Correo", "Al guardar un mes que contenga cambios manuales, el sistema envía automáticamente un correo formal a todos los funcionarios detallando la semana cambiada y el motivo."),
+        ("RF-02", "Rotación Automática Continua", "El sistema reparte las semanas de guardia en orden secuencial entre todos los funcionarios de la lista, asegurando que a todos les toque la misma cantidad."),
+        ("RF-03", "Ingresar Ausencias Justificadas", "El usuario puede ingresar días o períodos de ausencia para cualquier funcionario escribiendo los números (ej. '1-5' o '12, 19') y seleccionando si es DA, FL, LIC u OTR."),
+        ("RF-04", "Justificación Obligatoria OTR", "Al ingresar un permiso tipo OTR (Otro), el sistema exige obligatoriamente escribir el motivo. Esta justificación se muestra en pantalla y se exporta en la planilla Excel."),
+        ("RF-05", "Salto y Devolución Justa", "Si alguien tiene permiso, el programa no le da turno esa semana, le asigna al siguiente compañero libre y guarda a la persona ausente en una 'lista de pendientes' para devolverle la guardia apenas regrese."),
+        ("RF-06", "Cambio Manual de Guardia", "Si dos personas cambiaron turno entre ellas, el usuario puede pulsar 'Cambiar' en la semana, seleccionar al reemplazante y escribir obligatoriamente el motivo del cambio (queda marcado con la etiqueta verde MANUAL)."),
+        ("RF-07", "Botón para Volver a Auto (↺ Auto)", "Si el usuario se equivoca al cambiar una guardia a mano, puede pulsar el botón '↺ Auto' para que el sistema vuelva a calcular la persona original que le tocaba por lista."),
+        ("RF-08", "Protección Feriados Chilenos", "En festividades críticas (Navidad, Año Nuevo, Fiestas Patrias), el sistema consulta los feriados nacionales de Chile para evitar que un funcionario repita la guardia en el mismo feriado del año anterior."),
+        ("RF-09", "Estimación de Próximo Turno", "Al seleccionar un funcionario en la lista de Planificación, el sistema calcula y muestra en pantalla la fecha proyectada en que volverá a tocarle guardia."),
+        ("RF-10", "Calendario Mensual a Color", "En la pestaña 'Ver Turnos del Mes', el usuario puede ver la cuadrícula completa del mes: días de turno en rojo, ausencias en sus colores y fines de semana sombreados."),
+        ("RF-11", "Exportar a Excel Oficial", "El usuario puede pulsar 'Exportar Excel' para generar un archivo .xlsx con título institucional, nombres completos, días coloreados, notas de auditoría, tablas de permutas y OTR, y totales por persona."),
+        ("RF-12", "Guardar Mes Definitivo", "Al pulsar 'Guardar mes' en Planificación, el programa guarda el período en el historial, avanza la cola de rotación para el siguiente mes y crea un respaldo fechado."),
+        ("RF-13", "Administrar la Lista del Equipo", "En la pestaña Ajustes, el usuario puede agregar nuevas personas con su correo, corregir nombres, reordenar la fila con flechas (⬆/⬇) y dar de baja a quienes dejen la unidad sin borrar su historia."),
+        ("RF-14", "Avisos por Correo Electrónico", "Al guardar un mes que contenga cambios manuales, el sistema despacha automáticamente un correo formal al equipo informando la semana cambiada, los involucrados y el motivo."),
+        ("RF-15", "Cola de Reintentos Offline", "Si no hay conexión a internet al cerrar el mes, el cierre no se anula: el aviso queda retenido en una cola de pendientes para enviarlo con un clic al restablecerse la red."),
+        ("RF-16", "Copias de Seguridad y Restauración", "En Ajustes, el usuario puede generar copias manuales y restaurar estados anteriores; antes de restaurar, el sistema crea automáticamente un respaldo preventivo pre_restore."),
+        ("RF-17", "Prevención de Cierre Accidental", "Si hay cambios sin guardar, la ventana muestra un punto indicador (●) en el título y solicita confirmación de seguridad antes de salir."),
     ]
-    add_custom_table(document, ["ID", "Funcionalidad", "¿Qué le permite hacer al usuario en la práctica?"], rf_tabla, widths=[0.8, 1.9, 4.3])
+    add_custom_table(document, ["ID", "Funcionalidad", "¿Qué le permite hacer al usuario en la práctica?"], rf_tabla, widths=[0.8, 2.0, 4.2])
 
     # ── 5. REQUERIMIENTOS DE OPERACIÓN Y FUNCIONAMIENTO ─────────────────────────
     add_heading(document, "5. Requerimientos de Operación (¿Qué necesita para funcionar?)", level=1)
-    
+
     rnf_tabla = [
         ("Velocidad Inmediata", "El cálculo de las semanas y la vista previa del calendario toman menos de 1 segundo. La creación de la hoja de Excel toma menos de 2 segundos."),
         ("Diseño Amigable (Modo Oscuro)", "La pantalla tiene fondo oscuro descansado para la vista, letras grandes, avatares con las iniciales de cada persona y avisos en verde o rojo según corresponda."),
         ("Sin Instalaciones Complicadas", "Viene como un único archivo ejecutable ('Sistema de Turnos.exe'). No requiere instalar Python ni programas técnicos adicionales en el computador."),
-        ("Trabajo Desconectado (Offline)", "El programa no depende de internet para armar los turnos ni para sacar las planillas de Excel."),
-        ("Seguridad y Respaldo", "El programa guarda su información de forma segura en 'config.json' y crea copias de respaldo automáticas fechadas en la carpeta /backups cada vez que se guarda un mes."),
+        ("Trabajo Desconectado (Offline)", "El programa no depende de internet para armar los turnos, navegar por los meses ni para generar las planillas de Excel."),
+        ("Seguridad y Respaldo Atómico", "El programa guarda su información de forma segura en 'config.json' mediante escritura atómica y crea copias de respaldo automáticas fechadas en la carpeta /backups cada vez que se guarda un mes."),
+        ("Privacidad y Soberanía", "No almacena contraseñas de correos en el equipo local ni envía datos a servidores externos desconocidos; las notificaciones operan a través del webhook institucional de Google Apps Script."),
+        ("Confiabilidad Acreditada", "Cuenta con una batería de 132 pruebas automatizadas unitarias y de integración que verifican cada regla de cálculo, exportación y persistencia con 100% de éxito."),
     ]
     add_custom_table(document, ["Aspecto Clave", "Condición Práctica"], rnf_tabla, widths=[2.0, 5.0])
 
@@ -412,13 +433,16 @@ def build_word_document():
     add_heading(document, "6. Reglas de Negocio en Palabras Simples", level=1)
     add_body(
         document,
-        "Estas son las 3 reglas básicas con las que piensa el programa para que todo sea justo:"
+        "Estas son las reglas básicas con las que piensa el programa para garantizar que todo sea justo y transparente:"
     )
 
     add_bullets(document, [
-        "Regla 1 (El orden para elegir quién hace guardia): Para cada semana, el programa revisa en este orden: 1° Si el coordinador fijó a alguien a mano (asignación manual). 2° Si hay semanas fijas de inicio. 3° Si el mes ya estaba guardado en el historial. 4° Si alguien debe turno por haber estado de permiso (lista de pendientes). 5° Si nadie debe turno, le toca al siguiente de la lista en orden circular.",
+        "Regla 1 (El orden para elegir quién hace guardia): Para cada semana, el programa revisa en este orden estricto: 1° Si el coordinador fijó a alguien a mano (asignación manual). 2° Si hay semanas fijas de inicio. 3° Si el mes ya estaba guardado en el historial. 4° Si alguien debe turno por haber estado de permiso (lista de pendientes). 5° Si nadie debe turno, le toca al siguiente de la lista en orden circular.",
         "Regla 2 (Exportar Excel NO es lo mismo que Guardar Mes): Exportar Excel solo crea la hoja para mirar, imprimir o mandar a borrador (puedes exportar cuantas veces quieras y la cuenta no se mueve). Guardar Mes es la firma final que anota el mes en el historial y hace girar la lista para el mes siguiente.",
-        "Regla 3 (Nadie hace guardia estando de permiso): Si una persona tiene anotado un Día Administrativo (DA), Feriado Legal (FL), Licencia Médica (LIC) u Otro (OTR) en los días de una semana, el sistema jamás le asignará guardia en esa semana."
+        "Regla 3 (Nadie hace guardia estando de permiso): Si una persona tiene anotado un Día Administrativo (DA), Feriado Legal (FL), Licencia Médica (LIC) u Otro (OTR) en los días de una semana, el sistema jamás le asignará guardia en esa semana.",
+        "Regla 4 (Descanso mínimo entre turnos): El sistema aplica una ventana de enfriamiento de 4 semanas entre turnos regulares para que ningún funcionario sufra sobrecarga laboral o fatiga.",
+        "Regla 5 (Alternancia en feriados críticos): Si un funcionario cubrió una festividad como Navidad, Año Nuevo o Fiestas Patrias el año pasado, el sistema evitará asignarlo al mismo feriado en el año en curso siempre que exista otro compañero disponible.",
+        "Regla 6 (Trazabilidad y motivo obligatorio en cambios): Toda permuta manual o permiso especial OTR exige escribir una justificación. Los cambios manuales quedan registrados en la planilla Excel y se notifican por correo a todo el equipo.",
     ])
 
     # ── 7. VALIDACIÓN Y APROBACIÓN DEL ALCANCE ───────────────────────────────────
