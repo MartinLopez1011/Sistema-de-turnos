@@ -4,8 +4,8 @@ import tkinter as tk
 import customtkinter as ctk
 from tkinter import messagebox
 
-from views.theme import P, AVATAR_PAL, MESES, DIAS, EXC_COLORS, EXC_ICONS
-from views.components.widgets import _short_name, _initials, _avatar_ctk, _make_row_hover
+from views.theme import P, AVATAR_PAL, MESES, DIAS, EXC_COLORS, EXC_ICONS, FONT_FAMILY
+from views.components.widgets import _short_name, _initials, _avatar_ctk
 from views.components.dialogs import AddExceptionDialog
 
 class TabCalendar:
@@ -19,8 +19,32 @@ class TabCalendar:
         self.btn_hoy = None
         self.btn_exportar = None
         self.vista_scroll = None
+        self._status_leave_job = None
 
         self._build_ui()
+
+    def _on_cell_enter(self, msg):
+        if self._status_leave_job is not None:
+            try:
+                self.parent.after_cancel(self._status_leave_job)
+            except Exception:
+                pass
+            self._status_leave_job = None
+        self.app.set_status(msg, "info")
+
+    def _on_cell_leave(self):
+        if self._status_leave_job is not None:
+            try:
+                self.parent.after_cancel(self._status_leave_job)
+            except Exception:
+                pass
+        self._status_leave_job = self.parent.after(
+            80,
+            lambda: self.app.set_status(
+                "💡 Pasa el cursor sobre los días o haz clic en una celda para gestionar excepciones.",
+                "info"
+            )
+        )
 
     def _build_ui(self):
         self.parent.configure(fg_color=P["bg_app"])
@@ -34,47 +58,54 @@ class TabCalendar:
         nav.grid(row=0, column=0, sticky="ew", padx=16, pady=(12, 8))
         nav.grid_columnconfigure(5, weight=1)
 
+        def _on_nav_wheel(event):
+            if event.delta > 0:
+                self._prev_month()
+            elif event.delta < 0:
+                self._next_month()
+        nav.bind("<MouseWheel>", _on_nav_wheel)
+
         now = datetime.now()
         self.v_month_var = ctk.StringVar(value=MESES[now.month - 1])
         self.v_year_var = ctk.StringVar(value=str(now.year))
 
         ctk.CTkButton(
-            nav, text="‹  Anterior", width=88, height=36, corner_radius=8,
-            fg_color=P["bg_card"], hover_color=P["border_h"],
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            nav, text="‹  Anterior", width=82, height=36, corner_radius=8,
+            fg_color=P["bg_card"], hover_color=P["border_h"], cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             command=self._prev_month
         ).grid(row=0, column=0, padx=(14, 4), pady=12)
 
         ctk.CTkOptionMenu(
-            nav, variable=self.v_month_var, values=MESES, width=140,
+            nav, variable=self.v_month_var, values=MESES, width=132,
             fg_color=P["bg_card"], button_color=P["accent_d"],
             button_hover_color=P["accent"],
             dropdown_fg_color=P["bg_card2"],
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
             command=lambda _: self.render_turnos_view()
         ).grid(row=0, column=1, padx=4, pady=12)
 
         years = [str(y) for y in range(now.year - 2, now.year + 4)]
         ctk.CTkOptionMenu(
-            nav, variable=self.v_year_var, values=years, width=88,
+            nav, variable=self.v_year_var, values=years, width=82,
             fg_color=P["bg_card"], button_color=P["accent_d"],
             button_hover_color=P["accent"],
             dropdown_fg_color=P["bg_card2"],
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
             command=lambda _: self.render_turnos_view()
         ).grid(row=0, column=2, padx=4, pady=12)
 
         ctk.CTkButton(
-            nav, text="Siguiente  ›", width=92, height=36, corner_radius=8,
-            fg_color=P["bg_card"], hover_color=P["border_h"],
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            nav, text="Siguiente  ›", width=84, height=36, corner_radius=8,
+            fg_color=P["bg_card"], hover_color=P["border_h"], cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             command=self._next_month
         ).grid(row=0, column=3, padx=4, pady=12)
 
         self.btn_hoy = ctk.CTkButton(
-            nav, text="Hoy", width=54, height=36, corner_radius=8,
-            fg_color=P["accent_d"], hover_color=P["accent"],
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            nav, text="Hoy", width=50, height=36, corner_radius=8,
+            fg_color=P["accent_d"], hover_color=P["accent"], cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             command=self._go_to_today
         )
         self.btn_hoy.grid(row=0, column=4, padx=(4, 8), pady=12)
@@ -96,20 +127,20 @@ class TabCalendar:
             cf.grid(row=0, column=i, padx=3, pady=5, ipadx=5, ipady=2)
             ctk.CTkLabel(
                 cf, text=lbl, text_color="#FFF",
-                font=ctk.CTkFont(family="Inter", size=10, weight="bold")
+                font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold")
             ).pack(padx=2)
 
         ctk.CTkButton(
-            nav, text="Actualizar", width=86, height=36, corner_radius=8,
-            fg_color=P["accent_d"], hover_color=P["accent"],
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            nav, text="Actualizar", width=84, height=36, corner_radius=8,
+            fg_color=P["accent_d"], hover_color=P["accent"], cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             command=self.render_turnos_view
         ).grid(row=0, column=7, padx=4, pady=12)
 
         self.btn_exportar = ctk.CTkButton(
             nav, text="📊  Exportar Excel", width=125, height=36, corner_radius=8,
-            fg_color=P["green_d"], hover_color=P["green"],
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            fg_color=P["green_d"], hover_color=P["green"], cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             command=self.app.export_calendar_excel
         )
         self.btn_exportar.grid(row=0, column=8, padx=(4, 14), pady=12)
@@ -121,6 +152,31 @@ class TabCalendar:
         )
         self.vista_scroll.grid(row=1, column=0, sticky="nsew")
         self.vista_scroll.grid_columnconfigure(0, weight=1)
+
+        # Barra inferior informativa y de estado interactivo
+        self.cal_bottom = ctk.CTkFrame(
+            self.parent, fg_color=P["bg_card"], height=38, corner_radius=8,
+            border_width=1, border_color=P["border"]
+        )
+        self.cal_bottom.grid(row=2, column=0, sticky="ew", padx=16, pady=(4, 10))
+        self.cal_bottom.grid_columnconfigure(0, weight=1)
+        self.cal_bottom.grid_propagate(False)
+
+        self.cal_status_lbl = ctk.CTkLabel(
+            self.cal_bottom,
+            text="💡 Pasa el cursor sobre los días o haz clic en una celda para gestionar excepciones.",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
+            text_color=P["text_s"], anchor="w"
+        )
+        self.cal_status_lbl.grid(row=0, column=0, padx=14, pady=6, sticky="w")
+
+        self.cal_shortcut_lbl = ctk.CTkLabel(
+            self.cal_bottom,
+            text="⌨ Alt+←/→ Mes · Ctrl+1/2/3 Pestañas · F5 Refrescar",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            text_color=P["border_h"], anchor="e"
+        )
+        self.cal_shortcut_lbl.grid(row=0, column=1, padx=14, pady=6, sticky="e")
 
     def _prev_month(self):
         m = MESES.index(self.v_month_var.get())
@@ -154,6 +210,13 @@ class TabCalendar:
         self.v_year_var.set(str(year))
 
     def render_turnos_view(self):
+        if self._status_leave_job is not None:
+            try:
+                self.parent.after_cancel(self._status_leave_job)
+            except Exception:
+                pass
+            self._status_leave_job = None
+
         for w in self.vista_scroll.winfo_children():
             w.destroy()
 
@@ -267,11 +330,18 @@ class TabCalendar:
         exception_summary = ctk.CTkFrame(self.vista_scroll, fg_color="transparent", height=28)
         exception_summary.grid(row=stats_row_offset, column=0, sticky="ew", padx=20, pady=(6, 0))
         exception_summary.grid_propagate(False)
+        if n_exc > 0:
+            exc_text = f"⚠  {n_exc} excepción{'es' if n_exc != 1 else ''} registrada{'s' if n_exc != 1 else ''}"
+            exc_color = P["text_w"]
+        else:
+            exc_text = "✓  Sin excepciones en este periodo"
+            exc_color = P["text_ok"]
+
         ctk.CTkLabel(
             exception_summary,
-            text=f"⚠  {n_exc} excepción{'es' if n_exc != 1 else ''} registrada{'s' if n_exc != 1 else ''}",
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
-            text_color=P["text_w"], anchor="w"
+            text=exc_text,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            text_color=exc_color, anchor="w"
         ).pack(side="left")
 
         hl = ctk.CTkFrame(self.vista_scroll, fg_color="transparent")
@@ -290,13 +360,13 @@ class TabCalendar:
 
         ctk.CTkLabel(
             hl, text=titulo_txt,
-            font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
             text_color=titulo_color
         ).grid(row=0, column=0, sticky="w")
         ctk.CTkLabel(
             hl,
             text="■ Turno Regular  ·  ■ Cambio Guardia (Manual)  ·  DA Día Admin  ·  FL Feriado  ·  Sombreado = fin de semana  ·  Azul = semana actual",
-            font=ctk.CTkFont(family="Inter", size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=P["text_s"]
         ).grid(row=1, column=0, sticky="w")
 
@@ -309,7 +379,7 @@ class TabCalendar:
             ctk.CTkLabel(
                 banner_f,
                 text="🗄  Mes cerrado — Datos correspondientes al historial guardado",
-                font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
                 text_color=P["text_w"]
             ).pack(padx=12, pady=5, side="left")
 
@@ -321,20 +391,20 @@ class TabCalendar:
             empty_f.grid(row=stats_row_offset + 2, column=0, sticky="ew", padx=16, pady=(4, 16))
             ctk.CTkLabel(
                 empty_f, text="📭  Sin turnos generados para este periodo",
-                font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+                font=ctk.CTkFont(family=FONT_FAMILY, size=14, weight="bold"),
                 text_color=P["text_s"]
             ).pack(pady=(20, 6))
             ctk.CTkLabel(
                 empty_f, text="Asegúrate de haber configurado el mes desde la pestaña Planificación.",
-                font=ctk.CTkFont(family="Inter", size=12), text_color=P["text_s"]
+                font=ctk.CTkFont(family=FONT_FAMILY, size=12), text_color=P["text_s"]
             ).pack(pady=(0, 20))
             return
 
         # ── GRILLA ────────────────────────────────────────────────────────────
-        CELL_W = 34
-        CELL_H = 50
-        HDR_H = 62
-        NAME_W = 240
+        CELL_W = 33
+        CELL_H = 48
+        HDR_H = 56
+        NAME_W = 220
 
         card_bg = P["past_tint"] if is_past_mo else P["bg_card"]
         cal_outer = ctk.CTkFrame(
@@ -359,7 +429,7 @@ class TabCalendar:
         corner.grid_propagate(False)
         tk.Label(
             corner, text="PERSONAL", bg=hdr_bg, fg=P["text_s"],
-            font=("Inter", 9, "bold"), anchor="w"
+            font=(FONT_FAMILY, 9, "bold"), anchor="w"
         ).place(x=14, rely=0.5, anchor="w")
         tk.Frame(corner, bg=P["border"], width=1).place(relx=1.0, rely=0, anchor="ne", relheight=1.0)
 
@@ -380,7 +450,7 @@ class TabCalendar:
 
             df = tk.Frame(cal_table, bg=bg, width=CELL_W, height=HDR_H)
             df.grid(row=0, column=d, sticky="nsew", padx=1, pady=2)
-            df.grid_propagate(False)
+            df.pack_propagate(False)
 
             tc_n = "#FFF" if is_today else (P["text_a"] if in_cw else (P["text_s"] if is_we else "#CBD5E1"))
             if is_past_mo and not is_today:
@@ -389,12 +459,12 @@ class TabCalendar:
             tk.Label(
                 df, text=DIAS[wd], bg=bg,
                 fg=P["text_s"] if not is_today else "#93C5FD",
-                font=("Inter", 8)
-            ).place(relx=0.5, rely=0.28, anchor="center")
+                font=(FONT_FAMILY, 8)
+            ).pack(pady=(6, 0))
             tk.Label(
                 df, text=str(d), bg=bg, fg=tc_n,
-                font=("Inter", 12, "bold" if is_today or in_cw else "normal")
-            ).place(relx=0.5, rely=0.68, anchor="center")
+                font=(FONT_FAMILY, 12, "bold" if is_today or in_cw else "normal")
+            ).pack(pady=(2, 6))
 
         tk.Frame(cal_table, bg=P["border_h"], height=2).grid(row=1, column=0, columnspan=days_in + 1, sticky="ew")
 
@@ -410,19 +480,15 @@ class TabCalendar:
             row_bg = row_bg_e if ri % 2 == 0 else row_bg_o
             rnum = ri + 2
 
-            row_widgets = []
-
             name_f = tk.Frame(cal_table, bg=name_bg, width=NAME_W, height=CELL_H)
             name_f.grid(row=rnum, column=0, sticky="nsew")
             name_f.grid_propagate(False)
-            row_widgets.append((name_f, name_bg))
 
             AV = 28
             av_c = tk.Canvas(name_f, width=AV, height=AV, bg=name_bg, highlightthickness=0)
             av_c.place(x=8, rely=0.5, anchor="w")
             av_c.create_oval(0, 0, AV, AV, fill=av_color, outline="")
-            av_c.create_text(AV // 2, AV // 2, text=_initials(persona), fill="#FFF", font=("Inter", 8, "bold"))
-            row_widgets.append((av_c, name_bg))
+            av_c.create_text(AV // 2, AV // 2, text=_initials(persona), fill="#FFF", font=(FONT_FAMILY, 8, "bold"))
 
             display_name = _short_name(persona, 4)
             if is_deleted:
@@ -431,13 +497,21 @@ class TabCalendar:
             lbl_n = tk.Label(
                 name_f, text=display_name,
                 bg=name_bg, fg=P["text"] if not is_past_mo else P["text_s"],
-                font=("Inter", 10, "bold" if not is_deleted else "italic"), anchor="w"
+                font=(FONT_FAMILY, 10, "bold" if not is_deleted else "italic"), anchor="w"
             )
             lbl_n.place(x=AV + 14, rely=0.5, anchor="w", width=NAME_W - AV - 18)
-            row_widgets.append((lbl_n, name_bg))
 
             border_line = tk.Frame(name_f, bg=P["border"], width=1)
             border_line.place(relx=1.0, x=-1, rely=0, anchor="ne", relheight=1.0)
+
+            # Hover ligero en la tarjeta del nombre
+            def _bind_name_hover(f=name_f, l=lbl_n, base=name_bg):
+                hover_bg = P["bg_hover"]
+                f.bind("<Enter>", lambda e: (f.configure(bg=hover_bg), l.configure(bg=hover_bg)))
+                f.bind("<Leave>", lambda e: (f.configure(bg=base), l.configure(bg=base)))
+                l.bind("<Enter>", lambda e: (f.configure(bg=hover_bg), l.configure(bg=hover_bg)))
+                l.bind("<Leave>", lambda e: (f.configure(bg=base), l.configure(bg=base)))
+            _bind_name_hover()
 
             for d in range(1, days_in + 1):
                 wd = date(year, month, d).weekday()
@@ -483,58 +557,94 @@ class TabCalendar:
                 else:
                     bg, txt, tc, bold = row_bg, "", P["text_s"], False
 
-                cf = tk.Frame(cal_table, bg=bg, width=CELL_W, height=CELL_H)
-                cf.grid(row=rnum, column=d, sticky="nsew", padx=1, pady=2)
-                cf.grid_propagate(False)
-                row_widgets.append((cf, bg))
+                cell = tk.Label(
+                    cal_table, text=txt, bg=bg, fg=tc,
+                    font=(FONT_FAMILY, 10, "bold" if bold else "normal"),
+                    width=3, height=2, anchor="center"
+                )
+                cell.grid(row=rnum, column=d, sticky="nsew", padx=1, pady=2)
 
-                lbl = None
-                if txt:
-                    lbl = tk.Label(
-                        cf, text=txt, bg=bg, fg=tc,
-                        font=("Inter", 10, "bold" if bold else "normal")
-                    )
-                    lbl.place(relx=0.5, rely=0.5, anchor="center")
+                # Mensaje interactivo contextual en la barra inferior al posar el cursor
+                p_short = _short_name(persona, 2)
+                m_text = None
+                if has_t:
+                    if is_man:
+                        mot = manual_shift_motives.get((persona, d), "Cambio manual registrado")
+                        m_text = f"📌 Guardia manual de turno: {p_short} (Día {d}) — Motivo: {mot}"
+                    else:
+                        m_text = f"🗓 Guardia de turno regular: {p_short} (Día {d})"
+                elif exc_tipo == "DA":
+                    m_text = f"⏭ Día Administrativo (DA): {p_short} (Día {d})"
+                elif exc_tipo == "FL":
+                    m_text = f"🚫 Feriado Legal (FL): {p_short} (Día {d})"
+                elif exc_tipo == "LIC":
+                    m_text = f"📋 Licencia Médica (LIC): {p_short} (Día {d})"
+                elif exc_tipo == "OTR":
+                    mot = exc_motives.get((persona, d), "")
+                    mot_str = f" — Motivo: {mot}" if mot else ""
+                    m_text = f"⭐ Permiso especial (OTR): {p_short} (Día {d}){mot_str}"
+                elif not is_deleted and not is_past_mo and not is_closed:
+                    m_text = f"➕ Clic para registrar excepción a {p_short} el día {d}"
 
-                # Mensaje explicativo en la barra inferior al posar el cursor
-                if has_t and is_man:
-                    m_text = manual_shift_motives.get((persona, d), "Cambio manual registrado")
-                    def make_status_enter(p=persona, day_num=d, mot_val=m_text):
-                        return lambda e: self.app.set_status(
-                            f"📌 Cambio manual de guardia: {p} (Día {day_num}) — Motivo: {mot_val}", "info"
-                        )
-                    def on_status_leave(e):
-                        self.app.set_status("Listo", "ok")
-                    status_fn = make_status_enter()
-                    cf.bind("<Enter>", status_fn, add="+")
-                    cf.bind("<Leave>", on_status_leave, add="+")
-                    if lbl:
-                        lbl.bind("<Enter>", status_fn, add="+")
-                        lbl.bind("<Leave>", on_status_leave, add="+")
-                elif exc_tipo == "OTR" and (persona, d) in exc_motives:
-                    otr_mot = exc_motives[(persona, d)]
-                    def make_otr_enter(p=persona, day_num=d, mot_val=otr_mot):
-                        return lambda e: self.app.set_status(
-                            f"📌 Permiso especial OTR: {p} (Día {day_num}) — Motivo: {mot_val}", "info"
-                        )
-                    def on_otr_leave(e):
-                        self.app.set_status("Listo", "ok")
-                    otr_fn = make_otr_enter()
-                    cf.bind("<Enter>", otr_fn, add="+")
-                    cf.bind("<Leave>", on_otr_leave, add="+")
-                    if lbl:
-                        lbl.bind("<Enter>", otr_fn, add="+")
-                        lbl.bind("<Leave>", on_otr_leave, add="+")
+                # Color de realce al posar el cursor (hover)
+                if has_t:
+                    if d in warning_days.get(persona, set()):
+                        cell_hov = "#EA580C"
+                    elif is_man:
+                        cell_hov = "#10B981"
+                    elif is_past_mo:
+                        cell_hov = "#7F1D1D"
+                    else:
+                        cell_hov = P["turno_h"]
+                elif exc_tipo == "DA":
+                    cell_hov = "#D97706"
+                elif exc_tipo == "FL":
+                    cell_hov = "#7C3AED"
+                elif exc_tipo == "LIC":
+                    cell_hov = "#0891B2"
+                elif exc_tipo == "OTR":
+                    cell_hov = "#4B5563"
+                elif exc_tipo == "FOR":
+                    cell_hov = "#10B981"
+                elif in_cw:
+                    cell_hov = "#202E54"
+                elif is_we:
+                    cell_hov = "#222938"
+                else:
+                    cell_hov = P["bg_hover"]
+
+                # Enlazar hover visual y mensaje contextual con debouncing
+                def _bind_cell(c=cell, base=bg, hov=cell_hov, msg=m_text):
+                    def _enter(e):
+                        try:
+                            if c.winfo_exists():
+                                c.configure(bg=hov)
+                        except Exception:
+                            pass
+                        if msg:
+                            self._on_cell_enter(msg)
+
+                    def _leave(e):
+                        try:
+                            if c.winfo_exists():
+                                c.configure(bg=base)
+                        except Exception:
+                            pass
+                        if msg:
+                            self._on_cell_leave()
+
+                    c.bind("<Enter>", _enter)
+                    c.bind("<Leave>", _leave)
+
+                _bind_cell()
 
                 if not is_deleted and not is_past_mo and not is_closed:
-                    def make_handler(p, day, exc, y=year, m=month):
-                        return lambda e: self._handle_calendar_click(p, day, exc, y, m)
-                    handler = make_handler(persona, d, exc_tipo)
-                    cf.bind("<Button-1>", handler)
-                    if lbl:
-                        lbl.bind("<Button-1>", handler)
-
-            _make_row_hover(cal_table, row_widgets)
+                    try:
+                        cell.configure(cursor="hand2")
+                    except Exception:
+                        pass
+                    handler = lambda e, p=persona, day=d, exc=exc_tipo, y=year, m=month: self._handle_calendar_click(p, day, exc, y, m)
+                    cell.bind("<Button-1>", handler)
 
             if ri < len(personal) - 1:
                 tk.Frame(cal_table, bg=P["sep"], height=1).grid(

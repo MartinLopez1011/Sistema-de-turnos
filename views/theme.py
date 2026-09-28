@@ -2,6 +2,9 @@
 Design tokens, paleta de colores y constantes de la interfaz gráfica.
 """
 
+# Tipografía del sistema (Segoe UI en Windows para renderizado nativo ultra nítido)
+FONT_FAMILY = "Segoe UI"
+
 # Paleta central (Dark Mode)
 P = {
     "bg_app":    "#111418",

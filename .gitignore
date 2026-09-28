@@ -31,4 +31,5 @@ archives/
 *.tmp
 *.corrupted_*
 pending_notifications.json
+ui_state.json
 ~$*

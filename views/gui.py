@@ -1,3 +1,4 @@
+import json
 import os
 import sys
 import threading
@@ -6,11 +7,12 @@ import tkinter as tk
 from tkinter import messagebox, filedialog
 import customtkinter as ctk
 
-from views.theme import P, MESES
+from views.theme import P, MESES, FONT_FAMILY
 from views.tabs.tab_plan import TabPlan
 from views.tabs.tab_calendar import TabCalendar
 from views.tabs.tab_settings import TabSettings
 from views.components.dialogs import LoadingModal
+from views.components.widgets import _short_name
 from utils.logger import get_logger
 from utils.email_notifier import (
     check_internet_connection, format_plain_text_message, format_save_month_message,
@@ -23,6 +25,14 @@ logger = get_logger("gui")
 ctk.set_appearance_mode("Dark")
 ctk.set_default_color_theme("blue")
 
+# Asegurar tipografía Segoe UI consistente y nativa en todos los componentes CTkFont
+_orig_ctkfont_init = ctk.CTkFont.__init__
+def _patched_ctkfont_init(self, *args, **kwargs):
+    if kwargs.get("family") in ("Inter", None):
+        kwargs["family"] = FONT_FAMILY
+    _orig_ctkfont_init(self, *args, **kwargs)
+ctk.CTkFont.__init__ = _patched_ctkfont_init
+
 
 class TurnosApp(ctk.CTk):
     def __init__(self, controller):
@@ -30,17 +40,9 @@ class TurnosApp(ctk.CTk):
         self.controller = controller
         self.notification_queue = NotificationQueue(controller.root_path)
         self.title("Sistema de Turnos")
-        self.geometry("1280x700")
-        self.minsize(1100, 580)
         self.configure(fg_color=P["bg_app"])
         self._setup_icon()
-
-        # Maximizar automáticamente en pantallas pequeñas (ej: laptops 1366x768)
-        try:
-            if self.winfo_screenwidth() <= 1366 or self.winfo_screenheight() <= 768:
-                self.after(150, lambda: self.state('zoomed'))
-        except Exception:
-            pass
+        self._setup_window_geometry()
 
         self.exceptions = []
         self.exceptions_by_period = {}
@@ -88,6 +90,108 @@ class TurnosApp(ctk.CTk):
             )
 
         threading.Thread(target=worker, daemon=True).start()
+
+    def _get_ui_state_path(self):
+        """Ruta al archivo ui_state.json para persistencia de estado de interfaz."""
+        root = getattr(self.controller, "root_path", os.getcwd())
+        return os.path.join(root, "ui_state.json")
+
+    def _load_ui_state(self):
+        """Carga de forma segura el estado guardado de la ventana y pestañas."""
+        try:
+            path = self._get_ui_state_path()
+            if os.path.exists(path):
+                with open(path, "r", encoding="utf-8") as f:
+                    return json.load(f)
+        except Exception as e:
+            logger.debug("No se pudo leer ui_state.json: %s", e)
+        return {}
+
+    def _save_ui_state(self):
+        """Guarda el tamaño, posición, maximizado y pestaña activa del usuario."""
+        try:
+            is_zoomed = False
+            try:
+                is_zoomed = (self.state() == "zoomed")
+            except Exception:
+                pass
+
+            existing = self._load_ui_state()
+            state_data = {
+                "is_maximized": is_zoomed,
+            }
+            if hasattr(self, "tabview"):
+                state_data["last_tab"] = self.tabview.get()
+
+            if not is_zoomed:
+                w = self.winfo_width()
+                h = self.winfo_height()
+                x = self.winfo_x()
+                y = self.winfo_y()
+                if w >= 1100 and h >= 580:
+                    state_data["width"] = w
+                    state_data["height"] = h
+                    state_data["x"] = x
+                    state_data["y"] = y
+            else:
+                if "width" in existing:
+                    state_data["width"] = existing.get("width")
+                    state_data["height"] = existing.get("height")
+                    state_data["x"] = existing.get("x")
+                    state_data["y"] = existing.get("y")
+
+            path = self._get_ui_state_path()
+            with open(path, "w", encoding="utf-8") as f:
+                json.dump(state_data, f, indent=2)
+        except Exception as e:
+            logger.debug("No se pudo guardar ui_state.json: %s", e)
+
+    def _setup_window_geometry(self):
+        """Configura el tamaño y posición de la ventana de forma profesional, centrada y adaptable."""
+        self.minsize(1120, 620)
+
+        # Leer resolución real de la pantalla
+        screen_w = self.winfo_screenwidth()
+        screen_h = self.winfo_screenheight()
+
+        # Dimensiones ideales de trabajo según la resolución del monitor
+        if screen_w <= 1366 or screen_h <= 768:
+            default_w, default_h = 1320, 720
+            should_zoom = True
+        elif screen_w >= 1920 and screen_h >= 1080:
+            default_w, default_h = 1440, 860
+            should_zoom = False
+        elif screen_w > 1920:
+            default_w, default_h = min(1600, int(screen_w * 0.75)), min(960, int(screen_h * 0.80))
+            should_zoom = False
+        else:
+            default_w = min(1360, int(screen_w * 0.88))
+            default_h = min(800, int(screen_h * 0.85))
+            should_zoom = False
+
+        # Centrado óptico con margen para la barra de tareas de Windows
+        default_x = max(0, (screen_w - default_w) // 2)
+        default_y = max(0, (screen_h - default_h) // 2 - 25)
+
+        saved = self._load_ui_state()
+        if saved and "width" in saved and "height" in saved:
+            w = saved.get("width", default_w)
+            h = saved.get("height", default_h)
+            x = saved.get("x", default_x)
+            y = saved.get("y", default_y)
+
+            # Validar que esté dentro de la pantalla visible (evita bugs de monitor desconectado)
+            if 0 <= x < screen_w - 100 and 0 <= y < screen_h - 100 and w >= 1100 and h >= 580:
+                self.geometry(f"{w}x{h}+{x}+{y}")
+            else:
+                self.geometry(f"{default_w}x{default_h}+{default_x}+{default_y}")
+
+            if saved.get("is_maximized", False):
+                self.after(50, lambda: self.state("zoomed"))
+        else:
+            self.geometry(f"{default_w}x{default_h}+{default_x}+{default_y}")
+            if should_zoom:
+                self.after(50, lambda: self.state("zoomed"))
 
     def _setup_icon(self):
         """Configura el icono de la ventana para desarrollo y producción empaquetada."""
@@ -153,6 +257,129 @@ class TurnosApp(ctk.CTk):
         self.tab_calendar = TabCalendar(self.raw_tab_vista, self)
         self.tab_settings = TabSettings(self.raw_tab_ajustes, self)
 
+        # Personalizar tipografía de la barra de pestañas
+        try:
+            self.tabview._segmented_button.configure(
+                font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold")
+            )
+        except Exception:
+            pass
+
+        # Restaurar la última pestaña activa si existe en el estado guardado
+        saved_state = self._load_ui_state()
+        last_tab = saved_state.get("last_tab")
+        if last_tab and last_tab in ("  📋  Planificación  ", "  📅  Ver Turnos del Mes  ", "  ⚙  Ajustes  "):
+            try:
+                self.tabview.set(last_tab)
+            except Exception:
+                pass
+
+        self._setup_shortcuts()
+
+    def _setup_shortcuts(self):
+        """Configura atajos de teclado globales para productividad de escritorio."""
+        try:
+            # Cambio rápido de pestañas: Ctrl+1, Ctrl+2, Ctrl+3
+            self.bind_all("<Control-Key-1>", lambda e: self._switch_tab_index(0))
+            self.bind_all("<Control-Key-2>", lambda e: self._switch_tab_index(1))
+            self.bind_all("<Control-Key-3>", lambda e: self._switch_tab_index(2))
+
+            # Ciclo de pestañas: Ctrl+PageUp/PageDown, Ctrl+Tab, Ctrl+Shift+Tab
+            self.bind_all("<Control-Prior>", lambda e: self._cycle_tab(-1))
+            self.bind_all("<Control-Next>", lambda e: self._cycle_tab(1))
+            self.bind_all("<Control-Tab>", lambda e: self._cycle_tab(1))
+            self.bind_all("<Control-Shift-Tab>", lambda e: self._cycle_tab(-1))
+            self.bind_all("<Control-ISO_Left_Tab>", lambda e: self._cycle_tab(-1))
+
+            # Navegación horizontal de mes: Alt+Left, Alt+Right
+            self.bind_all("<Alt-Left>", lambda e: self._nav_month(-1))
+            self.bind_all("<Alt-Right>", lambda e: self._nav_month(1))
+
+            # Guardar mes: Ctrl+S
+            def _on_ctrl_s(e):
+                self.save_month()
+                return "break"
+            self.bind_all("<Control-s>", _on_ctrl_s)
+            self.bind_all("<Control-S>", _on_ctrl_s)
+
+            # Exportar Excel: Ctrl+E
+            def _on_ctrl_e(e):
+                self.export_calendar_excel()
+                return "break"
+            self.bind_all("<Control-e>", _on_ctrl_e)
+            self.bind_all("<Control-E>", _on_ctrl_e)
+
+            # Refrescar vista actual: F5
+            def _on_f5(e):
+                self._refresh_current_view()
+                return "break"
+            self.bind_all("<F5>", _on_f5)
+        except Exception as e:
+            logger.debug("No se pudieron registrar atajos de teclado: %s", e)
+
+    def _switch_tab_index(self, index):
+        tabs = ["  📋  Planificación  ", "  📅  Ver Turnos del Mes  ", "  ⚙  Ajustes  "]
+        if 0 <= index < len(tabs):
+            tab_name = tabs[index]
+            try:
+                self.tabview.set(tab_name)
+                self._on_tab_change(tab_name)
+            except Exception:
+                pass
+            return "break"
+
+    def _cycle_tab(self, delta):
+        tabs = ["  📋  Planificación  ", "  📅  Ver Turnos del Mes  ", "  ⚙  Ajustes  "]
+        try:
+            curr = self.tabview.get()
+            idx = tabs.index(curr) if curr in tabs else 0
+            new_idx = (idx + delta) % len(tabs)
+            self._switch_tab_index(new_idx)
+        except Exception:
+            pass
+        return "break"
+
+    def _nav_month(self, delta):
+        focused = self.focus_get()
+        if focused:
+            f_type = str(type(focused)).lower()
+            if "entry" in f_type or "text" in f_type:
+                return None
+        current = self.tabview.get()
+        if "Ver Turnos" in current:
+            if delta < 0:
+                self.tab_calendar._prev_month()
+            else:
+                self.tab_calendar._next_month()
+            return "break"
+        elif "Planificación" in current:
+            m = MESES.index(self.month_var.get())
+            y = int(self.year_var.get())
+            if delta < 0:
+                m, y = (11, y - 1) if m == 0 else (m - 1, y)
+            else:
+                m, y = (0, y + 1) if m == 11 else (m + 1, y)
+            self.month_var.set(MESES[m])
+            self.year_var.set(str(y))
+            self.on_period_change()
+            return "break"
+        return None
+
+    def _refresh_current_view(self):
+        try:
+            current = self.tabview.get()
+            if "Ver Turnos" in current:
+                self.tab_calendar.render_turnos_view()
+                self.set_status("Vista de turnos actualizada (F5).", "info")
+            elif "Planificación" in current:
+                self.render_preview()
+                self.set_status("Planificación recalculada (F5).", "info")
+            elif "Ajustes" in current:
+                self.load_personal()
+                self.set_status("Ajustes y personal recargados (F5).", "info")
+        except Exception as e:
+            logger.debug("Error en _refresh_current_view: %s", e)
+
     def _on_tab_change(self, tab_name=None):
         current = tab_name or self.tabview.get()
         if "Ver Turnos" in current:
@@ -202,15 +429,15 @@ class TurnosApp(ctk.CTk):
         if self.is_exporting:
             return
         if self.active_period_key is not None:
-            self.exceptions_by_period[self.active_period_key] = self.exceptions
             self.manual_assignments_by_period[self.active_period_key] = self.manual_assignments
             self.manual_motives_by_period[self.active_period_key] = self.manual_motives
         self.active_period_key = self.get_selected_period_key()
-        self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+        year, month = self.get_selected_period()
+        self.exceptions = self.controller.get_exceptions_for_period(year, month)
         self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
         self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
         self.plan_period_dirty = True
-        self.tab_plan.refresh_exceptions(self.exceptions)
+        self.tab_plan.refresh_exceptions()
         self.refresh_plan_views()
 
     def load_personal(self):
@@ -218,30 +445,76 @@ class TurnosApp(ctk.CTk):
         self.manual_assignments_by_period = self.controller.get_saved_manual_assignments()
         self.active_period_key = self.get_selected_period_key()
         self.manual_motives_by_period[self.active_period_key] = self.controller.get_all_manual_motives(self.active_period_key)
-        self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+        year, month = self.get_selected_period()
+        self.exceptions = self.controller.get_exceptions_for_period(year, month)
         self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
         self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
 
         personal = self.controller.get_personal_list()
         self.tab_plan.refresh_personal(personal)
-        self.tab_plan.refresh_exceptions(self.exceptions)
+        self.tab_plan.refresh_exceptions()
         self.refresh_plan_views()
 
     def add_exceptions(self, new_exceptions):
-        self.exceptions.extend(new_exceptions)
-        self.exceptions_by_period[self.active_period_key] = self.exceptions
-        self.tab_plan.refresh_exceptions(self.exceptions)
+        """Método compatible para agregar una lista de excepciones individuales."""
+        for exc in new_exceptions:
+            f = exc['fecha']
+            self.controller.shift_manager.add_exception_date(
+                exc['persona'], f, exc['tipo'], exc.get('motivo', '')
+            )
+        self.controller.shift_manager.save_config()
+        self.exceptions_by_period = self.controller.get_saved_exceptions()
+        year, month = self.get_selected_period()
+        self.exceptions = self.controller.get_exceptions_for_period(year, month)
+        self.tab_plan.refresh_exceptions()
         self.refresh_plan_views()
         self.mark_dirty()
 
+    def add_exception_range(self, persona, start_date, end_date, tipo, motivo=""):
+        ok, res = self.controller.add_exception_range(persona, start_date, end_date, tipo, motivo=motivo)
+        if not ok:
+            self.set_status(f"Error al guardar excepción: {res}", "error")
+            return False, res
+
+        self.exceptions_by_period = self.controller.get_saved_exceptions()
+        year, month = self.get_selected_period()
+        self.exceptions = self.controller.get_exceptions_for_period(year, month)
+        self.tab_plan.refresh_exceptions()
+        self.refresh_plan_views()
+
+        f_str = start_date.strftime('%d/%m/%Y') if start_date == end_date else f"{start_date.strftime('%d/%m/%Y')} al {end_date.strftime('%d/%m/%Y')}"
+        tot = res.get('total', 1) if isinstance(res, dict) else 1
+        self.set_status(f"✓ Excepción {tipo} guardada ({f_str}): {_short_name(persona, 2)} ({tot} día{'s' if tot != 1 else ''})", "ok")
+        return True, res
+
     def remove_exception(self, index):
+        """Elimina una excepción individual por índice (compatibilidad)."""
         if 0 <= index < len(self.exceptions):
-            removed = self.exceptions.pop(index)
-            self.exceptions_by_period[self.active_period_key] = self.exceptions
-            self.tab_plan.refresh_exceptions(self.exceptions)
+            removed = self.exceptions[index]
+            self.controller.remove_exception_range(removed['persona'], removed['fecha'], removed['fecha'])
+            self.exceptions_by_period = self.controller.get_saved_exceptions()
+            year, month = self.get_selected_period()
+            self.exceptions = self.controller.get_exceptions_for_period(year, month)
+            self.tab_plan.refresh_exceptions()
             self.refresh_plan_views()
             self.mark_dirty()
             self.set_status(f"Excepción eliminada: {removed['fecha'].strftime('%d/%m/%Y')}", "warn")
+
+    def remove_exception_range(self, persona, start_date, end_date):
+        ok, res = self.controller.remove_exception_range(persona, start_date, end_date)
+        if not ok:
+            self.set_status(f"Error al eliminar excepción: {res}", "error")
+            return False, res
+
+        self.exceptions_by_period = self.controller.get_saved_exceptions()
+        year, month = self.get_selected_period()
+        self.exceptions = self.controller.get_exceptions_for_period(year, month)
+        self.tab_plan.refresh_exceptions()
+        self.refresh_plan_views()
+
+        f_str = start_date.strftime('%d/%m/%Y') if start_date == end_date else f"{start_date.strftime('%d/%m/%Y')} al {end_date.strftime('%d/%m/%Y')}"
+        self.set_status(f"Excepción eliminada ({f_str}): {_short_name(persona, 2)}", "warn")
+        return True, res
 
     def set_manual_assignment(self, week_key, person_name, motivo=""):
         self.manual_assignments[week_key] = person_name
@@ -277,6 +550,11 @@ class TurnosApp(ctk.CTk):
 
     # ── Feedback y Estado ─────────────────────────────────────────────────────
     def set_status(self, text, level="info"):
+        if getattr(self, "_last_status_text", None) == text and getattr(self, "_last_status_level", None) == level:
+            return
+        self._last_status_text = text
+        self._last_status_level = level
+
         if self._status_fade_job is not None:
             try:
                 self.after_cancel(self._status_fade_job)
@@ -295,6 +573,10 @@ class TurnosApp(ctk.CTk):
             self.tab_plan._status_frame.configure(fg_color=bg)
             self.tab_plan.status_label.configure(text=text, text_color=tc)
 
+        if hasattr(self, "tab_calendar") and hasattr(self.tab_calendar, "cal_bottom") and self.tab_calendar.cal_bottom:
+            self.tab_calendar.cal_bottom.configure(fg_color=bg)
+            self.tab_calendar.cal_status_lbl.configure(text=text, text_color=tc)
+
         if level == "ok":
             self._status_fade_job = self.after(
                 5000,
@@ -305,12 +587,18 @@ class TurnosApp(ctk.CTk):
         if not self.title().startswith("●"):
             self.title("●  Sistema de Turnos")
         if self.tab_plan.save_btn:
-            self.tab_plan.save_btn.configure(text="💾  Guardar mes  ●")
+            self.tab_plan.save_btn.configure(
+                text="💾  Guardar mes  ●",
+                fg_color=P["green"], hover_color=P["green_d"]
+            )
 
     def mark_clean(self):
         self.title("Sistema de Turnos")
         if self.tab_plan.save_btn:
-            self.tab_plan.save_btn.configure(text="💾  Guardar mes")
+            self.tab_plan.save_btn.configure(
+                text="💾  Guardar mes",
+                fg_color=P["green_d"], hover_color=P["green"]
+            )
 
     def _on_close(self):
         if self.is_exporting:
@@ -327,6 +615,23 @@ class TurnosApp(ctk.CTk):
                 parent=self
             ):
                 return
+
+        # Cancelar temporizadores activos para evitar callbacks huérfanos
+        if self._status_fade_job is not None:
+            try:
+                self.after_cancel(self._status_fade_job)
+            except Exception:
+                pass
+            self._status_fade_job = None
+
+        if hasattr(self, "tab_calendar") and getattr(self.tab_calendar, "_status_leave_job", None) is not None:
+            try:
+                self.after_cancel(self.tab_calendar._status_leave_job)
+            except Exception:
+                pass
+            self.tab_calendar._status_leave_job = None
+
+        self._save_ui_state()
         self.destroy()
 
     # ── Acciones de Negocio ───────────────────────────────────────────────────
@@ -451,11 +756,11 @@ class TurnosApp(ctk.CTk):
                 self.month_var.set(MESES[next_month - 1])
                 self.year_var.set(str(next_year))
                 self.active_period_key = self.get_selected_period_key()
-                self.exceptions = self.exceptions_by_period.get(self.active_period_key, []).copy()
+                self.exceptions = self.controller.get_exceptions_for_period(next_year, next_month)
                 self.manual_assignments = self.manual_assignments_by_period.get(self.active_period_key, {}).copy()
                 self.manual_motives = self.manual_motives_by_period.get(self.active_period_key, {}).copy()
 
-                self.tab_plan.refresh_exceptions(self.exceptions)
+                self.tab_plan.refresh_exceptions()
                 self.refresh_plan_views()
                 self.set_status("Mes guardado en el historial y cola avanzada.", "ok")
                 return True

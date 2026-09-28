@@ -1,5 +1,5 @@
 import customtkinter as ctk
-from views.theme import P
+from views.theme import P, FONT_FAMILY
 
 def _section_header(parent, text, row, pady_top=14):
     """Genera un encabezado de sección con texto en mayúsculas y línea decorativa."""
@@ -7,7 +7,7 @@ def _section_header(parent, text, row, pady_top=14):
     f.grid(row=row, column=0, sticky="ew", padx=16, pady=(pady_top, 4))
     ctk.CTkLabel(
         f, text=text.upper(),
-        font=ctk.CTkFont(family="Inter", size=10, weight="bold"),
+        font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
         text_color=P["text_s"]
     ).pack(side="left")
     ctk.CTkFrame(f, height=1, fg_color=P["border"]).pack(
@@ -25,7 +25,7 @@ def _avatar_ctk(parent, initials, color, size=32):
     c.pack_propagate(False)
     ctk.CTkLabel(
         c, text=initials,
-        font=ctk.CTkFont(family="Inter", size=max(9, size // 3), weight="bold"),
+        font=ctk.CTkFont(family=FONT_FAMILY, size=max(9, size // 3), weight="bold"),
         text_color="#FFFFFF"
     ).pack(expand=True)
     return c
@@ -73,6 +73,8 @@ def _make_row_hover(ref_widget, row_widgets):
             if orig not in hoverable_colors:
                 continue
             try:
+                if hasattr(w, "winfo_exists") and not w.winfo_exists():
+                    continue
                 w.configure(fg_color=HOVER)
             except Exception:
                 try:
@@ -87,6 +89,8 @@ def _make_row_hover(ref_widget, row_widgets):
             if orig not in hoverable_colors:
                 continue
             try:
+                if hasattr(w, "winfo_exists") and not w.winfo_exists():
+                    continue
                 w.configure(fg_color=orig)
             except Exception:
                 try:

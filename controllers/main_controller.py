@@ -30,6 +30,57 @@ class MainController:
             for period_key in self.shift_manager.excepciones
         }
 
+    def get_all_exceptions(self):
+        return self.shift_manager.get_all_exceptions()
+
+    def get_exceptions_for_period(self, year, month):
+        return self.shift_manager.get_exceptions_for_period(year, month)
+
+    def get_exceptions_grouped(self, year=None, month=None):
+        if year is not None and month is not None:
+            exc_list = self.get_exceptions_for_period(year, month)
+        else:
+            exc_list = self.get_all_exceptions()
+        return self.shift_manager.group_exceptions_into_ranges(exc_list)
+
+    def add_exception_range(self, persona, start_date, end_date, tipo, motivo=""):
+        try:
+            stats = self.shift_manager.add_exception_range(
+                persona, start_date, end_date, tipo, motivo=motivo
+            )
+            return True, stats
+        except Exception as e:
+            logger.error("Error al agregar rango de excepciones: %s", e, exc_info=True)
+            return False, str(e)
+
+    def remove_exception_range(self, persona, start_date, end_date):
+        try:
+            count = self.shift_manager.remove_exception_range(persona, start_date, end_date)
+            return True, count
+        except Exception as e:
+            logger.error("Error al eliminar rango de excepciones: %s", e, exc_info=True)
+            return False, str(e)
+
+    def get_closed_periods_in_range(self, start_date, end_date):
+        """Retorna lista de claves de periodo 'YYYY-MM' cerrados en el historial que son tocados por el rango."""
+        from datetime import datetime, timedelta
+        if isinstance(start_date, str):
+            start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+        if isinstance(end_date, str):
+            end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+        if start_date > end_date:
+            start_date, end_date = end_date, start_date
+
+        closed_touched = set()
+        curr = start_date
+        while curr <= end_date:
+            pkey = f"{curr.year}-{curr.month:02d}"
+            # Se considera cerrado si está en snapshots o tiene semanas cerradas en historial
+            if pkey in self.shift_manager.snapshots or any(k.startswith(pkey) for k in self.shift_manager.historial):
+                closed_touched.add(pkey)
+            curr += timedelta(days=1)
+        return sorted(closed_touched)
+
     def get_saved_manual_assignments(self):
         return {
             period_key: self.shift_manager.get_manual_assignments(period_key)

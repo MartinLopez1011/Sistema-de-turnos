@@ -54,7 +54,7 @@ Este sistema resuelve de raíz dichos problemas integrando un **motor algorítmi
 - **Pestaña 📋 Planificación:**
   - Selector ágil de mes y año con previsualización en tiempo real.
   - **Tarjeta Dinámica de Turno:** Muestra el funcionario con guardia en curso (`● GUARDIA EN CURSO`) o la fecha y funcionario del próximo turno proyectado (`⏳ PRÓXIMO TURNO`), con avatar, iniciales y rango de fechas.
-  - **Ingreso Flexible de Excepciones:** Admite días individuales o rangos numéricos continuos (ej: `1-5, 12, 20-25`), actualizando o agregando según corresponda.
+  - **Ingreso Flexible de Excepciones y Licencias por Rango de Fechas:** Admite fechas directas (`DD/MM/AAAA`) con campos 'Desde' y 'Hasta' y selector de mini-calendario emergente (📅), permitiendo registrar periodos continuos que cruzan meses (ej: 30 de octubre al 11 de noviembre), o días individuales y rangos rápidos. Cuenta con agrupación visual por rangos continuos en la lista, guardado automático persistente y filtros de visualización (Mes actual / Todas).
   - Validación estricta para excepciones tipo `OTR` (motivo obligatorio de al menos 3 caracteres).
   - **Tarjetas Semanales Interactivas:** Detalle de fechas, semana actual destacada (`● ACTUAL`), funcionario asignado, estado (`🤖 AUTOMÁTICO` o `📌 MANUAL`), diálogo modal de cambio (`ChangeShiftDialog`), visualización del motivo y desglose de saltados (`↷`).
   - Detección de cambios sucios en tiempo real mediante indicador visual en el título (`● Sistema de Turnos`) y botón `💾 Guardar mes ●`, con confirmación de seguridad al cerrar la aplicación (`WM_DELETE_WINDOW`).

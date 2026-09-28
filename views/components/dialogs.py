@@ -1,5 +1,7 @@
+import calendar
+from datetime import date, datetime
 import customtkinter as ctk
-from views.theme import P, EXC_COLORS
+from views.theme import P, EXC_COLORS, MESES, FONT_FAMILY
 from views.components.widgets import _short_name
 from utils.email_notifier import is_valid_email
 
@@ -22,7 +24,7 @@ class CustomInputDialog:
 
         ctk.CTkLabel(
             dialog, text=prompt,
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=14, weight="bold"),
             text_color=P["text"]
         ).pack(pady=(20, 12))
 
@@ -47,12 +49,16 @@ class CustomInputDialog:
         ctk.CTkButton(
             btn_frame, text="Cancelar",
             fg_color=P["bg_card2"], hover_color=P["border_h"],
-            text_color=P["text"], command=cancel, width=130, height=36
+            text_color=P["text"], command=cancel, width=130, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).pack(side="left")
         ctk.CTkButton(
             btn_frame, text="Aceptar",
             fg_color=P["accent_d"], hover_color=P["accent"],
-            text_color=P["text"], command=submit, width=130, height=36
+            text_color=P["text"], command=submit, width=130, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold")
         ).pack(side="right")
 
         dialog.bind("<Return>", lambda e: submit())
@@ -81,7 +87,7 @@ class CustomConfirmDialog:
 
         ctk.CTkLabel(
             dialog, text=prompt,
-            font=ctk.CTkFont(family="Inter", size=13),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13),
             text_color=P["text"], wraplength=370, justify="center"
         ).pack(pady=(28, 20))
 
@@ -101,12 +107,16 @@ class CustomConfirmDialog:
         ctk.CTkButton(
             btn_frame, text=cancel_text,
             fg_color=P["bg_card2"], hover_color=P["border_h"],
-            text_color=P["text"], command=cancel, width=130, height=36
+            text_color=P["text"], command=cancel, width=130, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).pack(side="left")
         ctk.CTkButton(
             btn_frame, text=confirm_text,
             fg_color=confirm_color, hover_color=confirm_hover,
-            command=submit, width=130, height=36
+            command=submit, width=130, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold")
         ).pack(side="right")
 
         dialog.bind("<Return>", lambda e: submit())
@@ -136,14 +146,14 @@ class PromptOTRMotiveDialog:
         ctk.CTkLabel(
             dialog,
             text=f"Motivo para OTR (Otro)\n{_short_name(persona, 3)} · Día {day}",
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=14, weight="bold"),
             text_color=P["text"], justify="center"
         ).pack(pady=(16, 6))
 
         ctk.CTkLabel(
             dialog,
             text="Ingresa la justificación (obligatorio, mín. 3 caracteres):",
-            font=ctk.CTkFont(family="Inter", size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=P["text_s"]
         ).pack(pady=(0, 6))
 
@@ -157,7 +167,7 @@ class PromptOTRMotiveDialog:
 
         error_lbl = ctk.CTkLabel(
             dialog, text="",
-            font=ctk.CTkFont(family="Inter", size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=P["red"]
         )
         error_lbl.pack(pady=(0, 6))
@@ -181,14 +191,17 @@ class PromptOTRMotiveDialog:
         ctk.CTkButton(
             btn_frame, text="Cancelar",
             fg_color=P["bg_card2"], hover_color=P["border_h"],
-            text_color=P["text"], command=cancel, width=140, height=34
+            text_color=P["text"], command=cancel, width=140, height=34,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).pack(side="left")
 
         ctk.CTkButton(
             btn_frame, text="Aceptar",
             fg_color=P["accent_d"], hover_color=P["accent"],
             text_color=P["text"], command=submit, width=140, height=34,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold")
         ).pack(side="right")
 
         dialog.bind("<Return>", lambda e: submit())
@@ -216,7 +229,7 @@ class AddExceptionDialog:
         ctk.CTkLabel(
             dialog,
             text=f"Añadir excepción para\n{_short_name(persona, 3)} el día {day}",
-            font=ctk.CTkFont(family="Inter", size=14, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=14, weight="bold"),
             text_color=P["text"]
         ).pack(pady=(16, 8))
 
@@ -243,27 +256,37 @@ class AddExceptionDialog:
 
         ctk.CTkButton(
             btn_frame, text="DA (Día Admin)", fg_color=P["orange"], hover_color=P["da"],
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            corner_radius=8, cursor="hand2",
             command=lambda: on_select("DA")
         ).grid(row=0, column=0, padx=4, pady=4, sticky="ew")
 
         ctk.CTkButton(
             btn_frame, text="FL (Feriado Legal)", fg_color=P["purple"], hover_color=P["fl"],
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            corner_radius=8, cursor="hand2",
             command=lambda: on_select("FL")
         ).grid(row=0, column=1, padx=4, pady=4, sticky="ew")
 
         ctk.CTkButton(
             btn_frame, text="LIC (Licencia)", fg_color=P["lic"], hover_color=P["lic"],
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            corner_radius=8, cursor="hand2",
             command=lambda: on_select("LIC")
         ).grid(row=1, column=0, padx=4, pady=4, sticky="ew")
 
         ctk.CTkButton(
             btn_frame, text="OTR (Otro)", fg_color=P["otr"], hover_color=P["border"],
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            corner_radius=8, cursor="hand2",
             command=lambda: on_select("OTR")
         ).grid(row=1, column=1, padx=4, pady=4, sticky="ew")
+
+        dialog.bind("<Escape>", lambda e: dialog.destroy())
+        for key, tipo in [("1", "DA"), ("2", "FL"), ("3", "LIC"), ("4", "OTR"),
+                          ("d", "DA"), ("D", "DA"), ("f", "FL"), ("F", "FL"),
+                          ("l", "LIC"), ("L", "LIC"), ("o", "OTR"), ("O", "OTR")]:
+            dialog.bind(f"<{key}>", lambda e, t=tipo: on_select(t))
 
 
 class SelectPersonDialog:
@@ -285,7 +308,7 @@ class SelectPersonDialog:
 
         ctk.CTkLabel(
             dialog, text=prompt,
-            font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
             text_color=P["text"], wraplength=380, justify="center"
         ).pack(pady=(20, 10))
 
@@ -295,7 +318,7 @@ class SelectPersonDialog:
             dialog, variable=selected_var, values=persons, width=360, height=36,
             fg_color=P["bg_input"], button_color=P["accent_d"],
             button_hover_color=P["accent"], dropdown_fg_color=P["bg_card2"],
-            font=ctk.CTkFont(family="Inter", size=12)
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         )
         dropdown.pack(pady=(0, 20))
 
@@ -311,13 +334,16 @@ class SelectPersonDialog:
         ctk.CTkButton(
             btn_frame, text="Cancelar",
             fg_color=P["bg_card2"], hover_color=P["border_h"],
-            text_color=P["text"], command=cancel, width=140, height=36
+            text_color=P["text"], command=cancel, width=140, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).pack(side="left")
         ctk.CTkButton(
             btn_frame, text="Asignar Guardia",
             fg_color=P["green_d"], hover_color=P["green"],
             text_color=P["text"], command=submit, width=140, height=36,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold")
         ).pack(side="right")
 
         dialog.bind("<Return>", lambda e: submit())
@@ -346,14 +372,14 @@ class PersonFormDialog:
 
         ctk.CTkLabel(
             dialog, text=title,
-            font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
             text_color=P["text"]
         ).pack(pady=(16, 12))
 
         # Nombre
         ctk.CTkLabel(
             dialog, text="Nombre completo del funcionario:",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         ).pack(fill="x", padx=30, pady=(0, 2))
 
@@ -368,7 +394,7 @@ class PersonFormDialog:
         # Correo
         ctk.CTkLabel(
             dialog, text="Correo electrónico (obligatorio para notificaciones):",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         ).pack(fill="x", padx=30, pady=(0, 2))
 
@@ -383,7 +409,7 @@ class PersonFormDialog:
 
         error_lbl = ctk.CTkLabel(
             dialog, text="",
-            font=ctk.CTkFont(family="Inter", size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=P["red"], anchor="w"
         )
         error_lbl.pack(fill="x", padx=30, pady=(0, 8))
@@ -413,13 +439,16 @@ class PersonFormDialog:
         ctk.CTkButton(
             btn_frame, text="Cancelar",
             fg_color=P["bg_card2"], hover_color=P["border_h"],
-            text_color=P["text"], command=cancel, width=150, height=36
+            text_color=P["text"], command=cancel, width=150, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).pack(side="left")
         ctk.CTkButton(
             btn_frame, text="Guardar",
             fg_color=P["green_d"], hover_color=P["green"],
             text_color=P["text"], command=submit, width=150, height=36,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold")
         ).pack(side="right")
 
         dialog.bind("<Return>", lambda e: submit())
@@ -458,21 +487,21 @@ class ChangeShiftDialog:
             text="⚠ AVISO OBLIGATORIO DE TRANSPARENCIA\n"
                  "Al asignar manualmente este turno y guardar el mes, se enviará una "
                  "notificación automática por correo a TODOS los funcionarios del equipo.",
-            font=ctk.CTkFont(family="Inter", size=11, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
             text_color=P["orange"], wraplength=420, justify="center"
         ).pack(padx=12, pady=10)
 
         # Semana afectada
         ctk.CTkLabel(
             dialog, text=f"Semana de guardia: {dates_prompt}",
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             text_color=P["text"], anchor="w"
         ).pack(fill="x", padx=24, pady=(4, 6))
 
         # Selector de persona
         ctk.CTkLabel(
             dialog, text="Nuevo funcionario asignado a la guardia:",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         ).pack(fill="x", padx=24, pady=(0, 2))
 
@@ -482,14 +511,14 @@ class ChangeShiftDialog:
             dialog, variable=selected_var, values=persons, width=440, height=34,
             fg_color=P["bg_input"], button_color=P["accent_d"],
             button_hover_color=P["accent"], dropdown_fg_color=P["bg_card2"],
-            font=ctk.CTkFont(family="Inter", size=12)
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         )
         dropdown.pack(padx=24, pady=(0, 8))
 
         # Motivo obligatorio
         ctk.CTkLabel(
             dialog, text="Motivo del cambio (Obligatorio para la notificación):",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         ).pack(fill="x", padx=24, pady=(0, 2))
 
@@ -503,7 +532,7 @@ class ChangeShiftDialog:
 
         error_lbl = ctk.CTkLabel(
             dialog, text="",
-            font=ctk.CTkFont(family="Inter", size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=P["red"], anchor="w"
         )
         error_lbl.pack(fill="x", padx=24, pady=(0, 6))
@@ -527,13 +556,16 @@ class ChangeShiftDialog:
         ctk.CTkButton(
             btn_frame, text="Cancelar",
             fg_color=P["bg_card2"], hover_color=P["border_h"],
-            text_color=P["text"], command=cancel, width=170, height=36
+            text_color=P["text"], command=cancel, width=170, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).pack(side="left")
         ctk.CTkButton(
             btn_frame, text="Aceptar y Registrar",
             fg_color=P["green_d"], hover_color=P["green"],
             text_color=P["text"], command=submit, width=170, height=36,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold")
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold")
         ).pack(side="right")
 
         dialog.bind("<Return>", lambda e: submit())
@@ -597,14 +629,14 @@ class LoadingModal:
 
         self.lbl_title = ctk.CTkLabel(
             inner, text=title,
-            font=ctk.CTkFont(family="Inter", size=15, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
             text_color=P["text"]
         )
         self.lbl_title.pack(pady=(0, 4))
 
         self.lbl_message = ctk.CTkLabel(
             inner, text=message,
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], wraplength=380, justify="center"
         )
         self.lbl_message.pack(pady=(0, 16))
@@ -657,4 +689,198 @@ class LoadingModal:
 
         if self.parent:
             self.parent.after(0, _destroy)
+
+
+class DatePickerDialog:
+    @classmethod
+    def show(cls, parent, initial_date=None, callback=None, title="Seleccionar Fecha"):
+        """
+        Muestra un diálogo de calendario interactivo en Dark Mode.
+        Permite navegar meses y años y hacer clic en un día para seleccionarlo.
+        Al seleccionar, llama a callback(selected_date: date) y cierra el diálogo.
+        """
+        dialog = ctk.CTkToplevel(parent)
+        dialog.title(title)
+        dialog.geometry("320x350")
+        dialog.configure(fg_color=P["bg_card"])
+        dialog.resizable(False, False)
+        dialog.transient(parent)
+        dialog.grab_set()
+
+        # Parsear fecha inicial
+        curr_selected = None
+        if initial_date:
+            if isinstance(initial_date, (date, datetime)):
+                curr_selected = initial_date if isinstance(initial_date, date) else initial_date.date()
+            elif isinstance(initial_date, str):
+                for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
+                    try:
+                        curr_selected = datetime.strptime(initial_date.strip(), fmt).date()
+                        break
+                    except ValueError:
+                        pass
+        if not curr_selected:
+            curr_selected = date.today()
+
+        state = {
+            "year": curr_selected.year,
+            "month": curr_selected.month,
+            "selected": curr_selected
+        }
+
+        # Centrar diálogo
+        dialog.update_idletasks()
+        pw = parent.winfo_width() or 400
+        ph = parent.winfo_height() or 400
+        px = parent.winfo_rootx() if hasattr(parent, 'winfo_rootx') else parent.winfo_x()
+        py = parent.winfo_rooty() if hasattr(parent, 'winfo_rooty') else parent.winfo_y()
+        x = max(50, px + (pw - 320) // 2)
+        y = max(50, py + (ph - 350) // 2)
+        dialog.geometry(f"320x350+{x}+{y}")
+
+        # Header con navegación de mes y año
+        hdr = ctk.CTkFrame(dialog, fg_color="transparent")
+        hdr.pack(fill="x", padx=14, pady=(12, 6))
+
+        month_label = ctk.CTkLabel(
+            hdr, text="",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=14, weight="bold"),
+            text_color=P["text"]
+        )
+
+        def prev_month():
+            if state["month"] == 1:
+                state["month"] = 12
+                state["year"] -= 1
+            else:
+                state["month"] -= 1
+            render_grid()
+
+        def next_month():
+            if state["month"] == 12:
+                state["month"] = 1
+                state["year"] += 1
+            else:
+                state["month"] += 1
+            render_grid()
+
+        ctk.CTkButton(
+            hdr, text="◀", width=32, height=30, corner_radius=6,
+            fg_color=P["bg_input"], hover_color=P["bg_hover"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            cursor="hand2", command=prev_month
+        ).pack(side="left")
+
+        month_label.pack(side="left", expand=True)
+
+        ctk.CTkButton(
+            hdr, text="▶", width=32, height=30, corner_radius=6,
+            fg_color=P["bg_input"], hover_color=P["bg_hover"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            cursor="hand2", command=next_month
+        ).pack(side="right")
+
+        # Nombres de días de la semana
+        days_header = ctk.CTkFrame(dialog, fg_color="transparent")
+        days_header.pack(fill="x", padx=14, pady=(4, 2))
+        for col_idx, d_name in enumerate(["Lu", "Ma", "Mi", "Ju", "Vi", "Sá", "Do"]):
+            days_header.grid_columnconfigure(col_idx, weight=1)
+            lbl = ctk.CTkLabel(
+                days_header, text=d_name,
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+                text_color=P["text_s"] if col_idx < 5 else P["orange"]
+            )
+            lbl.grid(row=0, column=col_idx, pady=2)
+
+        # Contenedor de la cuadrícula de días
+        grid_frame = ctk.CTkFrame(dialog, fg_color=P["bg_card2"], corner_radius=8)
+        grid_frame.pack(fill="both", expand=True, padx=14, pady=4)
+        for c in range(7):
+            grid_frame.grid_columnconfigure(c, weight=1)
+        for r in range(6):
+            grid_frame.grid_rowconfigure(r, weight=1)
+
+        today = date.today()
+
+        def on_day_click(selected_date):
+            dialog.destroy()
+            if callback:
+                callback(selected_date)
+
+        def render_grid():
+            for w in grid_frame.winfo_children():
+                w.destroy()
+
+            y, m = state["year"], state["month"]
+            month_label.configure(text=f"{MESES[m - 1]} {y}")
+
+            cal = calendar.monthcalendar(y, m)
+            for r_idx, week in enumerate(cal):
+                for c_idx, day in enumerate(week):
+                    if day == 0:
+                        continue
+                    d_obj = date(y, m, day)
+                    is_selected = (d_obj == state["selected"])
+                    is_today = (d_obj == today)
+
+                    if is_selected:
+                        fg = P["accent_d"]
+                        hov = P["accent"]
+                        tc = "#FFFFFF"
+                        font_w = "bold"
+                    elif is_today:
+                        fg = P["bg_hover"]
+                        hov = P["border_h"]
+                        tc = P["accent"]
+                        font_w = "bold"
+                    else:
+                        fg = "transparent"
+                        hov = P["bg_hover"]
+                        tc = P["text"] if c_idx < 5 else P["orange"]
+                        font_w = "normal"
+
+                    btn = ctk.CTkButton(
+                        grid_frame, text=str(day),
+                        width=32, height=28, corner_radius=6,
+                        fg_color=fg, hover_color=hov,
+                        text_color=tc, cursor="hand2",
+                        font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight=font_w),
+                        command=lambda d=d_obj: on_day_click(d)
+                    )
+                    btn.grid(row=r_idx, column=c_idx, padx=2, pady=2, sticky="nsew")
+
+        render_grid()
+
+        # Botones inferiores (Hoy, Cancelar)
+        bot_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        bot_frame.pack(fill="x", padx=14, pady=(6, 12))
+
+        def select_today():
+            on_day_click(today)
+
+        ctk.CTkButton(
+            bot_frame, text="Hoy", width=70, height=28, corner_radius=6,
+            fg_color=P["bg_input"], hover_color=P["bg_hover"],
+            cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+            command=select_today
+        ).pack(side="left")
+
+        ctk.CTkButton(
+            bot_frame, text="Cancelar", width=80, height=28, corner_radius=6,
+            fg_color="transparent", hover_color=P["bg_hover"],
+            text_color=P["text_s"], cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+            command=dialog.destroy
+        ).pack(side="right")
+
+        # Atajos de teclado para el calendario
+        dialog.bind("<Left>", lambda _: prev_month())
+        dialog.bind("<Right>", lambda _: next_month())
+        dialog.bind("<Prior>", lambda _: prev_month())
+        dialog.bind("<Next>", lambda _: next_month())
+        dialog.bind("<Home>", lambda _: select_today())
+        dialog.bind("<Return>", lambda _: on_day_click(state["selected"]))
+        dialog.bind("<Escape>", lambda _: dialog.destroy())
+
 

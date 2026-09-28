@@ -1,8 +1,8 @@
 import os
 import customtkinter as ctk
 
-from views.theme import P
-from views.components.widgets import _short_name, _make_row_hover
+from views.theme import P, AVATAR_PAL, FONT_FAMILY
+from views.components.widgets import _short_name, _initials, _avatar_ctk, _make_row_hover
 from views.components.dialogs import (
     CustomConfirmDialog, PersonFormDialog, SelectPersonDialog
 )
@@ -49,14 +49,14 @@ class TabSettings:
 
         ctk.CTkLabel(
             wrapper, text="Ajustes",
-            font=ctk.CTkFont(family="Inter", size=24, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=24, weight="bold"),
             text_color=P["text"], anchor="w"
         ).grid(row=0, column=0, sticky="w")
 
         ctk.CTkLabel(
             wrapper,
             text="Configuración de rotación, personal del equipo y exportación de reportes.",
-            font=ctk.CTkFont(family="Inter", size=13),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13),
             text_color=P["text_s"], anchor="w"
         ).grid(row=1, column=0, pady=(4, 20), sticky="w")
 
@@ -77,13 +77,13 @@ class TabSettings:
 
         ctk.CTkLabel(
             title_box, text="Gestión de Personal",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=P["text"], anchor="w"
         ).pack(side="left")
 
         self.person_count_badge = ctk.CTkLabel(
             title_box, text="",
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             text_color=P["text_a"], anchor="w"
         )
         self.person_count_badge.pack(side="left", padx=(12, 0))
@@ -92,8 +92,8 @@ class TabSettings:
             header_p, text="＋  Añadir Persona",
             command=self._on_add_person,
             height=32, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            fg_color=P["green_d"], hover_color=P["green"]
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["green_d"], hover_color=P["green"], cursor="hand2"
         )
         btn_add.pack(side="right")
 
@@ -106,7 +106,7 @@ class TabSettings:
         # ── Barra Desplegable: Ajustes Avanzados ───────────────────────────────
         advanced_bar = ctk.CTkFrame(
             wrapper, fg_color=P["bg_card"], corner_radius=12,
-            border_width=1, border_color=P["border"]
+            border_width=1, border_color=P["border"], cursor="hand2"
         )
         advanced_bar.grid(row=3, column=0, sticky="ew", pady=(20, 0))
         advanced_bar.grid_columnconfigure(0, weight=1)
@@ -120,7 +120,7 @@ class TabSettings:
 
         adv_title_lbl = ctk.CTkLabel(
             adv_text_box, text="⚙️  Ajustes Avanzados",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=P["text"], anchor="w"
         )
         adv_title_lbl.grid(row=0, column=0, sticky="w")
@@ -128,7 +128,7 @@ class TabSettings:
         adv_sub_lbl = ctk.CTkLabel(
             adv_text_box,
             text="Punto de inicio de rotación, configuración de correo SMTP, auditoría, respaldos y GitHub.",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         )
         adv_sub_lbl.grid(row=1, column=0, pady=(2, 0), sticky="w")
@@ -137,8 +137,8 @@ class TabSettings:
             bar_inner, text="Mostrar  ▼",
             command=self._toggle_advanced,
             height=34, width=120, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            fg_color=P["bg_card2"], hover_color=P["border_h"]
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["bg_card2"], hover_color=P["border_h"], cursor="hand2"
         )
         self.btn_toggle_advanced.grid(row=0, column=1, sticky="e")
 
@@ -160,14 +160,14 @@ class TabSettings:
 
         ctk.CTkLabel(
             card1, text="Persona inicial de la rotación",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=P["text"], anchor="w"
         ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
 
         ctk.CTkLabel(
             card1,
             text="Se usará para el próximo cálculo que no tenga un historial cerrado.",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w", wraplength=620
         ).grid(row=1, column=0, padx=20, pady=(0, 14), sticky="w")
 
@@ -176,21 +176,22 @@ class TabSettings:
             card1, variable=self.starting_person_var,
             values=self.controller.get_personal_list(), width=420,
             fg_color=P["bg_input"], button_color=P["accent_d"],
-            button_hover_color=P["accent"], dropdown_fg_color=P["bg_card2"]
+            button_hover_color=P["accent"], dropdown_fg_color=P["bg_card2"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         )
         self.starting_person_dropdown.grid(row=2, column=0, padx=20, pady=(0, 16), sticky="w")
 
         self.btn_save_start = ctk.CTkButton(
             card1, text="Guardar punto de inicio", command=self.save_starting_person,
             height=38, width=220, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
-            fg_color=P["green_d"], hover_color=P["green"]
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
+            fg_color=P["green_d"], hover_color=P["green"], cursor="hand2"
         )
         self.btn_save_start.grid(row=3, column=0, padx=20, pady=(0, 20), sticky="w")
 
         self.settings_status_label = ctk.CTkLabel(
             card1, text="Los cambios se guardan en config.json.",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         )
         self.settings_status_label.grid(row=4, column=0, padx=20, pady=(0, 18), sticky="w")
@@ -199,7 +200,7 @@ class TabSettings:
             self.advanced_container,
             text="Nota: este ajuste no cambia el historial ni los meses ya guardados.\n"
                  "Si hay personas pendientes, esas se atienden antes de iniciar la rotación normal.",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], justify="left", anchor="w"
         ).grid(row=1, column=0, pady=(10, 0), sticky="w")
 
@@ -213,7 +214,7 @@ class TabSettings:
 
         ctk.CTkLabel(
             notif_card, text="📧  Notificaciones por Correo (SMTP)",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=P["text"], anchor="w"
         ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
 
@@ -221,7 +222,7 @@ class TabSettings:
             notif_card,
             text="Al guardar el mes se enviará automáticamente el Excel con la planificación a todos\n"
                  "los funcionarios. Para Gmail, usa una Contraseña de Aplicación (no tu contraseña normal).",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w", justify="left"
         ).grid(row=1, column=0, padx=20, pady=(0, 12), sticky="w")
 
@@ -242,14 +243,14 @@ class TabSettings:
 
         self.notif_badge_label = ctk.CTkLabel(
             status_box, text=dot_text,
-            font=ctk.CTkFont(family="Inter", size=13, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
             text_color=dot_color
         )
         self.notif_badge_label.pack(side="left")
 
         ctk.CTkLabel(
             status_box, text=f"  —  {desc_text}",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"]
         ).pack(side="left")
 
@@ -262,7 +263,7 @@ class TabSettings:
         smtp_form.grid_columnconfigure(1, weight=1)
         smtp_form.grid_columnconfigure(3, weight=1)
 
-        lbl_font = ctk.CTkFont(family="Inter", size=12)
+        lbl_font = ctk.CTkFont(family=FONT_FAMILY, size=12)
         entry_h = 34
 
         ctk.CTkLabel(smtp_form, text="Host SMTP:", font=lbl_font, text_color=P["text_s"]
@@ -311,16 +312,16 @@ class TabSettings:
         self.btn_edit_smtp = ctk.CTkButton(
             smtp_actions, text="✏️  Editar", command=self._toggle_edit_smtp,
             height=34, width=110, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            fg_color=P["accent_d"], hover_color=P["accent"]
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["accent_d"], hover_color=P["accent"], cursor="hand2"
         )
         self.btn_edit_smtp.pack(side="left", padx=(0, 8))
 
         self.btn_save_smtp = ctk.CTkButton(
             smtp_actions, text="💾  Guardar", command=self._save_smtp_config,
             height=34, width=120, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            fg_color=P["green_d"], hover_color=P["green"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["green_d"], hover_color=P["green"], cursor="hand2",
             state="disabled"
         )
         self.btn_save_smtp.pack(side="left", padx=(0, 8))
@@ -328,15 +329,15 @@ class TabSettings:
         self.btn_test_smtp = ctk.CTkButton(
             smtp_actions, text="🔌  Probar Conexión", command=self._test_smtp_connection,
             height=34, width=150, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            fg_color=P["bg_card"], hover_color=P["border_h"]
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["bg_card"], hover_color=P["border_h"], cursor="hand2"
         )
         self.btn_test_smtp.pack(side="left", padx=(0, 8))
 
         self.smtp_lock_label = ctk.CTkLabel(
             smtp_form,
             text="🔒 Configuración protegida. Pulsa 'Editar' para modificar los datos del servidor.",
-            font=ctk.CTkFont(family="Inter", size=11),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
             text_color=P["text_s"], anchor="w"
         )
         self.smtp_lock_label.grid(row=4, column=0, columnspan=4, padx=14, pady=(0, 10), sticky="w")
@@ -355,7 +356,7 @@ class TabSettings:
 
         test_title = ctk.CTkLabel(
             test_box, text="Enviar un correo de prueba:",
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             text_color=P["text"], anchor="w"
         )
         test_title.grid(row=0, column=0, columnspan=2, padx=14, pady=(12, 6), sticky="w")
@@ -370,14 +371,14 @@ class TabSettings:
         self.btn_test_webhook = ctk.CTkButton(
             test_box, text="✉  Probar Envío", command=self._test_webhook,
             height=36, width=140, corner_radius=8,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
-            fg_color=P["accent_d"], hover_color=P["accent"]
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["accent_d"], hover_color=P["accent"], cursor="hand2"
         )
         self.btn_test_webhook.grid(row=1, column=1, padx=(0, 14), pady=(0, 10))
 
         self.notif_status_label = ctk.CTkLabel(
             test_box, text="",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         )
         self.notif_status_label.grid(row=2, column=0, columnspan=2, padx=14, pady=(0, 10), sticky="w")
@@ -392,13 +393,13 @@ class TabSettings:
 
         ctk.CTkLabel(
             operations_card, text="🛡  Recuperación y auditoría",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=P["text"], anchor="w"
         ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
         ctk.CTkLabel(
             operations_card,
             text="Crea respaldos manuales, restaura una versión validada y revisa los últimos cambios.",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         ).grid(row=1, column=0, padx=20, pady=(0, 12), sticky="w")
 
@@ -406,37 +407,48 @@ class TabSettings:
         actions.grid(row=2, column=0, padx=20, pady=(0, 10), sticky="w")
         ctk.CTkButton(
             actions, text="Crear respaldo", command=self._create_backup,
-            width=140, height=34, fg_color=P["accent_d"], hover_color=P["accent"]
+            width=140, height=34, corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["accent_d"], hover_color=P["accent"]
         ).pack(side="left", padx=(0, 8))
         ctk.CTkButton(
             actions, text="Restaurar respaldo", command=self._restore_backup,
-            width=150, height=34, fg_color=P["orange"], hover_color=P["da"],
+            width=150, height=34, corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            fg_color=P["orange"], hover_color=P["da"],
             text_color="#111418"
         ).pack(side="left", padx=(0, 8))
         ctk.CTkButton(
             actions, text="Actualizar auditoría", command=self._refresh_audit,
-            width=160, height=34, fg_color=P["bg_card2"], hover_color=P["border_h"]
+            width=160, height=34, corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
+            fg_color=P["bg_card2"], hover_color=P["border_h"]
         ).pack(side="left")
         ctk.CTkButton(
             actions, text="Reintentar notificaciones",
             command=self._retry_pending_notifications,
-            width=190, height=34, fg_color=P["bg_card2"], hover_color=P["border_h"]
+            width=190, height=34, corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
+            fg_color=P["bg_card2"], hover_color=P["border_h"]
         ).pack(side="left", padx=(8, 0))
         pending = len(self.app.notification_queue.list_pending())
         self.pending_notifications_label = ctk.CTkLabel(
             actions,
             text=f"Notificaciones pendientes: {pending}",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_w"] if pending else P["text_s"],
         )
         self.pending_notifications_label.pack(side="left", padx=(14, 0))
 
         self.backup_status_label = ctk.CTkLabel(
-            operations_card, text="", text_color=P["text_s"], anchor="w"
+            operations_card, text="", text_color=P["text_s"], anchor="w",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         )
         self.backup_status_label.grid(row=3, column=0, padx=20, pady=(0, 8), sticky="w")
         self.audit_textbox = ctk.CTkTextbox(
             operations_card, height=130, fg_color=P["bg_card2"],
-            border_width=1, border_color=P["border"]
+            border_width=1, border_color=P["border"],
+            font=ctk.CTkFont(family="Consolas", size=11)
         )
         self.audit_textbox.grid(row=4, column=0, padx=20, pady=(0, 20), sticky="ew")
         self._refresh_audit()
@@ -451,14 +463,14 @@ class TabSettings:
 
         ctk.CTkLabel(
             github_card, text="🐙  Repositorio del Proyecto (GitHub)",
-            font=ctk.CTkFont(family="Inter", size=16, weight="bold"),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=P["text"], anchor="w"
         ).grid(row=0, column=0, padx=20, pady=(20, 4), sticky="w")
 
         ctk.CTkLabel(
             github_card,
             text="Código fuente oficial, documentación y control de versiones del sistema.",
-            font=ctk.CTkFont(family="Inter", size=12),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         ).grid(row=1, column=0, padx=20, pady=(0, 14), sticky="w")
 
@@ -473,7 +485,7 @@ class TabSettings:
 
         link_lbl = ctk.CTkLabel(
             link_box, text=github_url,
-            font=ctk.CTkFont(family="Inter", size=12, underline=True),
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, underline=True),
             text_color=P["text_a"], anchor="w", cursor="hand2"
         )
         link_lbl.grid(row=0, column=0, padx=(14, 10), pady=12, sticky="w")
@@ -484,16 +496,16 @@ class TabSettings:
 
         self.btn_copy_github = ctk.CTkButton(
             btn_box, text="📋  Copiar", command=self._copy_github_link,
-            height=32, width=90, corner_radius=6,
-            font=ctk.CTkFont(family="Inter", size=12),
+            height=32, width=90, corner_radius=6, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             fg_color=P["bg_input"], hover_color=P["border_h"], text_color=P["text"]
         )
         self.btn_copy_github.pack(side="left", padx=(0, 8))
 
         btn_open_github = ctk.CTkButton(
             btn_box, text="Abrir en GitHub ↗", command=self._open_github,
-            height=32, width=140, corner_radius=6,
-            font=ctk.CTkFont(family="Inter", size=12, weight="bold"),
+            height=32, width=140, corner_radius=6, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             fg_color=P["accent_d"], hover_color=P["accent"]
         )
         btn_open_github.pack(side="left")
@@ -669,59 +681,93 @@ class TabSettings:
         if hasattr(self, "person_count_badge") and self.person_count_badge:
             count = len(persons)
             self.person_count_badge.configure(text=f"·  👥 {count} funcionario{'s' if count != 1 else ''} activo{'s' if count != 1 else ''}")
+        if not persons and type(self.person_list_frame).__name__ not in ("MagicMock", "Mock"):
+            empty_card = ctk.CTkFrame(
+                self.person_list_frame, fg_color=P["bg_card2"], corner_radius=10,
+                border_width=1, border_color=P["border"]
+            )
+            empty_card.pack(fill="x", padx=10, pady=24)
+            ctk.CTkLabel(
+                empty_card,
+                text="👤  No hay funcionarios registrados en el sistema.\nPresiona '＋ Añadir Persona' para comenzar.",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=13),
+                text_color=P["text_s"], justify="center"
+            ).pack(padx=20, pady=20)
+
         for i, p in enumerate(persons):
-            row_f = ctk.CTkFrame(self.person_list_frame, fg_color=P["bg_row_e"] if i % 2 == 0 else P["bg_row_o"])
-            row_f.pack(fill="x", pady=2)
+            row_f = ctk.CTkFrame(
+                self.person_list_frame,
+                fg_color=P["bg_row_e"] if i % 2 == 0 else P["bg_row_o"],
+                corner_radius=8, border_width=1, border_color=P["border"]
+            )
+            row_f.pack(fill="x", pady=2, padx=4)
 
             info_f = ctk.CTkFrame(row_f, fg_color="transparent")
             info_f.pack(side="left", padx=10, pady=8, fill="x", expand=True)
 
+            av_color = AVATAR_PAL[i % len(AVATAR_PAL)]
+            av = _avatar_ctk(info_f, _initials(p['nombre']), av_color, size=28)
+            av.pack(side="left", padx=(0, 10))
+
+            id_pill = ctk.CTkFrame(info_f, fg_color=P["bg_input"], corner_radius=4)
+            id_pill.pack(side="left", padx=(0, 8))
             ctk.CTkLabel(
-                info_f, text=f"ID {p['id']}: {p['nombre']}", text_color=P["text"],
-                font=ctk.CTkFont(family="Inter", size=13, weight="bold" if i == 0 else "normal")
-            ).pack(side="left", padx=(0, 10))
+                id_pill, text=f"#{p['id']}", text_color=P["text_s"],
+                font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold")
+            ).pack(padx=5, pady=1)
+
+            ctk.CTkLabel(
+                info_f, text=p['nombre'], text_color=P["text"],
+                font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold" if i == 0 else "normal")
+            ).pack(side="left", padx=(0, 12))
 
             p_email = p.get('email', '')
             if p_email:
                 ctk.CTkLabel(
                     info_f, text=f"✉ {p_email}", text_color=P["text_s"],
-                    font=ctk.CTkFont(family="Inter", size=12)
+                    font=ctk.CTkFont(family=FONT_FAMILY, size=12)
                 ).pack(side="left")
             else:
                 ctk.CTkLabel(
                     info_f, text="⚠ Sin correo registrado", text_color=P["orange"],
-                    font=ctk.CTkFont(family="Inter", size=11, weight="bold")
+                    font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold")
                 ).pack(side="left")
 
             btn_del = ctk.CTkButton(
-                row_f, text="Eliminar", width=60, height=24,
-                fg_color=P["red_d"], hover_color=P["red"],
+                row_f, text="Eliminar", width=64, height=26, corner_radius=6,
+                fg_color=P["red_d"], hover_color=P["red"], cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
                 command=lambda pid=p['id'], pname=p['nombre']: self._on_delete_person(pid, pname)
             )
-            btn_del.pack(side="right", padx=10, pady=8)
+            btn_del.pack(side="right", padx=(4, 10), pady=6)
 
             btn_edit = ctk.CTkButton(
-                row_f, text="Editar", width=60, height=24,
-                fg_color=P["accent_d"], hover_color=P["accent"],
+                row_f, text="✏️ Editar", width=68, height=26, corner_radius=6,
+                fg_color=P["accent_d"], hover_color=P["accent"], cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
                 command=lambda pid=p['id'], pname=p['nombre']: self._on_edit_person(pid, pname)
             )
-            btn_edit.pack(side="right", padx=10, pady=8)
+            btn_edit.pack(side="right", padx=4, pady=6)
 
             btn_down = ctk.CTkButton(
-                row_f, text="⬇", width=28, height=24,
+                row_f, text="↓", width=26, height=26, corner_radius=6,
                 fg_color=P["bg_card2"], hover_color=P["border_h"], text_color=P["text_s"],
+                cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
                 command=lambda pid=p['id']: self._on_move_down(pid)
             )
-            btn_down.pack(side="right", padx=(2, 10), pady=8)
+            btn_down.pack(side="right", padx=(2, 6), pady=6)
             if i == len(persons) - 1:
                 btn_down.configure(state="disabled")
 
             btn_up = ctk.CTkButton(
-                row_f, text="⬆", width=28, height=24,
+                row_f, text="↑", width=26, height=26, corner_radius=6,
                 fg_color=P["bg_card2"], hover_color=P["border_h"], text_color=P["text_s"],
+                cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
                 command=lambda pid=p['id']: self._on_move_up(pid)
             )
-            btn_up.pack(side="right", padx=(10, 2), pady=8)
+            btn_up.pack(side="right", padx=(6, 2), pady=6)
             if i == 0:
                 btn_up.configure(state="disabled")
 

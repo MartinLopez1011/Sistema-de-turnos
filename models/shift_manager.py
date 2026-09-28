@@ -406,6 +406,287 @@ class ShiftManager:
                 continue
         return exceptions
 
+    def add_exception_date(self, persona, exc_date, tipo, motivo=""):
+        """
+        Agrega o actualiza una excepción para una persona en una fecha específica.
+        Soporta date, datetime o str 'YYYY-MM-DD'.
+        No guarda a disco directamente (útil para operaciones en lote).
+        """
+        if isinstance(exc_date, str):
+            exc_date = datetime.strptime(exc_date, '%Y-%m-%d').date()
+        elif isinstance(exc_date, datetime):
+            exc_date = exc_date.date()
+
+        period_key = f"{exc_date.year}-{exc_date.month:02d}"
+        if period_key not in self.excepciones:
+            self.excepciones[period_key] = []
+
+        date_str = exc_date.isoformat()
+        found = False
+        updated = False
+        for item in self.excepciones[period_key]:
+            if item.get('persona') == persona and item.get('fecha') == date_str:
+                found = True
+                if item.get('tipo') != tipo or str(item.get('motivo', '')) != str(motivo or ''):
+                    item['tipo'] = tipo
+                    if motivo and tipo == 'OTR':
+                        item['motivo'] = str(motivo)
+                    elif 'motivo' in item:
+                        del item['motivo']
+                    updated = True
+                break
+
+        if not found:
+            new_item = {
+                'persona': persona,
+                'fecha': date_str,
+                'tipo': tipo
+            }
+            if motivo and tipo == 'OTR':
+                new_item['motivo'] = str(motivo)
+            self.excepciones[period_key].append(new_item)
+            self.excepciones[period_key].sort(key=lambda x: x.get('fecha', ''))
+            return "added", period_key
+
+        if updated:
+            return "updated", period_key
+        return "skipped", period_key
+
+    def add_exception_range(self, persona, start_date, end_date, tipo, motivo=""):
+        """
+        Agrega un rango de excepciones para una persona entre start_date y end_date (inclusivo).
+        Guarda automáticamente en config.json.
+        Retorna diccionario con estadísticas: {'added': X, 'updated': Y, 'skipped': Z, 'total': N, 'periods': [...]}.
+        """
+        with self._lock:
+            if isinstance(start_date, str):
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            elif isinstance(start_date, datetime):
+                start_date = start_date.date()
+
+            if isinstance(end_date, str):
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            elif isinstance(end_date, datetime):
+                end_date = end_date.date()
+
+            if start_date > end_date:
+                start_date, end_date = end_date, start_date
+
+            stats = {"added": 0, "updated": 0, "skipped": 0, "total": 0, "periods": set()}
+            curr = start_date
+            while curr <= end_date:
+                action, pkey = self.add_exception_date(persona, curr, tipo, motivo)
+                stats[action] += 1
+                stats["total"] += 1
+                stats["periods"].add(pkey)
+                curr += timedelta(days=1)
+
+            stats["periods"] = sorted(stats["periods"])
+            self._record_audit(
+                "ADD_EXCEPTION_RANGE",
+                persona=persona,
+                start=start_date.isoformat(),
+                end=end_date.isoformat(),
+                tipo=tipo,
+                total_days=stats["total"],
+                periods=", ".join(stats["periods"])
+            )
+            self.save_config()
+            return stats
+
+    def remove_exception_range(self, persona, start_date, end_date):
+        """
+        Elimina todas las excepciones de una persona entre start_date y end_date (inclusivo).
+        Guarda automáticamente en config.json.
+        Retorna la cantidad de excepciones eliminadas.
+        """
+        with self._lock:
+            if isinstance(start_date, str):
+                start_date = datetime.strptime(start_date, '%Y-%m-%d').date()
+            elif isinstance(start_date, datetime):
+                start_date = start_date.date()
+
+            if isinstance(end_date, str):
+                end_date = datetime.strptime(end_date, '%Y-%m-%d').date()
+            elif isinstance(end_date, datetime):
+                end_date = end_date.date()
+
+            if start_date > end_date:
+                start_date, end_date = end_date, start_date
+
+            removed_count = 0
+            affected_periods = set()
+
+            curr = start_date
+            while curr <= end_date:
+                pkey = f"{curr.year}-{curr.month:02d}"
+                affected_periods.add(pkey)
+                curr += timedelta(days=1)
+
+            for pkey in affected_periods:
+                if pkey not in self.excepciones:
+                    continue
+                orig_len = len(self.excepciones[pkey])
+                new_list = []
+                for item in self.excepciones[pkey]:
+                    f_str = item.get('fecha')
+                    try:
+                        f_date = datetime.strptime(f_str, '%Y-%m-%d').date()
+                    except (ValueError, TypeError):
+                        new_list.append(item)
+                        continue
+                    if item.get('persona') == persona and start_date <= f_date <= end_date:
+                        continue
+                    new_list.append(item)
+                removed_count += (orig_len - len(new_list))
+                self.excepciones[pkey] = new_list
+
+            if removed_count > 0:
+                self._record_audit(
+                    "REMOVE_EXCEPTION_RANGE",
+                    persona=persona,
+                    start=start_date.isoformat(),
+                    end=end_date.isoformat(),
+                    removed=removed_count
+                )
+                self.save_config()
+
+            return removed_count
+
+    def get_all_exceptions(self):
+        """
+        Retorna todas las excepciones guardadas en el sistema como lista de objetos,
+        ordenadas cronológicamente por fecha y luego por persona.
+        """
+        all_exc = []
+        seen = set()
+        for pkey in sorted(self.excepciones.keys()):
+            for item in self.excepciones[pkey]:
+                try:
+                    f_date = datetime.strptime(item['fecha'], '%Y-%m-%d').date()
+                    key = (item['persona'], f_date)
+                    if key not in seen:
+                        seen.add(key)
+                        exc_obj = {
+                            'persona': item['persona'],
+                            'fecha': f_date,
+                            'tipo': item['tipo']
+                        }
+                        if 'motivo' in item and item['motivo']:
+                            exc_obj['motivo'] = str(item['motivo'])
+                        all_exc.append(exc_obj)
+                except (KeyError, TypeError, ValueError):
+                    continue
+        all_exc.sort(key=lambda x: (x['fecha'], x['persona']))
+        return all_exc
+
+    def get_exceptions_for_period(self, year, month):
+        """
+        Retorna todas las excepciones relevantes para planificar el mes (year, month).
+        Incluye tanto las fechas del mes calendario como las fechas de semanas
+        limítrofes calculadas por _build_weeks(year, month).
+        """
+        weeks = self._build_weeks(year, month)
+        if not weeks:
+            return self.get_exceptions(f"{year}-{month:02d}")
+
+        min_date = weeks[0][0]
+        max_date = weeks[-1][1]
+
+        relevant_keys = set()
+        curr = min_date
+        while curr <= max_date:
+            relevant_keys.add(f"{curr.year}-{curr.month:02d}")
+            curr += timedelta(days=1)
+
+        result = []
+        seen = set()
+        for pkey in relevant_keys:
+            for exc in self.get_exceptions(pkey):
+                key = (exc['persona'], exc['fecha'])
+                if key not in seen:
+                    seen.add(key)
+                    result.append(exc)
+        result.sort(key=lambda x: (x['fecha'], x['persona']))
+        return result
+
+    @staticmethod
+    def group_exceptions_into_ranges(exceptions_list):
+        """
+        Agrupa una lista de excepciones individuales en rangos continuos por (persona, tipo, motivo).
+        Retorna lista de diccionarios:
+        {
+            'persona': str,
+            'start_date': date,
+            'end_date': date,
+            'tipo': str,
+            'motivo': str,
+            'days_count': int,
+            'dates': [date, ...]
+        }
+        """
+        if not exceptions_list:
+            return []
+
+        normalized = []
+        for exc in exceptions_list:
+            f = exc['fecha']
+            if isinstance(f, str):
+                f = datetime.strptime(f, '%Y-%m-%d').date()
+            elif isinstance(f, datetime):
+                f = f.date()
+            normalized.append({
+                'persona': exc['persona'],
+                'fecha': f,
+                'tipo': exc['tipo'],
+                'motivo': str(exc.get('motivo', ''))
+            })
+
+        by_person = {}
+        for item in normalized:
+            by_person.setdefault(item['persona'], []).append(item)
+
+        ranges = []
+        for person, items in by_person.items():
+            items.sort(key=lambda x: x['fecha'])
+            curr_range = None
+            for item in items:
+                if curr_range is None:
+                    curr_range = {
+                        'persona': person,
+                        'start_date': item['fecha'],
+                        'end_date': item['fecha'],
+                        'tipo': item['tipo'],
+                        'motivo': item['motivo'],
+                        'dates': [item['fecha']]
+                    }
+                else:
+                    is_consecutive = (item['fecha'] == curr_range['end_date'] + timedelta(days=1))
+                    same_type = (item['tipo'] == curr_range['tipo'])
+                    same_motivo = (item['motivo'] == curr_range['motivo'])
+                    if is_consecutive and same_type and same_motivo:
+                        curr_range['end_date'] = item['fecha']
+                        curr_range['dates'].append(item['fecha'])
+                    elif item['fecha'] == curr_range['end_date']:
+                        pass
+                    else:
+                        curr_range['days_count'] = len(curr_range['dates'])
+                        ranges.append(curr_range)
+                        curr_range = {
+                            'persona': person,
+                            'start_date': item['fecha'],
+                            'end_date': item['fecha'],
+                            'tipo': item['tipo'],
+                            'motivo': item['motivo'],
+                            'dates': [item['fecha']]
+                        }
+            if curr_range:
+                curr_range['days_count'] = len(curr_range['dates'])
+                ranges.append(curr_range)
+
+        ranges.sort(key=lambda r: (r['start_date'], r['persona']))
+        return ranges
+
     def get_manual_assignments(self, period_key):
         return dict(self.asignaciones_manuales.get(period_key, {}))
 

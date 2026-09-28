@@ -10,6 +10,18 @@ from utils.app_paths import get_application_data_dir
 
 logger = get_logger("main")
 
+def setup_windows_dpi():
+    """Habilita DPI awareness en Windows para evitar renderizado borroso en pantallas HD/4K."""
+    if sys.platform.startswith("win"):
+        try:
+            import ctypes
+            try:
+                ctypes.windll.shcore.SetProcessDpiAwareness(1)
+            except Exception:
+                ctypes.windll.user32.SetProcessDPIAware()
+        except Exception:
+            pass
+
 def setup_global_exception_handler():
     def handle_exception(exc_type, exc_value, exc_traceback):
         if issubclass(exc_type, KeyboardInterrupt):
@@ -28,6 +40,7 @@ def setup_global_exception_handler():
     sys.excepthook = handle_exception
 
 def main():
+    setup_windows_dpi()
     setup_global_exception_handler()
     root_path = get_application_data_dir()
         
