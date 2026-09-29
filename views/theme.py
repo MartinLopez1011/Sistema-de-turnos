@@ -43,6 +43,9 @@ P = {
     "border_h":  "#49636A",
     "today":     "#16877D",
     "today_bg":  "#124A46",
+    "manual_bg": "#065F46",
+    "manual_fg": "#A7F3D0",
+    "next_bg":   "#1E293B",
     "sep":       "#293137",
     "past_tint": "#0A0C1A",
 }

@@ -364,13 +364,6 @@ class TabCalendar:
             font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
             text_color=titulo_color
         ).grid(row=0, column=0, sticky="w")
-        ctk.CTkLabel(
-            hl,
-            text="■ Turno Regular  ·  ■ Cambio Guardia (Manual)  ·  DA Día Admin  ·  FL Feriado  ·  Sombreado = fin de semana  ·  Azul = semana actual",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
-            text_color=P["text_s"]
-        ).grid(row=1, column=0, sticky="w")
-
         if is_closed and is_past_mo:
             banner_f = ctk.CTkFrame(
                 hl, fg_color="#1A1505", corner_radius=8,

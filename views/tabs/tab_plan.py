@@ -73,10 +73,10 @@ class TabPlan:
             title_f, text="🗓  Sistema de Turnos",
             font=ctk.CTkFont(family=FONT_FAMILY, size=16, weight="bold"),
             text_color=P["text"]
-        ).pack(padx=20, pady=16)
+        ).pack(padx=20, pady=10)
 
         # Periodo
-        _section_header(sidebar, "Periodo", row=1, pady_top=18)
+        _section_header(sidebar, "Periodo", row=1, pady_top=10)
         pf = ctk.CTkFrame(sidebar, fg_color="transparent")
         pf.grid(row=2, column=0, padx=16, pady=(0, 4), sticky="ew")
         pf.grid_columnconfigure(0, weight=3)
@@ -102,7 +102,7 @@ class TabPlan:
         ).grid(row=0, column=1, sticky="ew")
 
         # Persona
-        _section_header(sidebar, "Persona", row=3, pady_top=10)
+        _section_header(sidebar, "Persona", row=3, pady_top=6)
         person_box = ctk.CTkFrame(sidebar, fg_color="transparent")
         person_box.grid(row=4, column=0, padx=16, pady=(0, 4), sticky="ew")
         person_box.grid_columnconfigure(1, weight=1)
@@ -128,17 +128,16 @@ class TabPlan:
         self.person_dropdown.grid(row=0, column=1, sticky="ew")
         self.person_var.trace_add("write", lambda *_: self._update_person_avatar())
 
-        self.next_turno_frame = None
         self.next_turno_lbl = None
 
         # Formulario de Excepción
-        _section_header(sidebar, "Excepción", row=5, pady_top=14)
+        _section_header(sidebar, "Excepción", row=5, pady_top=8)
         exc_form = ctk.CTkFrame(sidebar, fg_color=P["bg_card2"], corner_radius=8)
         exc_form.grid(row=6, column=0, padx=16, pady=(0, 4), sticky="ew")
         exc_form.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
-            exc_form, text="Desde (DD/MM/AAAA)",
+            exc_form, text="Fecha(s): DD/MM/AAAA, 1-5, 8",
             font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"]
         ).grid(row=0, column=0, padx=12, pady=(10, 3), sticky="w")
@@ -289,7 +288,7 @@ class TabPlan:
             main, fg_color=P["bg_card"], corner_radius=12,
             border_width=1, border_color=P["border"]
         )
-        exc_frame.grid(row=1, column=0, padx=(0, 12), sticky="nsew")
+        exc_frame.grid(row=1, column=0, padx=(0, 10), sticky="nsew")
         exc_frame.grid_rowconfigure(2, weight=1)
         exc_frame.grid_columnconfigure(0, weight=1)
 
@@ -339,15 +338,16 @@ class TabPlan:
         preview_frame.grid_columnconfigure(0, weight=1)
         preview_frame.grid_rowconfigure(2, weight=1)
 
-        ctk.CTkLabel(
+        self.preview_title = ctk.CTkLabel(
             preview_frame, text="Vista previa",
             font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
             text_color=P["text"]
-        ).grid(row=0, column=0, padx=16, pady=(16, 2), sticky="w")
+        )
+        self.preview_title.grid(row=0, column=0, padx=16, pady=(16, 2), sticky="w")
 
         ctk.CTkLabel(
             preview_frame,
-            text="Se actualiza al cambiar el periodo o excepciones",
+            text="● Actual · 📌 Manual · ↷ Saltado",
             text_color=P["text_s"], anchor="w",
             font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).grid(row=1, column=0, padx=16, pady=(0, 8), sticky="ew")
@@ -973,6 +973,8 @@ class TabPlan:
             self.app.set_status(f"Error inesperado: {str(ex)}", "error")
 
     def update_preview(self, shifts, year, month):
+        if getattr(self, "preview_title", None) is not None:
+            self.preview_title.configure(text=f"Vista previa — {MESES[month - 1]} {year}")
         for w in self.preview_scroll.winfo_children():
             w.destroy()
 
@@ -1001,6 +1003,9 @@ class TabPlan:
             self._render_next_turno_card(None, today, personal)
             return
 
+        first_day = date(year, month, 1)
+        last_day = date(year, month, calendar.monthrange(year, month)[1])
+
         for idx, sh in enumerate(shifts):
             s, e = sh['semana']
             person = sh['persona'] or "NADIE DISPONIBLE"
@@ -1016,12 +1021,12 @@ class TabPlan:
             card = ctk.CTkFrame(
                 self.preview_scroll,
                 fg_color=P["bg_card2"],
-                corner_radius=10,
+                corner_radius=8,
                 border_width=2 if is_current else 1,
                 border_color=card_border
             )
-            card.pack(fill="x", padx=4, pady=5)
-            card.grid_columnconfigure(0, weight=1)
+            card.pack(fill="x", padx=2, pady=2)
+            card.grid_columnconfigure(1, weight=1)
 
             if not is_current:
                 def _attach_card_hover(c_w=card, orig_b=card_border):
@@ -1033,69 +1038,31 @@ class TabPlan:
                     c_w.bind("<Leave>", _leave, add="+")
                 _attach_card_hover()
 
-            crow = 0
+            av = _avatar_ctk(card, _initials(person), av_color, size=28)
+            av.grid(row=0, column=0, rowspan=2, padx=(10, 8), pady=6, sticky="w")
 
-            # Encabezado de la tarjeta semanal
-            header = ctk.CTkFrame(card, fg_color="transparent")
-            header.grid(row=crow, column=0, sticky="ew", padx=12, pady=(10, 4))
-            header.grid_columnconfigure(0, weight=1)
-            crow += 1
-
-            date_text = f"📅  {s.strftime('%d/%m')} → {e.strftime('%d/%m')}  ·  Semana {idx + 1}"
-            ctk.CTkLabel(
-                header, text=date_text,
-                font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
-                text_color=P["text_a"] if not is_current else P["accent"]
-            ).grid(row=0, column=0, sticky="w")
-
-            badges_f = ctk.CTkFrame(header, fg_color="transparent")
-            badges_f.grid(row=0, column=1, sticky="e")
-
-            if is_current:
-                cur_badge = ctk.CTkFrame(badges_f, fg_color=P["today_bg"], corner_radius=5)
-                cur_badge.pack(side="left", padx=(0, 6))
-                ctk.CTkLabel(
-                    cur_badge, text=" ● ACTUAL ",
-                    font=ctk.CTkFont(family=FONT_FAMILY, size=9, weight="bold"),
-                    text_color=P["accent"]
-                ).pack(padx=4, pady=2)
-
+            name_text = _short_name(person, 2)
             if is_manual:
-                man_badge = ctk.CTkFrame(badges_f, fg_color="#065F46", corner_radius=5)
-                man_badge.pack(side="left")
-                ctk.CTkLabel(
-                    man_badge, text=" 📌 MANUAL ",
-                    font=ctk.CTkFont(family=FONT_FAMILY, size=9, weight="bold"),
-                    text_color="#A7F3D0"
-                ).pack(padx=4, pady=2)
-            else:
-                auto_badge = ctk.CTkFrame(badges_f, fg_color=P["bg_input"], corner_radius=5)
-                auto_badge.pack(side="left")
-                ctk.CTkLabel(
-                    auto_badge, text=" 🤖 AUTOMÁTICO ",
-                    font=ctk.CTkFont(family=FONT_FAMILY, size=9, weight="bold"),
-                    text_color=P["text_s"]
-                ).pack(padx=4, pady=2)
-
-            # Fila de persona asignada y botones de acción
-            body = ctk.CTkFrame(card, fg_color="transparent")
-            body.grid(row=crow, column=0, sticky="ew", padx=12, pady=(4, 10))
-            body.grid_columnconfigure(1, weight=1)
-            crow += 1
-
-            av = _avatar_ctk(body, _initials(person), av_color, size=34)
-            av.grid(row=0, column=0, padx=(0, 10), sticky="w")
-
-            name_lbl = ctk.CTkLabel(
-                body, text=_short_name(person, 3),
+                name_text = f"📌 {name_text}"
+            ctk.CTkLabel(
+                card, text=name_text,
                 font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
-                text_color=P["text_ok"] if not is_manual else P["green"],
-                anchor="w"
-            )
-            name_lbl.grid(row=0, column=1, sticky="w")
+                text_color=P["green"] if is_manual else P["text_ok"], anchor="w"
+            ).grid(row=0, column=1, sticky="sw", pady=(6, 0))
 
-            actions_f = ctk.CTkFrame(body, fg_color="transparent")
-            actions_f.grid(row=0, column=2, sticky="e")
+            date_text = f"{s.strftime('%d/%m')} → {e.strftime('%d/%m')}"
+            if s < first_day or e > last_day:
+                date_text += "  ·  puente"
+            if is_current:
+                date_text = "● Actual  ·  " + date_text
+            ctk.CTkLabel(
+                card, text=date_text,
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+                text_color=P["accent"] if is_current else P["text_s"], anchor="w"
+            ).grid(row=1, column=1, sticky="nw", pady=(0, 6))
+
+            actions_f = ctk.CTkFrame(card, fg_color="transparent")
+            actions_f.grid(row=0, column=2, rowspan=2, padx=(4, 10), sticky="e")
 
             def _on_change(wk=week_key, cur_p=person, s_d=s, e_d=e):
                 available = self.controller.get_personal_list()
@@ -1114,66 +1081,44 @@ class TabPlan:
                     chosen, motive = res
                     self.app.set_manual_assignment(wk, chosen, motivo=motive)
 
-            btn_change = ctk.CTkButton(
-                actions_f, text="✏️ Cambiar",
+            ctk.CTkButton(
+                actions_f, text="Cambiar",
                 font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
                 fg_color=P["bg_input"], hover_color=P["bg_hover"],
                 border_width=1, border_color=P["border_h"],
-                text_color=P["text"], height=28, width=82,
+                text_color=P["text"], height=26, width=64,
                 cursor="hand2", command=_on_change
-            )
-            btn_change.pack(side="left", padx=(0, 4))
+            ).pack(side="left")
 
             if is_manual:
                 def _on_reset(wk=week_key):
                     self.app.clear_manual_assignment(wk)
 
-                btn_reset = ctk.CTkButton(
-                    actions_f, text="↺ Auto",
-                    font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+                ctk.CTkButton(
+                    actions_f, text="↺",
+                    font=ctk.CTkFont(family=FONT_FAMILY, size=13),
                     fg_color=P["bg_card"], hover_color=P["red_d"],
                     border_width=1, border_color=P["border"],
-                    text_color=P["text_s"], height=28, width=64,
+                    text_color=P["text_s"], height=26, width=28,
                     cursor="hand2", command=_on_reset
-                )
-                btn_reset.pack(side="left")
+                ).pack(side="left", padx=(4, 0))
 
+            # Notas secundarias: una sola línea cada una y solo si existen
+            notes = []
+            if is_manual:
                 motive = self.app.get_manual_motive(week_key)
                 if motive:
-                    mf = ctk.CTkFrame(card, fg_color="transparent")
-                    mf.grid(row=crow, column=0, padx=12, pady=(0, 4), sticky="ew")
-                    crow += 1
-                    ctk.CTkLabel(
-                        mf, text=f"📝 Motivo: {motive}",
-                        font=ctk.CTkFont(family=FONT_FAMILY, size=10, slant="italic"),
-                        text_color=P["green"], wraplength=230, justify="left", anchor="w"
-                    ).pack(anchor="w", padx=2)
-
-            # Advertencias y saltados
-            if sh.get("advertencias"):
-                wf = ctk.CTkFrame(card, fg_color=P["orange"], corner_radius=6)
-                wf.grid(row=crow, column=0, padx=12, pady=(0, 6), sticky="ew")
-                crow += 1
-                for w_item in sh["advertencias"]:
-                    ctk.CTkLabel(
-                        wf, text=f"⚠ {w_item['mensaje']} ({', '.join(w_item['feriados'])})",
-                        font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
-                        text_color="#000"
-                    ).pack(padx=8, pady=3, anchor="w")
-
+                    notes.append((f"📝 {motive}", P["green"]))
+            for w_item in sh.get("advertencias") or []:
+                notes.append((f"⚠ {w_item['mensaje']} ({', '.join(w_item['feriados'])})", P["orange"]))
             if salt:
-                sf = ctk.CTkFrame(card, fg_color="transparent")
-                sf.grid(row=crow, column=0, padx=12, pady=(0, 8), sticky="ew")
-                crow += 1
-                for sk in salt:
-                    tipo = sk['tipo']
-                    cc = EXC_COLORS.get(tipo, P["otr"])
-                    icon = EXC_ICONS.get(tipo, "📌")
-                    ctk.CTkLabel(
-                        sf, text=f"↷ {icon} {_short_name(sk['persona'], 2)} ({tipo})",
-                        font=ctk.CTkFont(family=FONT_FAMILY, size=10),
-                        text_color=P["text_s"]
-                    ).pack(anchor="w", padx=2)
+                detalle = ", ".join(f"{_short_name(sk['persona'], 2)} ({sk['tipo']})" for sk in salt)
+                notes.append((f"↷ Saltados: {detalle}", P["text_s"]))
+            for n, (txt, col) in enumerate(notes):
+                ctk.CTkLabel(
+                    card, text=txt, text_color=col, anchor="w", justify="left",
+                    font=ctk.CTkFont(family=FONT_FAMILY, size=11), wraplength=380
+                ).grid(row=2 + n, column=0, columnspan=3, sticky="w", padx=10, pady=(0, 6))
 
         # Actualizar tarjeta de próximo turno (compatible con pruebas)
         first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)
@@ -1207,7 +1152,7 @@ class TabPlan:
         e_date = first_shift['semana'][1].strftime('%d/%m')
         is_current = first_shift['semana'][0] <= today <= first_shift['semana'][1]
 
-        badge_bg = P["today_bg"] if is_current else "#1E293B"
+        badge_bg = P["today_bg"] if is_current else P["next_bg"]
         badge_fg = P["accent"] if is_current else P["text_a"]
         badge_text = "● GUARDIA EN CURSO" if is_current else "⏳ PRÓXIMO TURNO"
 

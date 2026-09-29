@@ -422,6 +422,8 @@ class TurnosApp(ctk.CTk):
             # Bloquear botón de excepción y entrada de días
             if self.tab_plan.days_entry:
                 self.tab_plan.days_entry.configure(state=state)
+            if getattr(self.tab_plan, "to_entry", None):
+                self.tab_plan.to_entry.configure(state=state)
         except Exception:
             pass
 
@@ -472,7 +474,6 @@ class TurnosApp(ctk.CTk):
         self.exceptions = self.controller.get_exceptions_for_period(year, month)
         self.tab_plan.refresh_exceptions()
         self.refresh_plan_views()
-        self.mark_dirty()
 
     def add_exception_range(self, persona, start_date, end_date, tipo, motivo=""):
         ok, res = self.controller.add_exception_range(persona, start_date, end_date, tipo, motivo=motivo)
@@ -501,7 +502,6 @@ class TurnosApp(ctk.CTk):
             self.exceptions = self.controller.get_exceptions_for_period(year, month)
             self.tab_plan.refresh_exceptions()
             self.refresh_plan_views()
-            self.mark_dirty()
             self.set_status(f"Excepción eliminada: {removed['fecha'].strftime('%d/%m/%Y')}", "warn")
 
     def remove_exception_range(self, persona, start_date, end_date):
@@ -549,12 +549,15 @@ class TurnosApp(ctk.CTk):
         shifts = self.controller.preview_shifts(
             year, month, self.exceptions, manual_assignments=self.manual_assignments)
         self.tab_plan.update_preview(shifts, year, month)
+        # El calendario (~700 widgets) solo se redibuja si está visible; al abrir
+        # la pestaña, _on_tab_change lo renderiza con el estado actualizado.
         if hasattr(self, "tab_calendar") and self.tab_calendar.vista_scroll:
-            self.tab_calendar.render_turnos_view()
+            if "Ver Turnos" in self.tabview.get():
+                self.tab_calendar.render_turnos_view()
 
     # ── Feedback y Estado ─────────────────────────────────────────────────────
     def set_status(self, text, level="info"):
-        if getattr(self, "_last_status_text", None) == text and getattr(self, "_last_status_level", None) == level:
+        if level == "info" and getattr(self, "_last_status_text", None) == text and getattr(self, "_last_status_level", None) == level:
             return
         self._last_status_text = text
         self._last_status_level = level
@@ -581,9 +584,10 @@ class TurnosApp(ctk.CTk):
             self.tab_calendar.cal_bottom.configure(fg_color=bg)
             self.tab_calendar.cal_status_lbl.configure(text=text, text_color=tc)
 
-        if level == "ok":
+        fade_ms = {"ok": 5000, "warn": 8000, "error": 12000}.get(level)
+        if fade_ms:
             self._status_fade_job = self.after(
-                5000,
+                fade_ms,
                 lambda: self.set_status("Listo para revisar y guardar el periodo.", "info")
             )
 
