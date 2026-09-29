@@ -1,5 +1,6 @@
 import calendar
 from datetime import datetime, date, timedelta
+import tkinter as tk
 import customtkinter as ctk
 from tkinter import messagebox
 
@@ -893,23 +894,24 @@ class TabPlan:
             new_exc = []
             updated_exc = []
             skipped_existing = []
+            to_persist = []
 
             for date_obj in target_dates:
                 if date_obj in existing_map:
                     item = existing_map[date_obj]
-                    changed = False
-                    if item.get('tipo') != exc_type:
+                    new_motivo = motivo if exc_type == 'OTR' else ''
+                    if item.get('tipo') != exc_type or (item.get('motivo') or '') != new_motivo:
+                        # Se persiste vía add_exceptions (add_exception_date actualiza en sitio)
+                        upd = {'persona': person, 'fecha': date_obj, 'tipo': exc_type}
+                        if new_motivo:
+                            upd['motivo'] = new_motivo
+                        to_persist.append(upd)
+                        # Refleja el cambio en memoria de inmediato (la persistencia va por add_exceptions)
                         item['tipo'] = exc_type
-                        changed = True
-                    if exc_type == 'OTR':
-                        if item.get('motivo') != motivo:
-                            item['motivo'] = motivo
-                            changed = True
-                    elif 'motivo' in item:
-                        del item['motivo']
-                        changed = True
-
-                    if changed:
+                        if new_motivo:
+                            item['motivo'] = new_motivo
+                        else:
+                            item.pop('motivo', None)
                         updated_exc.append(date_obj)
                     else:
                         skipped_existing.append(date_obj)
@@ -929,17 +931,8 @@ class TabPlan:
                 )
                 return
 
-            if new_exc:
-                self.app.add_exceptions(new_exc)
-            if updated_exc:
-                if hasattr(self.app, 'exceptions_by_period') and hasattr(self.app, 'active_period_key'):
-                    self.app.exceptions_by_period[self.app.active_period_key] = self.app.exceptions
-                if hasattr(self.app, 'refresh_plan_views'):
-                    self.app.refresh_plan_views()
-                if hasattr(self.app, 'mark_dirty'):
-                    self.app.mark_dirty()
-                if hasattr(self, 'refresh_exceptions') and getattr(self, 'exception_list', None) is not None:
-                    self.refresh_exceptions(self.app.exceptions)
+            if new_exc or to_persist:
+                self.app.add_exceptions(new_exc + to_persist)
 
             if hasattr(self, 'from_entry') and self.from_entry:
                 self.from_entry.delete(0, 'end')
@@ -1003,6 +996,10 @@ class TabPlan:
             self._render_next_turno_card(None, today, personal)
             return
 
+        # Widgets ligeros (tk) y fuentes compartidas: CTk crea un canvas por widget
+        card_bg = P["bg_card2"]
+        btn_font = ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold")
+        reset_font = ctk.CTkFont(family=FONT_FAMILY, size=13)
         first_day = date(year, month, 1)
         last_day = date(year, month, calendar.monthrange(year, month)[1])
 
@@ -1038,16 +1035,18 @@ class TabPlan:
                     c_w.bind("<Leave>", _leave, add="+")
                 _attach_card_hover()
 
-            av = _avatar_ctk(card, _initials(person), av_color, size=28)
+            av = tk.Canvas(card, width=28, height=28, bg=card_bg, highlightthickness=0)
+            av.create_oval(0, 0, 27, 27, fill=av_color, outline="")
+            av.create_text(14, 14, text=_initials(person), fill="#FFFFFF", font=(FONT_FAMILY, 7, "bold"))
             av.grid(row=0, column=0, rowspan=2, padx=(10, 8), pady=6, sticky="w")
 
             name_text = _short_name(person, 2)
             if is_manual:
                 name_text = f"📌 {name_text}"
-            ctk.CTkLabel(
-                card, text=name_text,
-                font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
-                text_color=P["green"] if is_manual else P["text_ok"], anchor="w"
+            tk.Label(
+                card, text=name_text, bg=card_bg, anchor="w",
+                font=(FONT_FAMILY, 11, "bold"),
+                fg=P["green"] if is_manual else P["text_ok"]
             ).grid(row=0, column=1, sticky="sw", pady=(6, 0))
 
             date_text = f"{s.strftime('%d/%m')} → {e.strftime('%d/%m')}"
@@ -1055,13 +1054,13 @@ class TabPlan:
                 date_text += "  ·  puente"
             if is_current:
                 date_text = "● Actual  ·  " + date_text
-            ctk.CTkLabel(
-                card, text=date_text,
-                font=ctk.CTkFont(family=FONT_FAMILY, size=11),
-                text_color=P["accent"] if is_current else P["text_s"], anchor="w"
+            tk.Label(
+                card, text=date_text, bg=card_bg, anchor="w",
+                font=(FONT_FAMILY, 9),
+                fg=P["accent"] if is_current else P["text_s"]
             ).grid(row=1, column=1, sticky="nw", pady=(0, 6))
 
-            actions_f = ctk.CTkFrame(card, fg_color="transparent")
+            actions_f = tk.Frame(card, bg=card_bg)
             actions_f.grid(row=0, column=2, rowspan=2, padx=(4, 10), sticky="e")
 
             def _on_change(wk=week_key, cur_p=person, s_d=s, e_d=e):
@@ -1082,8 +1081,7 @@ class TabPlan:
                     self.app.set_manual_assignment(wk, chosen, motivo=motive)
 
             ctk.CTkButton(
-                actions_f, text="Cambiar",
-                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+                actions_f, text="Cambiar", font=btn_font,
                 fg_color=P["bg_input"], hover_color=P["bg_hover"],
                 border_width=1, border_color=P["border_h"],
                 text_color=P["text"], height=26, width=64,
@@ -1095,8 +1093,7 @@ class TabPlan:
                     self.app.clear_manual_assignment(wk)
 
                 ctk.CTkButton(
-                    actions_f, text="↺",
-                    font=ctk.CTkFont(family=FONT_FAMILY, size=13),
+                    actions_f, text="↺", font=reset_font,
                     fg_color=P["bg_card"], hover_color=P["red_d"],
                     border_width=1, border_color=P["border"],
                     text_color=P["text_s"], height=26, width=28,
@@ -1115,9 +1112,9 @@ class TabPlan:
                 detalle = ", ".join(f"{_short_name(sk['persona'], 2)} ({sk['tipo']})" for sk in salt)
                 notes.append((f"↷ Saltados: {detalle}", P["text_s"]))
             for n, (txt, col) in enumerate(notes):
-                ctk.CTkLabel(
-                    card, text=txt, text_color=col, anchor="w", justify="left",
-                    font=ctk.CTkFont(family=FONT_FAMILY, size=11), wraplength=380
+                tk.Label(
+                    card, text=txt, fg=col, bg=card_bg, anchor="w", justify="left",
+                    font=(FONT_FAMILY, 9), wraplength=380
                 ).grid(row=2 + n, column=0, columnspan=3, sticky="w", padx=10, pady=(0, 6))
 
         # Actualizar tarjeta de próximo turno (compatible con pruebas)

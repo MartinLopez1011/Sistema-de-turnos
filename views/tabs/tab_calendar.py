@@ -1,6 +1,7 @@
 import calendar
 from datetime import datetime, date, timedelta
 import tkinter as tk
+from tkinter import font as tkfont
 import customtkinter as ctk
 from tkinter import messagebox
 
@@ -327,7 +328,8 @@ class TabCalendar:
         _, days_in = calendar.monthrange(year, month)
 
         stats_row_offset = 0
-        n_exc = len(exceptions)
+        month_visible_excs = [e for e in exceptions if e['fecha'].month == month and e['fecha'].year == year]
+        n_exc = len(month_visible_excs)
         exception_summary = ctk.CTkFrame(self.vista_scroll, fg_color="transparent", height=28)
         exception_summary.grid(row=stats_row_offset, column=0, sticky="ew", padx=20, pady=(6, 0))
         exception_summary.grid_propagate(False)
@@ -394,11 +396,12 @@ class TabCalendar:
             ).pack(pady=(0, 20))
             return
 
-        # ── GRILLA ────────────────────────────────────────────────────────────
+        # ── GRILLA (un único Canvas: ~8 items por persona en vez de ~35 widgets) ──
         CELL_W = 33
         CELL_H = 48
         HDR_H = 56
         NAME_W = 220
+        AV = 28
 
         card_bg = P["past_tint"] if is_past_mo else P["bg_card"]
         cal_outer = ctk.CTkFrame(
@@ -407,32 +410,26 @@ class TabCalendar:
         )
         cal_outer.grid(row=stats_row_offset + 2, column=0, sticky="ew", padx=16, pady=(4, 16))
         cal_outer.grid_columnconfigure(0, weight=1)
-        cal_outer.grid_rowconfigure(0, weight=1)
 
-        cal_table = tk.Frame(cal_outer, bg=card_bg)
-        cal_table.grid(row=0, column=0, sticky="nsew")
-        cal_table.grid_columnconfigure(0, minsize=NAME_W)
-        for c in range(1, days_in + 1):
-            cal_table.grid_columnconfigure(c, minsize=CELL_W, weight=1, uniform="days")
-        cal_table.grid_columnconfigure(days_in + 1, weight=0)
-
-        # Header de la tabla
         hdr_bg = P["bg_hdr"] if not is_past_mo else "#0A0C14"
-        corner = tk.Frame(cal_table, bg=hdr_bg, width=NAME_W, height=HDR_H)
-        corner.grid(row=0, column=0, sticky="nsew")
-        corner.grid_propagate(False)
-        tk.Label(
-            corner, text="PERSONAL", bg=hdr_bg, fg=P["text_s"],
-            font=(FONT_FAMILY, 9, "bold"), anchor="w"
-        ).place(x=14, rely=0.5, anchor="w")
-        tk.Frame(corner, bg=P["border"], width=1).place(relx=1.0, rely=0, anchor="ne", relheight=1.0)
+        row_bg_e = P["bg_row_e"] if not is_past_mo else "#0C0E1C"
+        row_bg_o = P["bg_row_o"] if not is_past_mo else "#0E1020"
+        name_bg = P["bg_name"] if not is_past_mo else "#0A0C1E"
 
+        top = HDR_H + 2
+        canvas = tk.Canvas(
+            cal_outer, bg=card_bg, highlightthickness=0,
+            width=NAME_W + 20 * days_in, height=top + len(all_personas) * CELL_H
+        )
+        canvas.grid(row=0, column=0, sticky="ew", padx=1, pady=1)
+
+        # Modelo de datos de la grilla (se dibuja en _draw; sin widgets por celda)
+        header_days = []
         for d in range(1, days_in + 1):
             wd = date(year, month, d).weekday()
             is_we = wd >= 5
             is_today = is_cur_mo and today.day == d
             in_cw = d in cur_week_days
-
             if is_today:
                 bg = P["today"]
             elif in_cw:
@@ -441,101 +438,43 @@ class TabCalendar:
                 bg = P["weekend"] if not is_past_mo else "#0D0F1E"
             else:
                 bg = hdr_bg
-
-            df = tk.Frame(cal_table, bg=bg, width=CELL_W, height=HDR_H)
-            df.grid(row=0, column=d, sticky="nsew", padx=1, pady=2)
-            df.pack_propagate(False)
-
             tc_n = "#FFF" if is_today else (P["text_a"] if in_cw else (P["text_s"] if is_we else "#CBD5E1"))
             if is_past_mo and not is_today:
                 tc_n = "#3A4260"
+            header_days.append((d, DIAS[wd], bg, tc_n, "#93C5FD" if is_today else P["text_s"],
+                                "bold" if (is_today or in_cw) else "normal"))
 
-            tk.Label(
-                df, text=DIAS[wd], bg=bg,
-                fg=P["text_s"] if not is_today else "#93C5FD",
-                font=(FONT_FAMILY, 8)
-            ).pack(pady=(6, 0))
-            tk.Label(
-                df, text=str(d), bg=bg, fg=tc_n,
-                font=(FONT_FAMILY, 12, "bold" if is_today or in_cw else "normal")
-            ).pack(pady=(2, 6))
-
-        tk.Frame(cal_table, bg=P["border_h"], height=2).grid(row=1, column=0, columnspan=days_in + 1, sticky="ew")
-
-        # Filas de personal
-        row_bg_e = P["bg_row_e"] if not is_past_mo else "#0C0E1C"
-        row_bg_o = P["bg_row_o"] if not is_past_mo else "#0E1020"
-        name_bg = P["bg_name"] if not is_past_mo else "#0A0C1E"
-
+        interactive = not is_past_mo and not is_closed
+        rows = []
+        cell_map = {}
         for ri, persona in enumerate(all_personas):
             is_deleted = persona not in personal
-            p_turno = turno_days.get(persona, set())
-            av_color = AVATAR_PAL[ri % len(AVATAR_PAL)]
+            display_name = _short_name(persona, 4) + (" (Eliminado)" if is_deleted else "")
             row_bg = row_bg_e if ri % 2 == 0 else row_bg_o
-            rnum = ri + 2
-
-            name_f = tk.Frame(cal_table, bg=name_bg, width=NAME_W, height=CELL_H)
-            name_f.grid(row=rnum, column=0, sticky="nsew")
-            name_f.grid_propagate(False)
-
-            AV = 28
-            av_c = tk.Canvas(name_f, width=AV, height=AV, bg=name_bg, highlightthickness=0)
-            av_c.place(x=8, rely=0.5, anchor="w")
-            av_c.create_oval(0, 0, AV, AV, fill=av_color, outline="")
-            av_c.create_text(AV // 2, AV // 2, text=_initials(persona), fill="#FFF", font=(FONT_FAMILY, 8, "bold"))
-
-            display_name = _short_name(persona, 4)
-            if is_deleted:
-                display_name += " (Eliminado)"
-
-            lbl_n = tk.Label(
-                name_f, text=display_name,
-                bg=name_bg, fg=P["text"] if not is_past_mo else P["text_s"],
-                font=(FONT_FAMILY, 10, "bold" if not is_deleted else "italic"), anchor="w"
-            )
-            lbl_n.place(x=AV + 14, rely=0.5, anchor="w", width=NAME_W - AV - 18)
-
-            border_line = tk.Frame(name_f, bg=P["border"], width=1)
-            border_line.place(relx=1.0, x=-1, rely=0, anchor="ne", relheight=1.0)
-
-            # Hover ligero en la tarjeta del nombre
-            def _bind_name_hover(f=name_f, l=lbl_n, base=name_bg):
-                hover_bg = P["bg_hover"]
-                f.bind("<Enter>", lambda e: (f.configure(bg=hover_bg), l.configure(bg=hover_bg)))
-                f.bind("<Leave>", lambda e: (f.configure(bg=base), l.configure(bg=base)))
-                l.bind("<Enter>", lambda e: (f.configure(bg=hover_bg), l.configure(bg=hover_bg)))
-                l.bind("<Leave>", lambda e: (f.configure(bg=base), l.configure(bg=base)))
-            _bind_name_hover()
+            rows.append({
+                "initials": _initials(persona), "name": display_name,
+                "av": AVATAR_PAL[ri % len(AVATAR_PAL)], "deleted": is_deleted,
+            })
+            p_turno = turno_days.get(persona, set())
+            p_manual = manual_shift_days.get(persona, set())
+            p_warn = warning_days.get(persona, set())
+            p_short = _short_name(persona, 2)
 
             for d in range(1, days_in + 1):
-                wd = date(year, month, d).weekday()
-                is_we = wd >= 5
+                is_we = date(year, month, d).weekday() >= 5
                 exc_tipo = exc_map.get((persona, d))
                 has_t = d in p_turno
                 in_cw = d in cur_week_days
+                is_man = d in p_manual
 
-                is_man = d in manual_shift_days.get(persona, set())
-
-                if exc_tipo == "DA":
-                    bg, txt, tc, bold = P["da"], "DA", "#FFF", True
-                elif exc_tipo == "FL":
-                    bg, txt, tc, bold = P["fl"], "FL", "#FFF", True
-                elif exc_tipo == "LIC":
-                    bg, txt, tc, bold = P["lic"], "LIC", "#FFF", True
-                elif exc_tipo == "OTR":
-                    bg, txt, tc, bold = P["otr"], "OTR", "#FFF", True
-                elif exc_tipo == "FOR":
-                    bg, txt, tc, bold = P["for"], "FOR", "#FFF", True
+                if exc_tipo in ("DA", "FL", "LIC", "OTR", "FOR"):
+                    bg = P[exc_tipo.lower()]
+                    txt, tc, bold = exc_tipo, "#FFF", True
                 elif has_t:
-                    if d in warning_days.get(persona, set()):
+                    if d in p_warn:
                         bg = P["orange"]
                     elif is_man:
-                        if is_past_mo:
-                            bg = "#064E3B"
-                        elif in_cw:
-                            bg = "#10B981"
-                        else:
-                            bg = P["for"]
+                        bg = "#064E3B" if is_past_mo else ("#10B981" if in_cw else P["for"])
                     elif is_past_mo:
                         bg = "#5A1010"
                     elif in_cw:
@@ -551,15 +490,6 @@ class TabCalendar:
                 else:
                     bg, txt, tc, bold = row_bg, "", P["text_s"], False
 
-                cell = tk.Label(
-                    cal_table, text=txt, bg=bg, fg=tc,
-                    font=(FONT_FAMILY, 10, "bold" if bold else "normal"),
-                    width=3, height=2, anchor="center"
-                )
-                cell.grid(row=rnum, column=d, sticky="nsew", padx=1, pady=2)
-
-                # Mensaje interactivo contextual en la barra inferior al posar el cursor
-                p_short = _short_name(persona, 2)
                 m_text = None
                 if has_t:
                     if is_man:
@@ -577,74 +507,147 @@ class TabCalendar:
                     mot = exc_motives.get((persona, d), "")
                     mot_str = f" — Motivo: {mot}" if mot else ""
                     m_text = f"⭐ Permiso especial (OTR): {p_short} (Día {d}){mot_str}"
-                elif not is_deleted and not is_past_mo and not is_closed:
+                elif not is_deleted and interactive:
                     m_text = f"➕ Clic para registrar excepción a {p_short} el día {d}"
 
-                # Color de realce al posar el cursor (hover)
                 if has_t:
-                    if d in warning_days.get(persona, set()):
-                        cell_hov = "#EA580C"
+                    if d in p_warn:
+                        hov = "#EA580C"
                     elif is_man:
-                        cell_hov = "#10B981"
+                        hov = "#10B981"
                     elif is_past_mo:
-                        cell_hov = "#7F1D1D"
+                        hov = "#7F1D1D"
                     else:
-                        cell_hov = P["turno_h"]
+                        hov = P["turno_h"]
                 elif exc_tipo == "DA":
-                    cell_hov = "#D97706"
+                    hov = "#D97706"
                 elif exc_tipo == "FL":
-                    cell_hov = "#7C3AED"
+                    hov = "#7C3AED"
                 elif exc_tipo == "LIC":
-                    cell_hov = "#0891B2"
+                    hov = "#0891B2"
                 elif exc_tipo == "OTR":
-                    cell_hov = "#4B5563"
+                    hov = "#4B5563"
                 elif exc_tipo == "FOR":
-                    cell_hov = "#10B981"
+                    hov = "#10B981"
                 elif in_cw:
-                    cell_hov = "#202E54"
+                    hov = "#202E54"
                 elif is_we:
-                    cell_hov = "#222938"
+                    hov = "#222938"
                 else:
-                    cell_hov = P["bg_hover"]
+                    hov = P["bg_hover"]
 
-                # Enlazar hover visual y mensaje contextual con debouncing
-                def _bind_cell(c=cell, base=bg, hov=cell_hov, msg=m_text):
-                    def _enter(e):
-                        try:
-                            if c.winfo_exists():
-                                c.configure(bg=hov)
-                        except Exception:
-                            pass
-                        if msg:
-                            self._on_cell_enter(msg)
+                cell_map[(ri, d)] = {
+                    "bg": bg, "txt": txt, "tc": tc, "bold": bold, "hov": hov, "msg": m_text,
+                    "click": (persona, d, exc_tipo) if (not is_deleted and interactive) else None,
+                }
 
-                    def _leave(e):
-                        try:
-                            if c.winfo_exists():
-                                c.configure(bg=base)
-                        except Exception:
-                            pass
-                        if msg:
-                            self._on_cell_leave()
+        name_font = tkfont.Font(family=FONT_FAMILY, size=10, weight="bold")
+        name_fg = P["text"] if not is_past_mo else P["text_s"]
+        st = {"w": 0, "cw": CELL_W, "hover": None, "rect": {}}
 
-                    c.bind("<Enter>", _enter)
-                    c.bind("<Leave>", _leave)
+        def _fit(text, maxw):
+            if name_font.measure(text) <= maxw:
+                return text
+            while text and name_font.measure(text + "…") > maxw:
+                text = text[:-1]
+            return text + "…"
 
-                _bind_cell()
+        def _draw(width):
+            canvas.delete("all")
+            st["rect"].clear()
+            st["hover"] = None
+            st["w"] = width
+            cw = max(20, (width - NAME_W) / days_in)
+            st["cw"] = cw
+            canvas.create_rectangle(0, 0, NAME_W, HDR_H, fill=hdr_bg, outline="")
+            canvas.create_text(14, HDR_H / 2, text="PERSONAL", anchor="w",
+                               fill=P["text_s"], font=(FONT_FAMILY, 9, "bold"))
+            for d, dia, bg, tc_n, tc_d, wgt in header_days:
+                x0 = NAME_W + (d - 1) * cw
+                canvas.create_rectangle(x0 + 1, 2, x0 + cw - 1, HDR_H - 2, fill=bg, outline="")
+                canvas.create_text(x0 + cw / 2, 18, text=dia, fill=tc_d, font=(FONT_FAMILY, 8))
+                canvas.create_text(x0 + cw / 2, 39, text=str(d), fill=tc_n, font=(FONT_FAMILY, 12, wgt))
+            canvas.create_rectangle(0, HDR_H, width, top, fill=P["border_h"], outline="")
 
-                if not is_deleted and not is_past_mo and not is_closed:
-                    try:
-                        cell.configure(cursor="hand2")
-                    except Exception:
-                        pass
-                    handler = lambda e, p=persona, day=d, exc=exc_tipo, y=year, m=month: self._handle_calendar_click(p, day, exc, y, m)
-                    cell.bind("<Button-1>", handler)
+            for ri, row in enumerate(rows):
+                y0 = top + ri * CELL_H
+                st["rect"][("n", ri)] = canvas.create_rectangle(0, y0, NAME_W, y0 + CELL_H, fill=name_bg, outline="")
+                canvas.create_oval(8, y0 + CELL_H / 2 - AV / 2, 8 + AV, y0 + CELL_H / 2 + AV / 2,
+                                   fill=row["av"], outline="")
+                canvas.create_text(8 + AV / 2, y0 + CELL_H / 2, text=row["initials"], fill="#FFF",
+                                   font=(FONT_FAMILY, 8, "bold"))
+                canvas.create_text(AV + 14, y0 + CELL_H / 2, anchor="w", text=_fit(row["name"], NAME_W - AV - 22),
+                                   fill=name_fg, font=(FONT_FAMILY, 10, "italic" if row["deleted"] else "bold"))
+                if ri < len(rows) - 1:
+                    canvas.create_rectangle(0, y0 + CELL_H - 1, width, y0 + CELL_H, fill=P["sep"], outline="")
+                for d in range(1, days_in + 1):
+                    c = cell_map[(ri, d)]
+                    x0 = NAME_W + (d - 1) * cw
+                    st["rect"][("c", ri, d)] = canvas.create_rectangle(
+                        x0 + 1, y0 + 2, x0 + cw - 1, y0 + CELL_H - 2, fill=c["bg"], outline="")
+                    if c["txt"]:
+                        canvas.create_text(x0 + cw / 2, y0 + CELL_H / 2, text=c["txt"], fill=c["tc"],
+                                           font=(FONT_FAMILY, 10, "bold" if c["bold"] else "normal"))
+            canvas.create_rectangle(NAME_W - 1, 0, NAME_W, top + len(rows) * CELL_H, fill=P["border"], outline="")
 
-            if ri < len(personal) - 1:
-                tk.Frame(cal_table, bg=P["sep"], height=1).grid(
-                    row=rnum, column=0, columnspan=days_in + 1, sticky="s"
-                )
+        def _target(ev):
+            if ev.y < top:
+                return None
+            ri = int((ev.y - top) // CELL_H)
+            if ri >= len(rows):
+                return None
+            if ev.x < NAME_W:
+                return ("n", ri)
+            d = int((ev.x - NAME_W) // st["cw"]) + 1
+            return ("c", ri, d) if 1 <= d <= days_in else None
 
+        def _apply(target, on):
+            rid = st["rect"].get(target)
+            if rid is None:
+                return None
+            if target[0] == "n":
+                canvas.itemconfigure(rid, fill=P["bg_hover"] if on else name_bg)
+                return None
+            c = cell_map[(target[1], target[2])]
+            canvas.itemconfigure(rid, fill=c["hov"] if on else c["bg"])
+            return c
+
+        def _set_hover(target):
+            old = st["hover"]
+            if target == old:
+                return
+            if old is not None:
+                c = _apply(old, False)
+                if c and c["msg"]:
+                    self._on_cell_leave()
+            st["hover"] = target
+            cursor = ""
+            if target is not None:
+                c = _apply(target, True)
+                if c:
+                    if c["msg"]:
+                        self._on_cell_enter(c["msg"])
+                    if c["click"]:
+                        cursor = "hand2"
+            canvas.configure(cursor=cursor)
+
+        def _on_click(ev):
+            t = _target(ev)
+            if t and t[0] == "c":
+                c = cell_map[(t[1], t[2])]
+                if c["click"]:
+                    persona, day, exc = c["click"]
+                    self._handle_calendar_click(persona, day, exc, year, month)
+
+        def _on_configure(ev):
+            if int(ev.width) != st["w"]:
+                _draw(int(ev.width))
+
+        canvas.bind("<Motion>", lambda ev: _set_hover(_target(ev)))
+        canvas.bind("<Leave>", lambda ev: _set_hover(None))
+        canvas.bind("<Button-1>", _on_click)
+        canvas.bind("<Configure>", _on_configure)
+        _draw(int(canvas.cget("width")))
 
 
     def _handle_calendar_click(self, persona, day, exc_tipo, c_year, c_month):

@@ -644,6 +644,8 @@ class ShiftManager:
         seen = set()
         for pkey in relevant_keys:
             for exc in self.get_exceptions(pkey):
+                if not (min_date <= exc['fecha'] <= max_date):
+                    continue
                 key = (exc['persona'], exc['fecha'])
                 if key not in seen:
                     seen.add(key)
