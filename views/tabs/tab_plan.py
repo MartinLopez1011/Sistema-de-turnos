@@ -1045,7 +1045,7 @@ class TabPlan:
 
             av = tk.Canvas(card, width=28, height=28, bg=card_bg, highlightthickness=0)
             av.create_oval(0, 0, 27, 27, fill=av_color, outline="")
-            av.create_text(14, 14, text=_initials(person), fill="#FFFFFF", font=(FONT_FAMILY, 9, "bold"))
+            av.create_text(14, 14, text=_initials(person), fill="#FFFFFF", font=(FONT_FAMILY, 7, "bold"))
             av.grid(row=0, column=0, rowspan=2, padx=(10, 8), pady=6, sticky="w")
 
             name_text = _short_name(person, 2)
@@ -1053,7 +1053,7 @@ class TabPlan:
                 name_text = f"📌 {name_text}"
             tk.Label(
                 card, text=name_text, bg=card_bg, anchor="w",
-                font=(FONT_FAMILY, 13, "bold"),
+                font=(FONT_FAMILY, 11, "bold"),
                 fg=P["green"] if is_manual else P["text_ok"]
             ).grid(row=0, column=1, sticky="sw", pady=(6, 0))
 
@@ -1064,7 +1064,7 @@ class TabPlan:
                 date_text = "● Actual  ·  " + date_text
             tk.Label(
                 card, text=date_text, bg=card_bg, anchor="w",
-                font=(FONT_FAMILY, 11),
+                font=(FONT_FAMILY, 9),
                 fg=P["accent"] if is_current else P["text_s"]
             ).grid(row=1, column=1, sticky="nw", pady=(0, 6))
 
@@ -1122,7 +1122,7 @@ class TabPlan:
             for n, (txt, col) in enumerate(notes):
                 tk.Label(
                     card, text=txt, fg=col, bg=card_bg, anchor="w", justify="left",
-                    font=(FONT_FAMILY, 11), wraplength=380
+                    font=(FONT_FAMILY, 9), wraplength=380
                 ).grid(row=2 + n, column=0, columnspan=3, sticky="w", padx=10, pady=(0, 6))
 
         # Actualizar tarjeta de próximo turno (compatible con pruebas)
