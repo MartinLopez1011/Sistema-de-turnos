@@ -53,8 +53,7 @@ Este sistema resuelve de raíz dichos problemas integrando un **motor algorítmi
 - **Modal de Carga Animado (`LoadingModal`):** Cuadro de diálogo modal no bloqueante con barra de progreso indeterminada, títulos e íconos dinámicos (💾 -> 📊 -> 📧) que acompaña operaciones asíncronas (guardar mes, compilar planilla Excel y despachar correos), impidiendo clics accidentales duplicados.
 - **Pestaña 📋 Planificación:**
   - Selector ágil de mes y año con previsualización en tiempo real.
-  - **Tarjeta Dinámica de Turno:** Muestra el funcionario con guardia en curso (`● GUARDIA EN CURSO`) o la fecha y funcionario del próximo turno proyectado (`⏳ PRÓXIMO TURNO`), con avatar, iniciales y rango de fechas.
-  - **Ingreso Flexible de Excepciones y Licencias por Rango de Fechas:** Admite fechas directas (`DD/MM/AAAA`) con campos 'Desde' y 'Hasta' y selector de mini-calendario emergente (📅), permitiendo registrar periodos continuos que cruzan meses (ej: 30 de octubre al 11 de noviembre), o días individuales y rangos rápidos. Cuenta con agrupación visual por rangos continuos en la lista, guardado automático persistente y filtros de visualización (Mes actual / Todas).
+  - **Ingreso Flexible de Excepciones y Licencias (Días Múltiples y Rangos):** Selector interactivo de calendario modal (📅) con selección múltiple interactiva (toggle de múltiples fechas discontinuas o continuas), contador en tiempo real, campos directos 'Desde' / 'Hasta', soporte de listas de fechas separadas por comas (ej: `04/10/2026, 12/10/2026, 18/10/2026`) y periodos que cruzan meses. Cuenta con agrupación visual por rangos continuos en la lista, guardado automático persistente y filtros de visualización (Mes actual / Todas).
   - Validación estricta para excepciones tipo `OTR` (motivo obligatorio de al menos 3 caracteres).
   - **Tarjetas Semanales Interactivas:** Detalle de fechas, semana actual destacada (`● ACTUAL`), funcionario asignado, estado (`🤖 AUTOMÁTICO` o `📌 MANUAL`), diálogo modal de cambio (`ChangeShiftDialog`), visualización del motivo y desglose de saltados (`↷`).
   - Detección de cambios sucios en tiempo real mediante indicador visual en el título (`● Sistema de Turnos`) y botón `💾 Guardar mes ●`, con confirmación de seguridad al cerrar la aplicación (`WM_DELETE_WINDOW`).
@@ -303,8 +302,7 @@ Diseñado específicamente para computadores de funcionarios y estaciones de tra
 ### 1. Iniciar la Planificación Mensual
 1. Inicia la aplicación.
 2. En la pestaña **📋 Planificación**, selecciona el **mes** y **año** a coordinar.
-3. Observa la tarjeta superior: indicará el funcionario actualmente de guardia (`● GUARDIA EN CURSO`) o el próximo proyectado (`⏳ PRÓXIMO TURNO`).
-4. Revisa las tarjetas semanales calculadas automáticamente por el algoritmo según la rotación continua, pendientes y descanso mínimo de 4 semanas.
+3. Revisa las tarjetas semanales calculadas automáticamente por el algoritmo según la rotación continua, pendientes y descanso mínimo de 4 semanas.
 
 ### 2. Registrar Excepciones (Permisos, Vacaciones, Licencias)
 Cuando un funcionario no esté disponible en determinadas fechas:

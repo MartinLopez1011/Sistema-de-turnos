@@ -24,6 +24,8 @@ class TabSettings:
         self.settings_status_label = None
         self.person_list_frame = None
         self.person_count_badge = None
+        self.person_search_var = None
+        self.person_search_entry = None
         self.btn_copy_github = None
         self.backup_status_label = None
         self.audit_textbox = None
@@ -97,11 +99,37 @@ class TabSettings:
         )
         btn_add.pack(side="right")
 
+        # Barra de herramientas: Búsqueda rápida
+        self.person_search_var = ctk.StringVar()
+        search_f = ctk.CTkFrame(person_card, fg_color="transparent")
+        search_f.grid(row=1, column=0, sticky="ew", padx=20, pady=(6, 8))
+        search_f.grid_columnconfigure(0, weight=1)
+
+        self.person_search_entry = ctk.CTkEntry(
+            search_f, placeholder_text="🔍  Buscar funcionario por nombre o correo...",
+            textvariable=self.person_search_var,
+            fg_color=P["bg_input"], border_color=P["border"], border_width=1,
+            height=34, font=ctk.CTkFont(family=FONT_FAMILY, size=12)
+        )
+        self.person_search_entry.grid(row=0, column=0, sticky="ew", padx=(0, 8))
+        self.person_search_entry.bind("<KeyRelease>", lambda _: self.refresh_person_list())
+
+        def _clear_search():
+            self.person_search_var.set("")
+            self.refresh_person_list()
+
+        ctk.CTkButton(
+            search_f, text="✕", width=34, height=34, corner_radius=6,
+            fg_color=P["bg_input"], hover_color=P["bg_hover"], text_color=P["text_s"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            cursor="hand2", command=_clear_search
+        ).grid(row=0, column=1)
+
         self.person_list_frame = ctk.CTkScrollableFrame(
-            person_card, fg_color="transparent", height=340,
+            person_card, fg_color="transparent", height=360,
             scrollbar_button_color=P["border_h"]
         )
-        self.person_list_frame.grid(row=1, column=0, padx=10, pady=(10, 20), sticky="nsew")
+        self.person_list_frame.grid(row=2, column=0, padx=10, pady=(4, 18), sticky="nsew")
 
         # ── Barra Desplegable: Ajustes Avanzados ───────────────────────────────
         advanced_bar = ctk.CTkFrame(
@@ -677,11 +705,24 @@ class TabSettings:
         for w in self.person_list_frame.winfo_children():
             w.destroy()
 
-        persons = self.controller.get_all_persons()
+        all_persons = self.controller.get_all_persons()
         if hasattr(self, "person_count_badge") and self.person_count_badge:
-            count = len(persons)
+            count = len(all_persons)
             self.person_count_badge.configure(text=f"·  👥 {count} funcionario{'s' if count != 1 else ''} activo{'s' if count != 1 else ''}")
-        if not persons and type(self.person_list_frame).__name__ not in ("MagicMock", "Mock"):
+
+        search_query = ""
+        if hasattr(self, "person_search_var") and self.person_search_var and hasattr(self.person_search_var, "get"):
+            search_query = self.person_search_var.get().strip().lower()
+
+        if search_query:
+            persons = [
+                p for p in all_persons
+                if search_query in p.get('nombre', '').lower() or search_query in p.get('email', '').lower()
+            ]
+        else:
+            persons = all_persons
+
+        if not all_persons and type(self.person_list_frame).__name__ not in ("MagicMock", "Mock"):
             empty_card = ctk.CTkFrame(
                 self.person_list_frame, fg_color=P["bg_card2"], corner_radius=10,
                 border_width=1, border_color=P["border"]
@@ -694,82 +735,129 @@ class TabSettings:
                 text_color=P["text_s"], justify="center"
             ).pack(padx=20, pady=20)
 
+        elif search_query and not persons and type(self.person_list_frame).__name__ not in ("MagicMock", "Mock"):
+            empty_search = ctk.CTkFrame(
+                self.person_list_frame, fg_color=P["bg_card2"], corner_radius=10,
+                border_width=1, border_color=P["border"]
+            )
+            empty_search.pack(fill="x", padx=10, pady=24)
+            ctk.CTkLabel(
+                empty_search,
+                text=f"🔍  No se encontraron funcionarios que coincidan con \"{search_query}\".",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=13),
+                text_color=P["text_s"], justify="center"
+            ).pack(padx=20, pady=18)
+
         for i, p in enumerate(persons):
+            orig_idx = all_persons.index(p) if p in all_persons else i
+            is_start_person = (orig_idx == 0)
+
             row_f = ctk.CTkFrame(
                 self.person_list_frame,
-                fg_color=P["bg_row_e"] if i % 2 == 0 else P["bg_row_o"],
-                corner_radius=8, border_width=1, border_color=P["border"]
+                fg_color=P["bg_card2"],
+                corner_radius=10, border_width=1, border_color=P["border"]
             )
-            row_f.pack(fill="x", pady=2, padx=4)
+            row_f.pack(fill="x", pady=3, padx=6)
+            row_f.grid_columnconfigure(0, minsize=42)
+            row_f.grid_columnconfigure(1, minsize=46)
+            row_f.grid_columnconfigure(2, weight=3)
+            row_f.grid_columnconfigure(3, weight=3)
+            row_f.grid_columnconfigure(4, minsize=210)
 
-            info_f = ctk.CTkFrame(row_f, fg_color="transparent")
-            info_f.pack(side="left", padx=10, pady=8, fill="x", expand=True)
-
-            av_color = AVATAR_PAL[i % len(AVATAR_PAL)]
-            av = _avatar_ctk(info_f, _initials(p['nombre']), av_color, size=28)
-            av.pack(side="left", padx=(0, 10))
-
-            id_pill = ctk.CTkFrame(info_f, fg_color=P["bg_input"], corner_radius=4)
-            id_pill.pack(side="left", padx=(0, 8))
+            # Columna 0: ID Pill
+            id_pill = ctk.CTkFrame(row_f, fg_color=P["bg_input"], corner_radius=6)
+            id_pill.grid(row=0, column=0, padx=(12, 6), pady=8, sticky="w")
             ctk.CTkLabel(
                 id_pill, text=f"#{p['id']}", text_color=P["text_s"],
-                font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold")
-            ).pack(padx=5, pady=1)
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold")
+            ).pack(padx=6, pady=2)
+
+            # Columna 1: Avatar
+            av_color = AVATAR_PAL[orig_idx % len(AVATAR_PAL)]
+            av = _avatar_ctk(row_f, _initials(p['nombre']), av_color, size=32)
+            av.grid(row=0, column=1, padx=(4, 10), pady=6, sticky="w")
+
+            # Columna 2: Nombre + Badge Inicio de rotación si corresponde
+            name_box = ctk.CTkFrame(row_f, fg_color="transparent")
+            name_box.grid(row=0, column=2, padx=6, pady=6, sticky="w")
 
             ctk.CTkLabel(
-                info_f, text=p['nombre'], text_color=P["text"],
-                font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold" if i == 0 else "normal")
-            ).pack(side="left", padx=(0, 12))
+                name_box, text=p['nombre'], text_color=P["text"],
+                font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold")
+            ).pack(side="left", anchor="w")
 
+            if is_start_person:
+                start_badge = ctk.CTkFrame(name_box, fg_color=P["today_bg"], corner_radius=5)
+                start_badge.pack(side="left", padx=(10, 0))
+                ctk.CTkLabel(
+                    start_badge, text="👑 Inicio",
+                    font=ctk.CTkFont(family=FONT_FAMILY, size=10, weight="bold"),
+                    text_color=P["accent"]
+                ).pack(padx=6, pady=1)
+
+            # Columna 3: Correo electrónico con chip estilizado
             p_email = p.get('email', '')
             if p_email:
+                mail_chip = ctk.CTkFrame(row_f, fg_color=P["bg_input"], corner_radius=6)
+                mail_chip.grid(row=0, column=3, padx=6, pady=6, sticky="w")
                 ctk.CTkLabel(
-                    info_f, text=f"✉ {p_email}", text_color=P["text_s"],
+                    mail_chip, text=f"✉ {p_email}", text_color=P["text_s"],
                     font=ctk.CTkFont(family=FONT_FAMILY, size=12)
-                ).pack(side="left")
+                ).pack(padx=8, pady=3)
             else:
+                warn_chip = ctk.CTkFrame(row_f, fg_color="#2E2010", corner_radius=6, border_width=1, border_color=P["orange"])
+                warn_chip.grid(row=0, column=3, padx=6, pady=6, sticky="w")
                 ctk.CTkLabel(
-                    info_f, text="⚠ Sin correo registrado", text_color=P["orange"],
+                    warn_chip, text="⚠ Sin correo registrado", text_color=P["orange"],
                     font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold")
-                ).pack(side="left")
+                ).pack(padx=8, pady=2)
 
-            btn_del = ctk.CTkButton(
-                row_f, text="Eliminar", width=64, height=26, corner_radius=6,
-                fg_color=P["red_d"], hover_color=P["red"], cursor="hand2",
-                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
-                command=lambda pid=p['id'], pname=p['nombre']: self._on_delete_person(pid, pname)
-            )
-            btn_del.pack(side="right", padx=(4, 10), pady=6)
+            # Columna 4: Barra de acciones agrupada
+            actions_box = ctk.CTkFrame(row_f, fg_color="transparent")
+            actions_box.grid(row=0, column=4, padx=(6, 12), pady=6, sticky="e")
 
-            btn_edit = ctk.CTkButton(
-                row_f, text="✏️ Editar", width=68, height=26, corner_radius=6,
-                fg_color=P["accent_d"], hover_color=P["accent"], cursor="hand2",
-                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
-                command=lambda pid=p['id'], pname=p['nombre']: self._on_edit_person(pid, pname)
-            )
-            btn_edit.pack(side="right", padx=4, pady=6)
-
-            btn_down = ctk.CTkButton(
-                row_f, text="↓", width=26, height=26, corner_radius=6,
-                fg_color=P["bg_card2"], hover_color=P["border_h"], text_color=P["text_s"],
-                cursor="hand2",
-                font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
-                command=lambda pid=p['id']: self._on_move_down(pid)
-            )
-            btn_down.pack(side="right", padx=(2, 6), pady=6)
-            if i == len(persons) - 1:
-                btn_down.configure(state="disabled")
-
+            # Botones de reordenamiento
             btn_up = ctk.CTkButton(
-                row_f, text="↑", width=26, height=26, corner_radius=6,
-                fg_color=P["bg_card2"], hover_color=P["border_h"], text_color=P["text_s"],
+                actions_box, text="↑", width=28, height=28, corner_radius=6,
+                fg_color=P["bg_input"], hover_color=P["border_h"], text_color=P["text_s"],
                 cursor="hand2",
                 font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
                 command=lambda pid=p['id']: self._on_move_up(pid)
             )
-            btn_up.pack(side="right", padx=(6, 2), pady=6)
-            if i == 0:
+            btn_up.pack(side="left", padx=2)
+            if orig_idx == 0 or bool(search_query):
                 btn_up.configure(state="disabled")
+
+            btn_down = ctk.CTkButton(
+                actions_box, text="↓", width=28, height=28, corner_radius=6,
+                fg_color=P["bg_input"], hover_color=P["border_h"], text_color=P["text_s"],
+                cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+                command=lambda pid=p['id']: self._on_move_down(pid)
+            )
+            btn_down.pack(side="left", padx=2)
+            if orig_idx == len(all_persons) - 1 or bool(search_query):
+                btn_down.configure(state="disabled")
+
+            # Botón Editar
+            btn_edit = ctk.CTkButton(
+                actions_box, text="✏️ Editar", width=72, height=28, corner_radius=6,
+                fg_color=P["accent_d"], hover_color=P["accent"], cursor="hand2",
+                text_color="#FFFFFF",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+                command=lambda pid=p['id'], pname=p['nombre']: self._on_edit_person(pid, pname)
+            )
+            btn_edit.pack(side="left", padx=(6, 2))
+
+            # Botón Eliminar
+            btn_del = ctk.CTkButton(
+                actions_box, text="🗑️ Eliminar", width=78, height=28, corner_radius=6,
+                fg_color=P["red_d"], hover_color=P["red"], cursor="hand2",
+                text_color="#FFFFFF",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+                command=lambda pid=p['id'], pname=p['nombre']: self._on_delete_person(pid, pname)
+            )
+            btn_del.pack(side="left", padx=2)
 
             _make_row_hover(row_f, [(row_f, row_f.cget("fg_color"))])
 

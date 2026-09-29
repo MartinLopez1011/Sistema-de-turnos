@@ -11,7 +11,7 @@ from views.theme import P, MESES, FONT_FAMILY
 from views.tabs.tab_plan import TabPlan
 from views.tabs.tab_calendar import TabCalendar
 from views.tabs.tab_settings import TabSettings
-from views.components.dialogs import LoadingModal
+from views.components.dialogs import LoadingModal, CustomConfirmDialog, CustomAlertDialog
 from views.components.widgets import _short_name
 from utils.logger import get_logger
 from utils.email_notifier import (
@@ -606,17 +606,21 @@ class TurnosApp(ctk.CTk):
 
     def _on_close(self):
         if self.is_exporting:
-            messagebox.showwarning(
-                "Operación en curso",
-                "Hay una operación de guardado o envío de correo en curso.\nEspera a que termine antes de cerrar.",
-                parent=self
+            CustomAlertDialog.show(
+                self,
+                title="Operación en curso",
+                message="Hay una operación de guardado o envío de correo en curso.\n\nEspera a que termine antes de cerrar.",
+                icon="warning"
             )
             return
         if self.title().startswith("●"):
-            if not messagebox.askyesno(
-                "Cambios sin guardar",
-                "Hay cambios sin guardar en el periodo actual.\n¿Deseas salir de todas formas?",
-                parent=self
+            if not CustomConfirmDialog.show(
+                self,
+                title="Cambios sin guardar",
+                prompt="Hay cambios sin guardar en el periodo actual.\n\n¿Deseas salir de todas formas?",
+                is_danger=True,
+                confirm_text="Salir",
+                cancel_text="Permanecer"
             ):
                 return
 
@@ -656,10 +660,11 @@ class TurnosApp(ctk.CTk):
             year, month, exceptions_snapshot, manual_assignments=manual_snapshot
         )
         if validation_errors:
-            messagebox.showerror(
-                "No se puede cerrar el mes",
-                "\n".join(f"• {error}" for error in validation_errors),
-                parent=self
+            CustomAlertDialog.show(
+                self,
+                title="No se puede cerrar el mes",
+                message="\n".join(f"• {error}" for error in validation_errors),
+                icon="error"
             )
             return
 
@@ -668,13 +673,16 @@ class TurnosApp(ctk.CTk):
             notif_cfg = self.controller.get_notification_settings()
             webhook_url = notif_cfg.get("webhook_url", "").strip()
             if not smtp_available and not webhook_url:
-                messagebox.showerror(
-                    "Configuración Requerida",
-                    "Existen asignaciones manuales en este mes.\n\n"
-                    "Para guardar un cambio manual de turno es obligatorio notificar a todos los funcionarios, "
-                    "pero no hay ningún servicio de correo configurado.\n\n"
-                    "Configura las credenciales SMTP en la pestaña 'Ajustes' o en el archivo .env.",
-                    parent=self
+                CustomAlertDialog.show(
+                    self,
+                    title="Configuración Requerida",
+                    message=(
+                        "Existen asignaciones manuales en este mes.\n\n"
+                        "Para guardar un cambio manual de turno es obligatorio notificar a todos los funcionarios, "
+                        "pero no hay ningún servicio de correo configurado.\n\n"
+                        "Configura las credenciales SMTP en la pestaña 'Ajustes' o en el archivo .env."
+                    ),
+                    icon="warning"
                 )
                 return
 
@@ -682,23 +690,29 @@ class TurnosApp(ctk.CTk):
             all_emails_ok, missing_emails = self.controller.validate_all_emails_registered()
             if not all_emails_ok:
                 nombres_str = "\n".join(f"  • {nom}" for nom in missing_emails)
-                messagebox.showerror(
-                    "Correos Incompletos",
-                    "Existen asignaciones manuales en este mes y la notificación es obligatoria para todo el equipo.\n\n"
-                    f"Los siguientes funcionarios no tienen correo registrado o es inválido:\n{nombres_str}\n\n"
-                    "Ingresa a la pestaña 'Ajustes > Gestión de Personal' y completa los correos antes de guardar.",
-                    parent=self
+                CustomAlertDialog.show(
+                    self,
+                    title="Correos Incompletos",
+                    message=(
+                        "Existen asignaciones manuales en este mes y la notificación es obligatoria para todo el equipo.\n\n"
+                        f"Los siguientes funcionarios no tienen correo registrado o es inválido:\n{nombres_str}\n\n"
+                        "Ingresa a la pestaña 'Ajustes > Gestión de Personal' y completa los correos antes de guardar."
+                    ),
+                    icon="warning"
                 )
                 return
 
             # 3. Validar conexión a Internet
             if not check_internet_connection():
-                messagebox.showerror(
-                    "Sin Conexión a Internet",
-                    "No se puede guardar el mes con cambios manuales sin conexión a Internet.\n\n"
-                    "Es obligatorio enviar la notificación de aviso a los funcionarios. "
-                    "Verifica tu conexión a Internet e inténtalo nuevamente.",
-                    parent=self
+                CustomAlertDialog.show(
+                    self,
+                    title="Sin Conexión a Internet",
+                    message=(
+                        "No se puede guardar el mes con cambios manuales sin conexión a Internet.\n\n"
+                        "Es obligatorio enviar la notificación de aviso a los funcionarios. "
+                        "Verifica tu conexión a Internet e inténtalo nuevamente."
+                    ),
+                    icon="error"
                 )
                 return
 
@@ -710,14 +724,19 @@ class TurnosApp(ctk.CTk):
         elif has_manual:
             aviso_correo = "\n\n⚠ Se enviará una notificación por correo a TODOS los funcionarios."
 
-        confirmed = messagebox.askyesno(
-            "Guardar mes",
-            f"¿Guardar {MESES[month-1]} {year} en el historial?\n\n"
-            f"  • {len(exceptions_snapshot)} excepción{'es' if len(exceptions_snapshot) != 1 else ''} registrada{'s' if len(exceptions_snapshot) != 1 else ''}.\n"
-            f"  • {len(manual_snapshot)} asignación{'es' if len(manual_snapshot) != 1 else ''} manual{'es' if len(manual_snapshot) != 1 else ''}."
-            f"{aviso_correo}\n\n"
-            "La cola avanzará al siguiente mes.",
-            parent=self
+        confirmed = CustomConfirmDialog.show(
+            self,
+            title="Guardar mes",
+            prompt=(
+                f"¿Guardar {MESES[month-1]} {year} en el historial?\n\n"
+                f"  • {len(exceptions_snapshot)} excepción{'es' if len(exceptions_snapshot) != 1 else ''} registrada{'s' if len(exceptions_snapshot) != 1 else ''}.\n"
+                f"  • {len(manual_snapshot)} asignación{'es' if len(manual_snapshot) != 1 else ''} manual{'es' if len(manual_snapshot) != 1 else ''}."
+                f"{aviso_correo}\n\n"
+                "La cola avanzará al siguiente mes."
+            ),
+            is_danger=False,
+            confirm_text="Guardar",
+            cancel_text="Cancelar"
         )
         if not confirmed:
             return
@@ -810,10 +829,11 @@ class TurnosApp(ctk.CTk):
             self.is_exporting = False
             self._set_ui_locked(False)
             self.tab_plan.save_btn.configure(state="normal", text="💾  Guardar mes")
-            messagebox.showinfo(
-                "Mes guardado",
-                f"El mes {MESES[month - 1]} {year} ha sido guardado exitosamente en el historial.",
-                parent=self
+            CustomAlertDialog.show(
+                self,
+                title="Mes guardado",
+                message=f"El mes {MESES[month - 1]} {year} ha sido guardado exitosamente en el historial.",
+                icon="info"
             )
             return
 
@@ -884,19 +904,23 @@ class TurnosApp(ctk.CTk):
                         wh_url, recipients, subject, body_text, send_msg
                     )
                     self.set_status(f"Error al enviar correo: {send_msg}", "error")
-                    messagebox.showwarning(
-                        "Mes guardado; notificación pendiente",
-                        f"El mes {MESES[month - 1]} {year} fue guardado correctamente, pero no se pudo enviar el aviso:\n\n{send_msg}",
-                        parent=self
+                    CustomAlertDialog.show(
+                        self,
+                        title="Mes guardado; notificación pendiente",
+                        message=f"El mes {MESES[month - 1]} {year} fue guardado correctamente, pero no se pudo enviar el aviso:\n\n{send_msg}",
+                        icon="warning"
                     )
                     return
 
                 self.set_status("Mes guardado y correo enviado a todos los funcionarios.", "ok")
-                messagebox.showinfo(
-                    "Mes guardado y notificado",
-                    f"✓ El mes {MESES[month - 1]} {year} fue guardado correctamente en el historial.\n\n"
-                    f"✓ Se envió la planilla Excel por correo a {len(recipients)} funcionario{'s' if len(recipients) != 1 else ''}.",
-                    parent=self
+                CustomAlertDialog.show(
+                    self,
+                    title="Mes guardado y notificado",
+                    message=(
+                        f"✓ El mes {MESES[month - 1]} {year} fue guardado correctamente en el historial.\n\n"
+                        f"✓ Se envió la planilla Excel por correo a {len(recipients)} funcionario{'s' if len(recipients) != 1 else ''}."
+                    ),
+                    icon="info"
                 )
 
             self.after(0, _on_finish)

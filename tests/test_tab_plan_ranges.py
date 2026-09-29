@@ -81,5 +81,35 @@ class TabPlanRangeParsingTests(unittest.TestCase):
         self.assertEqual(res_explicit, date(2026, 12, 20))
 
 
+    def test_multiple_explicit_dates_parsing(self):
+        mock_app = MagicMock()
+        mock_app.get_selected_period.return_value = (2026, 10)
+        mock_app.exceptions = []
+
+        tab_plan = TabPlan.__new__(TabPlan)
+        tab_plan.app = mock_app
+        tab_plan.person_var = MagicMock()
+        tab_plan.person_var.get.return_value = "COM PEREZ JUAN"
+        tab_plan.type_var = MagicMock()
+        tab_plan.type_var.get.return_value = "FL"
+        tab_plan.from_entry = MagicMock()
+        tab_plan.from_entry.get.return_value = "04/10/2026, 12/10/2026, 20/10/2026"
+        tab_plan.to_entry = MagicMock()
+        tab_plan.to_entry.get.return_value = ""
+
+        tab_plan.add_exception()
+
+        mock_app.add_exceptions.assert_called_once()
+        added = mock_app.add_exceptions.call_args[0][0]
+        self.assertEqual(len(added), 3)
+        self.assertEqual(added[0]['fecha'], date(2026, 10, 4))
+        self.assertEqual(added[1]['fecha'], date(2026, 10, 12))
+        self.assertEqual(added[2]['fecha'], date(2026, 10, 20))
+        for e in added:
+            self.assertEqual(e['tipo'], "FL")
+            self.assertEqual(e['persona'], "COM PEREZ JUAN")
+
+
 if __name__ == "__main__":
     unittest.main()
+

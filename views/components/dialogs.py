@@ -73,33 +73,56 @@ class CustomConfirmDialog:
     def show(cls, parent, title, prompt, is_danger=False, confirm_text="Confirmar", cancel_text="Cancelar"):
         dialog = ctk.CTkToplevel(parent)
         dialog.title(title)
-        dialog.geometry("420x210")
         dialog.configure(fg_color=P["bg_card"])
         dialog.transient(parent)
         dialog.grab_set()
 
+        # Cálculo dinámico de dimensiones según contenido
+        lines = prompt.count("\n") + 1
+        approx_lines = lines + (len(prompt) // 45)
+        needed_height = max(220, min(520, 140 + approx_lines * 22))
+        needed_width = 460 if len(prompt) > 100 else 420
+        dialog.geometry(f"{needed_width}x{needed_height}")
+
         dialog.update_idletasks()
-        x = parent.winfo_x() + (parent.winfo_width() - dialog.winfo_width()) // 2
-        y = parent.winfo_y() + (parent.winfo_height() - dialog.winfo_height()) // 2
-        dialog.geometry(f"+{x}+{y}")
+        try:
+            x = parent.winfo_x() + (parent.winfo_width() - dialog.winfo_width()) // 2
+            y = parent.winfo_y() + (parent.winfo_height() - dialog.winfo_height()) // 2
+            dialog.geometry(f"+{max(0, x)}+{max(0, y)}")
+        except Exception:
+            pass
 
         result = [False]
 
+        has_bullets = ("\n" in prompt or "•" in prompt or "-" in prompt)
+        justify_mode = "left" if has_bullets else "center"
+        anchor_mode = "w" if has_bullets else "center"
+
+        msg_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        msg_frame.pack(fill="both", expand=True, padx=28, pady=(22, 16))
+
         ctk.CTkLabel(
-            dialog, text=prompt,
+            msg_frame, text=prompt,
             font=ctk.CTkFont(family=FONT_FAMILY, size=13),
-            text_color=P["text"], wraplength=370, justify="center"
-        ).pack(pady=(28, 20))
+            text_color=P["text"], wraplength=needed_width - 56,
+            justify=justify_mode, anchor=anchor_mode
+        ).pack(fill="both", expand=True)
 
         def submit():
             result[0] = True
-            dialog.destroy()
+            try:
+                dialog.destroy()
+            except Exception:
+                pass
 
         def cancel():
-            dialog.destroy()
+            try:
+                dialog.destroy()
+            except Exception:
+                pass
 
         btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
-        btn_frame.pack(fill="x", padx=40)
+        btn_frame.pack(fill="x", padx=30, pady=(0, 18))
 
         confirm_color = P["red_d"] if is_danger else P["accent_d"]
         confirm_hover = P["red"] if is_danger else P["accent"]
@@ -124,6 +147,91 @@ class CustomConfirmDialog:
 
         parent.wait_window(dialog)
         return result[0]
+
+
+class CustomAlertDialog:
+    @classmethod
+    def show(cls, parent, title, message, icon="info", button_text="Entendido"):
+        dialog = ctk.CTkToplevel(parent)
+        dialog.title(title)
+        dialog.configure(fg_color=P["bg_card"])
+        dialog.transient(parent)
+        dialog.grab_set()
+
+        # Determinar icono y acento temático
+        icon_map = {
+            "error": ("❌", P["red"], P["red_d"], P["red"]),
+            "warning": ("⚠️", P["orange"], P["accent_d"], P["accent"]),
+            "info": ("ℹ️", P["accent"], P["accent_d"], P["accent"])
+        }
+        icon_char, icon_color, btn_color, btn_hover = icon_map.get(str(icon).lower(), icon_map["info"])
+
+        lines = message.count("\n") + 1
+        approx_lines = lines + (len(message) // 48)
+        needed_height = max(230, min(540, 160 + approx_lines * 22))
+        needed_width = 480 if len(message) > 120 else 420
+        dialog.geometry(f"{needed_width}x{needed_height}")
+
+        dialog.update_idletasks()
+        try:
+            x = parent.winfo_x() + (parent.winfo_width() - dialog.winfo_width()) // 2
+            y = parent.winfo_y() + (parent.winfo_height() - dialog.winfo_height()) // 2
+            dialog.geometry(f"+{max(0, x)}+{max(0, y)}")
+        except Exception:
+            pass
+
+        # Icono decorativo superior
+        ctk.CTkLabel(
+            dialog, text=icon_char,
+            font=ctk.CTkFont(size=26),
+            text_color=icon_color
+        ).pack(pady=(18, 4))
+
+        # Título
+        ctk.CTkLabel(
+            dialog, text=title,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=15, weight="bold"),
+            text_color=P["text"], justify="center"
+        ).pack(pady=(0, 8), padx=20)
+
+        # Mensaje
+        has_bullets = ("\n" in message or "•" in message or "-" in message)
+        justify_mode = "left" if has_bullets else "center"
+        anchor_mode = "w" if has_bullets else "center"
+
+        msg_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        msg_frame.pack(fill="both", expand=True, padx=28, pady=(0, 16))
+
+        ctk.CTkLabel(
+            msg_frame, text=message,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
+            text_color=P["text_s"],
+            wraplength=needed_width - 56,
+            justify=justify_mode,
+            anchor=anchor_mode
+        ).pack(fill="both", expand=True)
+
+        def close_dialog():
+            try:
+                dialog.destroy()
+            except Exception:
+                pass
+
+        btn_frame = ctk.CTkFrame(dialog, fg_color="transparent")
+        btn_frame.pack(fill="x", padx=30, pady=(0, 18))
+
+        ctk.CTkButton(
+            btn_frame, text=button_text,
+            fg_color=btn_color, hover_color=btn_hover,
+            text_color=P["text"], command=close_dialog, width=150, height=36,
+            corner_radius=8, cursor="hand2",
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold")
+        ).pack(expand=True)
+
+        dialog.bind("<Return>", lambda e: close_dialog())
+        dialog.bind("<Escape>", lambda e: close_dialog())
+
+        parent.wait_window(dialog)
 
 
 class PromptOTRMotiveDialog:
@@ -693,32 +801,61 @@ class LoadingModal:
 
 class DatePickerDialog:
     @classmethod
-    def show(cls, parent, initial_date=None, callback=None, title="Seleccionar Fecha", default_period=None):
+    def show(cls, parent, initial_date=None, callback=None, title="Seleccionar Fecha", default_period=None, mode="single"):
         """
         Muestra un diálogo de calendario interactivo en Dark Mode.
-        Permite navegar meses y años y hacer clic en un día para seleccionarlo.
-        Al seleccionar, llama a callback(selected_date: date) y cierra el diálogo.
+        Soporta modo "single" (selección de un día) y "multi" (selección múltiple interactiva).
+        - En modo "single": al hacer clic en un día llama a callback(selected_date: date) y cierra.
+        - En modo "multi": permite alternar (toggle) varios días discontinuos o continuos,
+          muestra contador en tiempo real y botón de confirmar, llamando a callback(selected_dates: list[date]).
         """
         dialog = ctk.CTkToplevel(parent)
         dialog.title(title)
-        dialog.geometry("320x350")
+        dialog_w = 350 if mode == "multi" else 320
+        dialog_h = 430 if mode == "multi" else 350
+        dialog.geometry(f"{dialog_w}x{dialog_h}")
         dialog.configure(fg_color=P["bg_card"])
         dialog.resizable(False, False)
         dialog.transient(parent)
         dialog.grab_set()
 
-        # Parsear fecha inicial
-        curr_selected = None
-        if initial_date:
-            if isinstance(initial_date, (date, datetime)):
-                curr_selected = initial_date if isinstance(initial_date, date) else initial_date.date()
-            elif isinstance(initial_date, str):
+        selected_dates = set()
+
+        def _parse_single_d(val):
+            if isinstance(val, (date, datetime)):
+                return val if isinstance(val, date) else val.date()
+            if isinstance(val, str):
                 for fmt in ("%d/%m/%Y", "%Y-%m-%d", "%d-%m-%Y"):
                     try:
-                        curr_selected = datetime.strptime(initial_date.strip(), fmt).date()
-                        break
+                        return datetime.strptime(val.strip(), fmt).date()
                     except ValueError:
                         pass
+            return None
+
+        # Parsear fecha o lista de fechas iniciales
+        if initial_date:
+            if isinstance(initial_date, (list, tuple, set)):
+                for item in initial_date:
+                    d_parsed = _parse_single_d(item)
+                    if d_parsed:
+                        selected_dates.add(d_parsed)
+            elif isinstance(initial_date, str) and ("," in initial_date or ";" in initial_date):
+                tokens = [t.strip() for t in initial_date.replace(";", ",").split(",") if t.strip()]
+                for t in tokens:
+                    d_parsed = _parse_single_d(t)
+                    if d_parsed:
+                        selected_dates.add(d_parsed)
+            else:
+                d_parsed = _parse_single_d(initial_date)
+                if d_parsed:
+                    selected_dates.add(d_parsed)
+
+        curr_selected = None
+        if selected_dates:
+            curr_selected = sorted(list(selected_dates))[0]
+        elif initial_date and not isinstance(initial_date, (list, tuple, set)):
+            curr_selected = _parse_single_d(initial_date)
+
         if not curr_selected:
             if default_period:
                 try:
@@ -741,13 +878,26 @@ class DatePickerDialog:
 
         # Centrar diálogo
         dialog.update_idletasks()
-        pw = parent.winfo_width() or 400
-        ph = parent.winfo_height() or 400
-        px = parent.winfo_rootx() if hasattr(parent, 'winfo_rootx') else parent.winfo_x()
-        py = parent.winfo_rooty() if hasattr(parent, 'winfo_rooty') else parent.winfo_y()
-        x = max(50, px + (pw - 320) // 2)
-        y = max(50, py + (ph - 350) // 2)
-        dialog.geometry(f"320x350+{x}+{y}")
+        try:
+            pw = int(parent.winfo_width()) if parent.winfo_width() else 400
+        except (TypeError, ValueError):
+            pw = 400
+        try:
+            ph = int(parent.winfo_height()) if parent.winfo_height() else 400
+        except (TypeError, ValueError):
+            ph = 400
+        try:
+            px = int(parent.winfo_rootx()) if hasattr(parent, 'winfo_rootx') else int(parent.winfo_x())
+        except (TypeError, ValueError):
+            px = 100
+        try:
+            py = int(parent.winfo_rooty()) if hasattr(parent, 'winfo_rooty') else int(parent.winfo_y())
+        except (TypeError, ValueError):
+            py = 100
+
+        x = max(50, px + (pw - dialog_w) // 2)
+        y = max(50, py + (ph - dialog_h) // 2)
+        dialog.geometry(f"{dialog_w}x{dialog_h}+{x}+{y}")
 
         # Header con navegación de mes y año
         hdr = ctk.CTkFrame(dialog, fg_color="transparent")
@@ -814,9 +964,17 @@ class DatePickerDialog:
         today = date.today()
 
         def on_day_click(selected_date):
-            dialog.destroy()
-            if callback:
-                callback(selected_date)
+            if mode == "multi":
+                if selected_date in selected_dates:
+                    selected_dates.remove(selected_date)
+                else:
+                    selected_dates.add(selected_date)
+                render_grid()
+                update_bottom_ui()
+            else:
+                dialog.destroy()
+                if callback:
+                    callback(selected_date)
 
         def render_grid():
             for w in grid_frame.winfo_children():
@@ -831,7 +989,10 @@ class DatePickerDialog:
                     if day == 0:
                         continue
                     d_obj = date(y, m, day)
-                    is_selected = (d_obj == state["selected"])
+                    if mode == "multi":
+                        is_selected = (d_obj in selected_dates)
+                    else:
+                        is_selected = (d_obj == state["selected"])
                     is_today = (d_obj == today)
 
                     if is_selected:
@@ -860,38 +1021,104 @@ class DatePickerDialog:
                     )
                     btn.grid(row=r_idx, column=c_idx, padx=2, pady=2, sticky="nsew")
 
-        render_grid()
-
-        # Botones inferiores (Hoy, Cancelar)
+        # Botones inferiores según modo
         bot_frame = ctk.CTkFrame(dialog, fg_color="transparent")
         bot_frame.pack(fill="x", padx=14, pady=(6, 12))
 
-        def select_today():
-            on_day_click(today)
+        if mode == "multi":
+            info_row = ctk.CTkFrame(bot_frame, fg_color="transparent")
+            info_row.pack(fill="x", pady=(0, 6))
 
-        ctk.CTkButton(
-            bot_frame, text="Hoy", width=70, height=28, corner_radius=6,
-            fg_color=P["bg_input"], hover_color=P["bg_hover"],
-            cursor="hand2",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
-            command=select_today
-        ).pack(side="left")
+            counter_lbl = ctk.CTkLabel(
+                info_row, text="",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+                text_color=P["accent"], anchor="w"
+            )
+            counter_lbl.pack(side="left")
 
-        ctk.CTkButton(
-            bot_frame, text="Cancelar", width=80, height=28, corner_radius=6,
-            fg_color="transparent", hover_color=P["bg_hover"],
-            text_color=P["text_s"], cursor="hand2",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=11),
-            command=dialog.destroy
-        ).pack(side="right")
+            def clear_selection():
+                selected_dates.clear()
+                render_grid()
+                update_bottom_ui()
 
-        # Atajos de teclado para el calendario
+            ctk.CTkButton(
+                info_row, text="Limpiar", width=60, height=24, corner_radius=5,
+                fg_color="transparent", hover_color=P["bg_hover"],
+                text_color=P["text_s"], cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+                command=clear_selection
+            ).pack(side="right")
+
+            action_row = ctk.CTkFrame(bot_frame, fg_color="transparent")
+            action_row.pack(fill="x")
+
+            ctk.CTkButton(
+                action_row, text="Cancelar", width=80, height=32, corner_radius=6,
+                fg_color=P["bg_input"], hover_color=P["bg_hover"],
+                text_color=P["text_s"], cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+                command=dialog.destroy
+            ).pack(side="left")
+
+            def submit_multi():
+                dialog.destroy()
+                if callback:
+                    callback(sorted(list(selected_dates)))
+
+            confirm_btn = ctk.CTkButton(
+                action_row, text="Confirmar selección", height=32, corner_radius=6,
+                fg_color=P["accent_d"], hover_color=P["accent"],
+                text_color="#FFFFFF", cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+                command=submit_multi
+            )
+            confirm_btn.pack(side="right", fill="x", expand=True, padx=(8, 0))
+
+            def update_bottom_ui():
+                count = len(selected_dates)
+                if count == 0:
+                    counter_lbl.configure(text="Ningún día seleccionado", text_color=P["text_s"])
+                    confirm_btn.configure(state="disabled", text="Confirmar selección")
+                elif count == 1:
+                    counter_lbl.configure(text="1 día seleccionado", text_color=P["accent"])
+                    confirm_btn.configure(state="normal", text="Confirmar (1 día)")
+                else:
+                    counter_lbl.configure(text=f"{count} días seleccionados", text_color=P["accent"])
+                    confirm_btn.configure(state="normal", text=f"Confirmar ({count} días)")
+
+            render_grid()
+            update_bottom_ui()
+
+            dialog.bind("<Return>", lambda _: submit_multi() if selected_dates else None)
+        else:
+            def select_today():
+                on_day_click(today)
+
+            ctk.CTkButton(
+                bot_frame, text="Hoy", width=70, height=28, corner_radius=6,
+                fg_color=P["bg_input"], hover_color=P["bg_hover"],
+                cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11, weight="bold"),
+                command=select_today
+            ).pack(side="left")
+
+            ctk.CTkButton(
+                bot_frame, text="Cancelar", width=80, height=28, corner_radius=6,
+                fg_color="transparent", hover_color=P["bg_hover"],
+                text_color=P["text_s"], cursor="hand2",
+                font=ctk.CTkFont(family=FONT_FAMILY, size=11),
+                command=dialog.destroy
+            ).pack(side="right")
+
+            render_grid()
+            dialog.bind("<Home>", lambda _: select_today())
+            dialog.bind("<Return>", lambda _: on_day_click(state["selected"]))
+
+        # Atajos de teclado para la navegación
         dialog.bind("<Left>", lambda _: prev_month())
         dialog.bind("<Right>", lambda _: next_month())
         dialog.bind("<Prior>", lambda _: prev_month())
         dialog.bind("<Next>", lambda _: next_month())
-        dialog.bind("<Home>", lambda _: select_today())
-        dialog.bind("<Return>", lambda _: on_day_click(state["selected"]))
         dialog.bind("<Escape>", lambda _: dialog.destroy())
 
 

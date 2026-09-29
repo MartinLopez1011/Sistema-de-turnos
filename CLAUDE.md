@@ -1,8 +1,26 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
 # Sistema de Turnos — Resumen de Proyecto para IA
 
 > **Propósito de este archivo:** Proveer contexto suficiente al asistente de IA para trabajar sin necesidad de leer cada archivo en detalle. Leé esto antes de cualquier otra cosa.
 
 ---
+
+## 0. Comandos
+
+```bash
+pip install -r requirements-dev.txt          # dentro de .venv
+.venv\Scripts\python.exe main.py             # ejecutar la app
+.venv\Scripts\python.exe -m pytest -q        # toda la suite (~165 tests, ~100 s)
+.venv\Scripts\python.exe -m pytest tests/test_shift_manager_rotation.py -x   # un archivo
+.venv\Scripts\python.exe -m pytest tests/test_shift_manager.py::NombreTest::test_x   # un test
+pyinstaller "Sistema de Turnos.spec"         # build del .exe
+python reset_historial.py                    # limpiar historial
+```
+
+`conftest.py` solo agrega la raíz del proyecto al `sys.path`. No hay linter configurado.
 
 ## 1. ¿Qué es este proyecto?
 
@@ -11,7 +29,7 @@ Aplicación de escritorio en **Python** que gestiona la asignación rotativa sem
 - **Tecnología principal:** Python + CustomTkinter (GUI dark mode)
 - **Distribución:** Compilado con PyInstaller → `Sistema de Turnos.exe` (standalone, sin instalar Python)
 - **Persistencia:** Un único archivo `config.json` en el directorio del ejecutable
-- **Output:** Archivos `turnos_<Mes>_<Año>.xlsx` generados con `openpyxl` y el documento ejecutivo `Sistema_de_Gestion_de_Turnos.docx`
+- **Output:** Archivos `turnos_<Mes>_<Año>.xlsx` generados con `openpyxl`
 
 ---
 
@@ -38,14 +56,19 @@ scripts/
 assets/                    ← Íconos PNG (success, error, save)
 backups/                   ← Respaldos automáticos fechados de config.json
 config.json                ← Base de datos en JSON (ver sección 4)
-generar_documento.py      ← Genera el documento ejecutivo editable en Word
-generar_manual_pdf.py     ← Genera el manual de usuario oficial en PDF (Chrome Headless)
-generar_requerimientos_word.py ← Genera el documento Word de requerimientos y alcance simple
-Sistema_de_Gestion_de_Turnos.docx ← Documento ejecutivo generado del proyecto
+Sistema_de_Gestion_de_Turnos.docx ← Documento ejecutivo (estático, ya no se genera por script)
 Manual_de_Usuario_Sistema_de_Turnos.pdf ← Manual de usuario oficial en PDF (actualizado)
 Requerimientos_del_Sistema_Turnos.docx ← Documento Word de requerimientos y alcance definido
 dist/Sistema de Turnos.exe   ← Ejecutable standalone autónomo (sin instalador, no requiere admin)
 ```
+
+### Notas de arquitectura adicionales (verificadas en el código)
+
+- `main.py` resuelve el directorio de datos con `utils/app_paths.get_application_data_dir()`, carga `.env` con `utils/env_helper.load_env_file` e instala un `sys.excepthook` global que loguea y muestra un messagebox.
+- `utils/` también contiene `config_validator.py`, `notification_queue.py` (cola `pending_notifications.json` para reintentos) y `env_helper.py`. `email_notifier.py` soporta SMTP directo con adjunto (variables `SMTP_*` en `.env`, ver `.env.example`) y webhook Apps Script (`WEBHOOK_URL`, `NOTIFICACIONES_ACTIVAS`) como respaldo.
+- `ShiftManager` (~1960 líneas): `generate_shifts` delega en `RotationEngine.generate` (`models/rotation_engine.py`), que a su vez llama a `_generate_shifts_legacy`: ahí vive toda la lógica real. Aplica una ventana de enfriamiento `min_gap_weeks=4` entre turnos de una misma persona. También maneja auditoría (`_record_audit`), backups/restauración y `archive_old_records`.
+- Las excepciones `OTR` exigen motivo (≥3 caracteres); las asignaciones manuales exigen motivo. Cada persona puede tener `email`.
+- `config.json`, `.env`, `config.privado.json`, `backups/`, `*.spec`, `dist/` y `build/` están en `.gitignore`: no commitear datos operativos. Documentación de usuario en `README.md`; políticas en `SECURITY.md` y `POLITICAS_Y_SEGURIDAD.md`.
 
 ---
 
@@ -207,13 +230,8 @@ El `.spec` incluye la carpeta `assets/` y el módulo `holidays.countries.chile`,
 - `openpyxl` — creación/escritura de Excel
 - `holidays` — calendario de feriados nacionales de Chile
 - `Pillow` — carga de íconos PNG
-- `python-docx` — generación del documento ejecutivo editable
 - `pyinstaller` — compilación (solo dev)
 
-El generador del Word se ejecuta desde el entorno virtual del proyecto:
-```bash
-.venv\Scripts\python.exe generar_documento.py
-```
 
 ---
 
@@ -258,27 +276,3 @@ El generador del Word se ejecuta desde el entorno virtual del proyecto:
 - Usar `reset_historial.py` para limpiar historial y volver a estado inicial
 - El `.exe` busca `config.json` relativo al directorio del ejecutable
 
----
-
-## 14. Estado actual (Septiembre 2026)
-
-- Personal: 16 personas activas (IDs 1–16)
-- Siguiente en turnar: ID 1 (Funcionario ID 1)
-- Historial: semanas desde el 7 de septiembre hasta el 4 de octubre de 2026
-- Snapshots: datos de inicio disponibles para septiembre y octubre de 2026
-- Excepciones guardadas: periodo septiembre de 2026 sin excepciones registradas
-
-> Este estado refleja `config.json` al 10 de septiembre de 2026. Si el archivo cambia, debe considerarse la fuente de verdad para el estado operativo.
-
----
-
-## 15. Documento ejecutivo del proyecto
-
-El archivo `Sistema_de_Gestion_de_Turnos.docx` resume el problema, los objetivos, el alcance, los requerimientos, la arquitectura MVC, el flujo mensual, las entradas y salidas y los beneficios esperados. Está dirigido a una persona ejecutiva y contiene tablas y diagramas editables de Word.
-
-Para regenerarlo después de modificar la implementación o `config.json`:
-```bash
-.venv\Scripts\python.exe generar_documento.py
-```
-
-El documento toma el código y la configuración actuales como fuente de verdad. No debe confundirse con una especificación de funcionalidades futuras: exportar Excel y cerrar el mes siguen siendo operaciones separadas, y la exportación no modifica la cola de rotación.

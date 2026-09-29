@@ -109,20 +109,27 @@ class ShiftManager:
         self.notificaciones = {"webhook_url": DEFAULT_WEBHOOK_URL, "activo": True}
 
     def _parse_config_data(self, data):
-        self.inicio = data.get('inicio', {})
-        self.historial = data.get('historial', {})
-        raw_personal = data.get('personal', [])
+        if not isinstance(data, dict):
+            self._init_defaults()
+            return
+
+        self.inicio = data.get('inicio') if isinstance(data.get('inicio'), dict) else {}
+        self.historial = data.get('historial') if isinstance(data.get('historial'), dict) else {}
+        raw_personal = data.get('personal') if isinstance(data.get('personal'), list) else []
         # Saneamiento retrocompatible: asegurar campo 'email' en todo funcionario
         self.personal = []
         for p in raw_personal:
-            if isinstance(p, dict):
+            if isinstance(p, dict) and 'id' in p and 'nombre' in p:
                 p_copy = dict(p)
                 if 'email' not in p_copy:
                     p_copy['email'] = ""
                 self.personal.append(p_copy)
-        self.siguiente_id = data.get('siguiente_id', 1)
-        self.pendientes = data.get('pendientes', [])
-        self.snapshots = data.get('snapshots', {})
+        sig_id = data.get('siguiente_id')
+        self.siguiente_id = sig_id if isinstance(sig_id, int) and sig_id > 0 else (self.personal[0]["id"] if self.personal else 1)
+        raw_pends = data.get('pendientes')
+        self.pendientes = [p for p in raw_pends if isinstance(p, int)] if isinstance(raw_pends, list) else []
+        raw_snaps = data.get('snapshots')
+        self.snapshots = raw_snaps if isinstance(raw_snaps, dict) else {}
         saved_exceptions = data.get('excepciones', {})
         if isinstance(saved_exceptions, dict):
             clean_exceptions = {}
@@ -349,7 +356,7 @@ class ShiftManager:
         for week_key, person in list(self.historial.items()):
             try:
                 _, week_end = _parse_week_range(week_key)
-                if week_end < cutoff_date:
+                if week_end and week_end < cutoff_date:
                     archived_historial[week_key] = person
             except Exception:
                 continue
@@ -964,19 +971,33 @@ class ShiftManager:
     # ── Helpers extraídos de generate_shifts ───────────────────────────────
 
     def _normalize_exceptions(self, exceptions):
-        """Asegura que cada excepción tenga su fecha como date, no str."""
+        """Asegura que cada excepción sea válida y tenga su fecha como date, no str."""
+        if not exceptions or not isinstance(exceptions, (list, tuple)):
+            return []
         normalized = []
         for exc in exceptions:
+            if not isinstance(exc, dict):
+                continue
+            persona = exc.get('persona')
+            if not persona or not isinstance(persona, str):
+                continue
+            tipo = exc.get('tipo')
+            if not tipo or not isinstance(tipo, str):
+                continue
             f = exc.get('fecha')
             if isinstance(f, str):
                 try:
-                    f = datetime.strptime(f, '%Y-%m-%d').date()
-                except ValueError:
+                    f = datetime.strptime(f[:10], '%Y-%m-%d').date()
+                except (ValueError, TypeError, IndexError):
                     continue
+            elif isinstance(f, datetime):
+                f = f.date()
+            elif not isinstance(f, date):
+                continue
             item = {
-                'persona': exc['persona'],
+                'persona': persona,
                 'fecha': f,
-                'tipo': exc['tipo']
+                'tipo': tipo
             }
             if 'motivo' in exc and exc['motivo']:
                 item['motivo'] = str(exc['motivo'])
@@ -1375,13 +1396,15 @@ class ShiftManager:
                     if blocked_fallback is None:
                         blocked_fallback = (p_id, nombre)
                         blocked_fallback_reason = week_restrictions
-                    new_pendientes.append(p_id)
+                    if p_id not in new_pendientes:
+                        new_pendientes.append(p_id)
                     continue
 
                 # Un pendiente recupera el turno perdido en la primera semana
                 # disponible; no debe esperar el intervalo de la rotación normal.
                 if has_exception:
-                    new_pendientes.append(p_id)
+                    if p_id not in new_pendientes:
+                        new_pendientes.append(p_id)
                     if not any(
                             skipped['persona'] == nombre
                             for skipped in skipped_this_week):
@@ -1422,7 +1445,8 @@ class ShiftManager:
                     if blocked_fallback is None:
                         blocked_fallback = (p_id, nombre)
                         blocked_fallback_reason = week_restrictions
-                    current_pendientes.append(p_id)
+                    if p_id not in current_pendientes:
+                        current_pendientes.append(p_id)
                     iterations += 1
                     continue
 
@@ -1437,13 +1461,15 @@ class ShiftManager:
                 )
                         
                 if has_exception:
-                    current_pendientes.append(p_id)
+                    if p_id not in current_pendientes:
+                        current_pendientes.append(p_id)
                     skipped_this_week.append({'persona': nombre, 'tipo': exc_tipo})
                 elif did_recently:
                     # Mandarlo al fondo de pendientes para que recupere su lugar
                     # más adelante sin duplicar turno, a menos que haya sido forzado
                     if not self._was_forced_recently(nombre, start_date, exceptions, min_gap_weeks=effective_gap):
-                        current_pendientes.append(p_id)
+                        if p_id not in current_pendientes:
+                            current_pendientes.append(p_id)
                 else:
                     shifts.append({
                         'semana': (start_date, end_date),
@@ -1537,6 +1563,7 @@ class ShiftManager:
             p_id for p_id in current_pendientes
             if p_id not in assigned_ids
         ]
+        current_pendientes = list(dict.fromkeys(current_pendientes))
 
         return shifts, current_siguiente_id, current_pendientes
 
@@ -1895,7 +1922,9 @@ class ShiftManager:
             if p['id'] == person_id:
                 if i < len(self.personal) - 1:
                     self.personal[i], self.personal[i+1] = self.personal[i+1], self.personal[i]
-                    self.save_config()
+                    if not self.save_config():
+                        self.personal[i], self.personal[i+1] = self.personal[i+1], self.personal[i]
+                        return False
                     return True
                 break
         return False

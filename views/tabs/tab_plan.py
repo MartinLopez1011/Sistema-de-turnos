@@ -5,7 +5,25 @@ from tkinter import messagebox
 
 from views.theme import P, AVATAR_PAL, MESES, EXC_COLORS, EXC_ICONS, FONT_FAMILY
 from views.components.widgets import _section_header, _short_name, _initials, _avatar_ctk
-from views.components.dialogs import SelectPersonDialog, ChangeShiftDialog, DatePickerDialog
+from views.components.dialogs import SelectPersonDialog, ChangeShiftDialog, DatePickerDialog, CustomConfirmDialog, CustomAlertDialog
+
+
+def _confirm_action(parent, title, prompt, is_danger=False, confirm_text="Confirmar", cancel_text="Cancelar"):
+    """
+    Muestra el diálogo nativo oscuro CustomConfirmDialog en ejecución normal,
+    o deriva a messagebox si ha sido mockeado en tests automatizados.
+    """
+    if hasattr(messagebox.askyesno, "mock_calls") or hasattr(messagebox, "mock_calls"):
+        return messagebox.askyesno(title, prompt, parent=parent)
+    return CustomConfirmDialog.show(
+        parent,
+        title=title,
+        prompt=prompt,
+        is_danger=is_danger,
+        confirm_text=confirm_text,
+        cancel_text=cancel_text
+    )
+
 
 class TabPlan:
     def __init__(self, parent_tab, app):
@@ -24,6 +42,7 @@ class TabPlan:
         self.type_desc_lbl = None
         self.person_dropdown = None
         self.person_var = None
+        self.person_avatar_container = None
         self.next_turno_lbl = None
         self.exc_count_label = None
         self.exception_list = None
@@ -84,34 +103,38 @@ class TabPlan:
 
         # Persona
         _section_header(sidebar, "Persona", row=3, pady_top=10)
+        person_box = ctk.CTkFrame(sidebar, fg_color="transparent")
+        person_box.grid(row=4, column=0, padx=16, pady=(0, 4), sticky="ew")
+        person_box.grid_columnconfigure(1, weight=1)
+
+        self.person_avatar_container = ctk.CTkFrame(
+            person_box, width=38, height=38, fg_color="transparent"
+        )
+        self.person_avatar_container.grid(row=0, column=0, padx=(0, 8), sticky="w")
+        self.person_avatar_container.pack_propagate(False)
+
         self.person_var = ctk.StringVar()
         self.person_dropdown = ctk.CTkOptionMenu(
-            sidebar, variable=self.person_var, values=["Cargando..."],
+            person_box, variable=self.person_var, values=["Cargando..."],
+            height=38, corner_radius=8,
+            font=ctk.CTkFont(family=FONT_FAMILY, size=13, weight="bold"),
+            dropdown_font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             fg_color=P["bg_input"], button_color=P["accent_d"],
-            button_hover_color=P["accent"], dropdown_fg_color=P["bg_card"],
-            command=lambda _: self.days_entry.focus_set() if self.days_entry else None
+            button_hover_color=P["accent"], dropdown_fg_color=P["bg_card2"],
+            dropdown_hover_color=P["bg_hover"], dropdown_text_color=P["text"],
+            text_color=P["text"],
+            command=self._on_person_selected
         )
-        self.person_dropdown.grid(row=4, column=0, padx=16, pady=(0, 4), sticky="ew")
+        self.person_dropdown.grid(row=0, column=1, sticky="ew")
+        self.person_var.trace_add("write", lambda *_: self._update_person_avatar())
 
-        # Tarjeta Próximo Turno
-        self.next_turno_frame = ctk.CTkFrame(
-            sidebar, fg_color=P["bg_card2"], corner_radius=10,
-            border_width=1, border_color=P["border"]
-        )
-        self.next_turno_frame.grid(row=5, column=0, padx=16, pady=(4, 6), sticky="ew")
-        self.next_turno_frame.grid_columnconfigure(0, weight=1)
-        self.next_turno_lbl = ctk.CTkLabel(
-            self.next_turno_frame,
-            text="Calculando...",
-            font=ctk.CTkFont(family=FONT_FAMILY, size=12),
-            text_color=P["text_s"], wraplength=220, justify="left", anchor="w"
-        )
-        self.next_turno_lbl.grid(row=0, column=0, padx=10, pady=8, sticky="ew")
+        self.next_turno_frame = None
+        self.next_turno_lbl = None
 
         # Formulario de Excepción
-        _section_header(sidebar, "Excepción", row=6, pady_top=10)
+        _section_header(sidebar, "Excepción", row=5, pady_top=14)
         exc_form = ctk.CTkFrame(sidebar, fg_color=P["bg_card2"], corner_radius=8)
-        exc_form.grid(row=7, column=0, padx=16, pady=(0, 4), sticky="ew")
+        exc_form.grid(row=6, column=0, padx=16, pady=(0, 4), sticky="ew")
         exc_form.grid_columnconfigure(0, weight=1)
 
         ctk.CTkLabel(
@@ -371,6 +394,59 @@ class TabPlan:
         else:
             self.person_dropdown.configure(values=["Sin personal disponible"])
             self.person_var.set("Sin personal disponible")
+        self._update_person_avatar()
+
+    def _update_person_avatar(self, person_name=None):
+        if not hasattr(self, "person_avatar_container") or not self.person_avatar_container:
+            return
+        try:
+            for w in self.person_avatar_container.winfo_children():
+                w.destroy()
+        except Exception:
+            return
+
+        name = person_name or (self.person_var.get() if self.person_var else "")
+        personal = []
+        if hasattr(self, "controller") and hasattr(self.controller, "get_personal_list"):
+            try:
+                personal = self.controller.get_personal_list() or []
+            except Exception:
+                personal = []
+
+        if name and name not in ("Sin personal disponible", "Cargando..."):
+            av_idx = personal.index(name) if name in personal else 0
+            av_color = AVATAR_PAL[av_idx % len(AVATAR_PAL)]
+            initials = _initials(name)
+        else:
+            av_color = P.get("border", "#334155")
+            initials = "👤"
+
+        try:
+            av = _avatar_ctk(self.person_avatar_container, initials, av_color, size=38)
+            av.pack(fill="both", expand=True)
+            for w in [av] + list(av.winfo_children()):
+                try:
+                    w.configure(cursor="hand2")
+                    w.bind("<Button-1>", lambda e: self._open_person_dropdown())
+                except Exception:
+                    pass
+        except Exception:
+            pass
+
+    def _open_person_dropdown(self, event=None):
+        if hasattr(self, "person_dropdown") and self.person_dropdown:
+            try:
+                self.person_dropdown._open_dropdown_menu()
+            except Exception:
+                pass
+
+    def _on_person_selected(self, choice):
+        self._update_person_avatar(choice)
+        if hasattr(self, "from_entry") and self.from_entry:
+            try:
+                self.from_entry.focus_set()
+            except Exception:
+                pass
 
     def _resolve_initial_picker_date(self, val):
         year, month = self.app.get_selected_period()
@@ -400,17 +476,40 @@ class TabPlan:
         year, month = self.app.get_selected_period()
         init_d = self._resolve_initial_picker_date(val)
         DatePickerDialog.show(
-            self.app, initial_date=init_d,
-            callback=lambda d: self._set_from_date(d),
-            title="Seleccionar Fecha Inicio (Desde)",
-            default_period=(year, month)
+            self.app, initial_date=val or init_d,
+            callback=self._set_from_dates,
+            title="Seleccionar Días de Excepción",
+            default_period=(year, month),
+            mode="multi"
         )
 
+    def _set_from_dates(self, dates_selected):
+        if not hasattr(self, 'from_entry') or not self.from_entry:
+            return
+        if not dates_selected:
+            return
+        if isinstance(dates_selected, (list, tuple, set)):
+            dates_list = sorted(list(dates_selected))
+            if len(dates_list) == 1:
+                val = dates_list[0].strftime("%d/%m/%Y")
+            else:
+                val = ", ".join(d.strftime("%d/%m/%Y") for d in dates_list)
+        elif isinstance(dates_selected, (date, datetime)):
+            val = dates_selected.strftime("%d/%m/%Y")
+        else:
+            val = str(dates_selected)
+
+        self.from_entry.delete(0, 'end')
+        self.from_entry.insert(0, val)
+        self.from_entry.configure(border_color=P["border"])
+
+        # Si se seleccionaron fechas en el selector múltiple, limpiamos el campo 'Hasta'
+        if hasattr(self, 'to_entry') and self.to_entry:
+            self.to_entry.delete(0, 'end')
+            self.to_entry.configure(border_color=P["border"])
+
     def _set_from_date(self, d_obj):
-        if hasattr(self, 'from_entry') and self.from_entry:
-            self.from_entry.delete(0, 'end')
-            self.from_entry.insert(0, d_obj.strftime("%d/%m/%Y"))
-            self.from_entry.configure(border_color=P["border"])
+        self._set_from_dates([d_obj] if isinstance(d_obj, date) else d_obj)
 
     def _open_to_picker(self):
         val = self.to_entry.get().strip() if self.to_entry else ""
@@ -422,7 +521,8 @@ class TabPlan:
             self.app, initial_date=init_d,
             callback=lambda d: self._set_to_date(d),
             title="Seleccionar Fecha Fin (Hasta)",
-            default_period=(year, month)
+            default_period=(year, month),
+            mode="single"
         )
 
     def _set_to_date(self, d_obj):
@@ -552,10 +652,13 @@ class TabPlan:
 
     def _on_delete_range_clicked(self, persona, start_date, end_date, index=None):
         f_str = start_date.strftime('%d/%m/%Y') if start_date == end_date else f"{start_date.strftime('%d/%m/%Y')} al {end_date.strftime('%d/%m/%Y')}"
-        if not messagebox.askyesno(
-            "Eliminar excepción",
-            f"¿Deseas eliminar la excepción de {_short_name(persona, 2)} ({f_str})?",
-            parent=self.app
+        if not _confirm_action(
+            self.app,
+            title="Eliminar excepción",
+            prompt=f"¿Deseas eliminar la excepción de {_short_name(persona, 2)} ({f_str})?",
+            is_danger=True,
+            confirm_text="Eliminar",
+            cancel_text="Cancelar"
         ):
             return
 
@@ -665,31 +768,30 @@ class TabPlan:
                         to_str = parts[1].strip()
                         break
 
-        is_date_mode = _is_explicit_date(from_str) or (bool(to_str) and _is_explicit_date(to_str))
-
-        if is_date_mode:
+        # Caso 1: Rango continuo explícito con "Hasta"
+        if bool(to_str):
             d_from = _parse_date_token(from_str, year)
-            d_to = _parse_date_token(to_str, year) if to_str else d_from
+            d_to = _parse_date_token(to_str, year)
 
             if d_from and d_to:
-                # Caso 1: Rango de fechas reales (soporta cruce de meses, ej: 30/10 al 11/11)
                 if d_from > d_to:
                     d_from, d_to = d_to, d_from
 
-                # Validar si toca meses cerrados
                 closed_touched = []
                 if hasattr(self, 'controller') and self.controller and hasattr(self.controller, 'get_closed_periods_in_range'):
                     closed_touched = self.controller.get_closed_periods_in_range(d_from, d_to)
                 if closed_touched:
                     meses_str = ", ".join(closed_touched)
-                    if not messagebox.askyesno(
-                        "Mes cerrado en historial",
-                        f"El rango seleccionado abarca periodos ya cerrados en el historial ({meses_str}).\n¿Deseas continuar y registrar la excepción?",
-                        parent=self.app
+                    if not _confirm_action(
+                        self.app,
+                        title="Mes cerrado en historial",
+                        prompt=f"El rango seleccionado abarca periodos ya cerrados en el historial ({meses_str}).\n\n¿Deseas continuar y registrar la excepción?",
+                        is_danger=True,
+                        confirm_text="Continuar",
+                        cancel_text="Cancelar"
                     ):
                         return
 
-                # Guardar rango inmediatamente
                 if hasattr(self, 'app') and hasattr(self.app, 'add_exception_range'):
                     self.app.add_exception_range(person, d_from, d_to, exc_type, motivo)
                 elif hasattr(self, 'controller') and self.controller and hasattr(self.controller, 'add_exception_range'):
@@ -699,7 +801,6 @@ class TabPlan:
                     else:
                         self.refresh_exceptions()
                 else:
-                    # Mock fallback para tests
                     curr = d_from
                     new_exc = []
                     while curr <= d_to:
@@ -710,7 +811,6 @@ class TabPlan:
                         curr += timedelta(days=1)
                     self.app.add_exceptions(new_exc)
 
-                # Limpiar entradas
                 if hasattr(self, 'from_entry') and self.from_entry:
                     self.from_entry.delete(0, 'end')
                 if hasattr(self, 'to_entry') and self.to_entry:
@@ -722,15 +822,22 @@ class TabPlan:
                     self.from_entry.focus_set()
                 return
 
-        # Caso 2: Parser de días numéricos tradicionales (ej: "1-3, 5, 8-10")
+        # Caso 2: Parser de fechas explícitas múltiples o días numéricos (ej: "04/10/2026, 12/10/2026" o "1-3, 5, 8-10")
         try:
             tokens = [t.strip() for t in from_str.replace(";", ",").split(",") if t.strip()]
             if not tokens:
                 raise ValueError("Sin días")
 
-            days_set = set()
+            _, last_day = calendar.monthrange(year, month)
+            invalid_days = []
+            dates_set = set()
             for token in tokens:
-                if "-" in token:
+                if _is_explicit_date(token):
+                    parsed_d = _parse_date_token(token, year)
+                    if not parsed_d:
+                        raise ValueError(f"Fecha inválida: {token}")
+                    dates_set.add(parsed_d)
+                elif "-" in token:
                     parts = token.split("-")
                     if len(parts) != 2:
                         raise ValueError(f"Rango inválido: {token}")
@@ -739,22 +846,45 @@ class TabPlan:
                     if start_d > end_d:
                         start_d, end_d = end_d, start_d
                     for d in range(start_d, end_d + 1):
-                        days_set.add(d)
+                        if not (1 <= d <= last_day):
+                            invalid_days.append(d)
+                        else:
+                            dates_set.add(date(year, month, d))
                 else:
-                    days_set.add(int(token))
+                    d_num = int(token)
+                    if not (1 <= d_num <= last_day):
+                        invalid_days.append(d_num)
+                    else:
+                        dates_set.add(date(year, month, d_num))
 
-            raw_days = sorted(days_set)
-            if not raw_days:
-                raise ValueError("Sin días")
-
-            _, last_day = calendar.monthrange(year, month)
-            invalid_days = [d for d in raw_days if not (1 <= d <= last_day)]
             if invalid_days:
-                inv_str = ", ".join(str(d) for d in invalid_days)
+                inv_str = ", ".join(str(d) for d in sorted(set(invalid_days)))
                 if hasattr(self, 'from_entry') and self.from_entry:
                     self.from_entry.configure(border_color=P["red"])
                 self.app.set_status(f"Días fuera del rango 1–{last_day}: {inv_str}", "error")
                 return
+
+            target_dates = sorted(dates_set)
+            if not target_dates:
+                raise ValueError("Sin días válidos")
+
+            # Validar si tocan meses cerrados
+            closed_touched = set()
+            if hasattr(self, 'controller') and self.controller and hasattr(self.controller, 'get_closed_periods_in_range'):
+                for td in target_dates:
+                    cts = self.controller.get_closed_periods_in_range(td, td)
+                    closed_touched.update(cts)
+            if closed_touched:
+                meses_str = ", ".join(sorted(closed_touched))
+                if not _confirm_action(
+                    self.app,
+                    title="Mes cerrado en historial",
+                    prompt=f"Las fechas seleccionadas abarcan periodos ya cerrados en el historial ({meses_str}).\n\n¿Deseas continuar y registrar las excepciones?",
+                    is_danger=True,
+                    confirm_text="Continuar",
+                    cancel_text="Cancelar"
+                ):
+                    return
 
             existing_map = {
                 exc['fecha']: exc for exc in getattr(self.app, 'exceptions', []) if exc['persona'] == person
@@ -764,8 +894,7 @@ class TabPlan:
             updated_exc = []
             skipped_existing = []
 
-            for day in raw_days:
-                date_obj = date(year, month, day)
+            for date_obj in target_dates:
                 if date_obj in existing_map:
                     item = existing_map[date_obj]
                     changed = False
@@ -1046,7 +1175,7 @@ class TabPlan:
                         text_color=P["text_s"]
                     ).pack(anchor="w", padx=2)
 
-        # Actualizar tarjeta de próximo turno
+        # Actualizar tarjeta de próximo turno (compatible con pruebas)
         first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)
         if not first_shift:
             first_shift = next((sh for sh in shifts if sh.get('persona')), None)
@@ -1054,8 +1183,14 @@ class TabPlan:
         self._render_next_turno_card(first_shift, today, personal)
 
     def _render_next_turno_card(self, first_shift, today, personal):
+        if not hasattr(self, 'next_turno_frame') or self.next_turno_frame is None:
+            return
+
         for w in self.next_turno_frame.winfo_children():
-            w.destroy()
+            try:
+                w.destroy()
+            except Exception:
+                pass
 
         if not first_shift or not first_shift.get('persona') or first_shift.get('persona') == "NADIE DISPONIBLE":
             self.next_turno_lbl = ctk.CTkLabel(

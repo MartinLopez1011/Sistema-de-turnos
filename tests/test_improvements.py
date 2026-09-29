@@ -218,6 +218,38 @@ class ImprovementsTests(unittest.TestCase):
         badge_text = tab_settings.person_count_badge.configure.call_args[1]["text"]
         self.assertIn("2 funcionarios activos", badge_text)
 
+    @patch("views.tabs.tab_settings.ctk.CTkFont")
+    @patch("views.tabs.tab_settings._make_row_hover")
+    @patch("views.tabs.tab_settings.ctk.CTkButton")
+    @patch("views.tabs.tab_settings.ctk.CTkLabel")
+    @patch("views.tabs.tab_settings.ctk.CTkFrame")
+    def test_tab_settings_search_filtering(self, mock_frame, mock_label, mock_btn, mock_hover, mock_font):
+        from views.tabs.tab_settings import TabSettings
+        mock_app = MagicMock()
+        mock_app.controller = MagicMock()
+        mock_app.controller.get_all_persons.return_value = [
+            {"id": 1, "nombre": "COM PEREZ JUAN", "email": "juan@correo.cl"},
+            {"id": 2, "nombre": "SGT GOMEZ ANA", "email": "ana@correo.cl"}
+        ]
+        tab_settings = TabSettings.__new__(TabSettings)
+        tab_settings.app = mock_app
+        tab_settings.controller = mock_app.controller
+        tab_settings.starting_person_var = MagicMock()
+        tab_settings.starting_person_dropdown = MagicMock()
+        tab_settings.person_list_frame = MagicMock()
+        tab_settings.person_list_frame.winfo_children.return_value = []
+        tab_settings.person_count_badge = MagicMock()
+        tab_settings.person_search_var = MagicMock()
+
+        # Búsqueda que coincide con ANA
+        tab_settings.person_search_var.get.return_value = "ana"
+        tab_settings.refresh_person_list()
+
+        # Solo debe haberse renderizado 1 fila con el nombre de ANA
+        created_labels = [call[1].get("text") for call in mock_label.call_args_list if "text" in call[1]]
+        self.assertIn("SGT GOMEZ ANA", created_labels)
+        self.assertNotIn("COM PEREZ JUAN", created_labels)
+
     @patch("views.tabs.tab_plan.ctk.CTkFont")
     @patch("views.tabs.tab_plan._avatar_ctk")
     @patch("views.tabs.tab_plan.ctk.CTkLabel")
@@ -358,6 +390,58 @@ class ImprovementsTests(unittest.TestCase):
         mock_parent.clipboard_clear.assert_called_once()
         mock_parent.clipboard_append.assert_called_once_with("https://github.com/MartinLopez1011/Sistema-de-turnos.git")
         mock_btn.configure.assert_called_once()
+
+    @patch("views.components.dialogs.ctk.CTkFont")
+    @patch("views.components.dialogs.ctk.CTkButton")
+    @patch("views.components.dialogs.ctk.CTkLabel")
+    @patch("views.components.dialogs.ctk.CTkFrame")
+    @patch("views.components.dialogs.ctk.CTkToplevel")
+    def test_date_picker_dialog_multi_mode(self, mock_toplevel, mock_frame, mock_label, mock_btn, mock_font):
+        from views.components.dialogs import DatePickerDialog
+        mock_parent = MagicMock()
+        mock_parent.winfo_width.return_value = 500
+        mock_parent.winfo_height.return_value = 500
+        mock_parent.winfo_x.return_value = 100
+        mock_parent.winfo_y.return_value = 100
+
+        callback_mock = MagicMock()
+        DatePickerDialog.show(
+            mock_parent,
+            initial_date="05/10/2026, 12/10/2026",
+            callback=callback_mock,
+            mode="multi"
+        )
+        mock_toplevel.assert_called_once_with(mock_parent)
+
+
+    @patch("views.tabs.tab_plan.ctk.CTkFont")
+    @patch("views.tabs.tab_plan._avatar_ctk")
+    @patch("views.tabs.tab_plan.ctk.CTkFrame")
+    def test_tab_plan_person_dropdown_and_avatar(self, mock_frame, mock_avatar, mock_font):
+        from views.tabs.tab_plan import TabPlan
+        mock_app = MagicMock()
+        mock_app.controller = MagicMock()
+        mock_app.controller.get_personal_list.return_value = ["PEREZ JUAN", "GOMEZ ANA"]
+
+        tab_plan = TabPlan.__new__(TabPlan)
+        tab_plan.app = mock_app
+        tab_plan.controller = mock_app.controller
+        tab_plan.person_dropdown = MagicMock()
+        tab_plan.person_var = MagicMock()
+        tab_plan.person_var.get.return_value = "PEREZ JUAN"
+        tab_plan.person_avatar_container = MagicMock()
+        tab_plan.person_avatar_container.winfo_children.return_value = []
+        tab_plan.from_entry = MagicMock()
+
+        # refresh_personal sets values and updates avatar
+        tab_plan.refresh_personal(["PEREZ JUAN", "GOMEZ ANA"])
+        tab_plan.person_dropdown.configure.assert_called_with(values=["PEREZ JUAN", "GOMEZ ANA"])
+        mock_avatar.assert_called_with(tab_plan.person_avatar_container, "PJ", unittest.mock.ANY, size=38)
+
+        # _on_person_selected focuses from_entry and updates avatar
+        tab_plan._on_person_selected("GOMEZ ANA")
+        tab_plan.from_entry.focus_set.assert_called_once()
+        mock_avatar.assert_called_with(tab_plan.person_avatar_container, "GA", unittest.mock.ANY, size=38)
 
 
 if __name__ == "__main__":
