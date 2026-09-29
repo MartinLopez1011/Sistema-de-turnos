@@ -328,7 +328,8 @@ class TabCalendar:
         _, days_in = calendar.monthrange(year, month)
 
         stats_row_offset = 0
-        n_exc = len(exceptions)
+        month_visible_excs = [e for e in exceptions if e['fecha'].month == month and e['fecha'].year == year]
+        n_exc = len(month_visible_excs)
         exception_summary = ctk.CTkFrame(self.vista_scroll, fg_color="transparent", height=28)
         exception_summary.grid(row=stats_row_offset, column=0, sticky="ew", padx=20, pady=(6, 0))
         exception_summary.grid_propagate(False)

@@ -117,6 +117,22 @@ class CrossMonthExceptionsTests(unittest.TestCase):
         # Debe incluir 2026-11-01
         self.assertTrue(any(e["fecha"] == date(2026, 11, 1) and e["persona"] == "COM PEREZ JUAN" for e in oct_exc))
 
+    def test_get_exceptions_for_period_does_not_leak_prior_month_exceptions(self):
+        """No debe incluir excepciones del mes previo que queden fuera de las semanas de planificación."""
+        # Fecha en septiembre fuera de las semanas de octubre
+        self.manager.add_exception_date("COM PEREZ JUAN", date(2026, 9, 5), "DA")
+        # Fecha en septiembre dentro de la primera semana de octubre (28/09 al 04/10)
+        self.manager.add_exception_date("COM GONZALEZ MARIA", date(2026, 9, 30), "FL")
+        # Fecha en noviembre fuera de las semanas de octubre (después del 01/11)
+        self.manager.add_exception_date("COM SOTO CARLOS", date(2026, 11, 20), "LIC")
+
+        oct_exc = self.manager.get_exceptions_for_period(2026, 10)
+        oct_dates = {e["fecha"] for e in oct_exc}
+
+        self.assertIn(date(2026, 9, 30), oct_dates)
+        self.assertNotIn(date(2026, 9, 5), oct_dates)
+        self.assertNotIn(date(2026, 11, 20), oct_dates)
+
     def test_tab_plan_add_range_explicit_dates(self):
         """Verifica que TabPlan interprete Desde y Hasta con fechas DD/MM/AAAA."""
         mock_app = MagicMock()
