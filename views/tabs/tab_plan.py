@@ -894,23 +894,24 @@ class TabPlan:
             new_exc = []
             updated_exc = []
             skipped_existing = []
+            to_persist = []
 
             for date_obj in target_dates:
                 if date_obj in existing_map:
                     item = existing_map[date_obj]
-                    changed = False
-                    if item.get('tipo') != exc_type:
+                    new_motivo = motivo if exc_type == 'OTR' else ''
+                    if item.get('tipo') != exc_type or (item.get('motivo') or '') != new_motivo:
+                        # Se persiste vía add_exceptions (add_exception_date actualiza en sitio)
+                        upd = {'persona': person, 'fecha': date_obj, 'tipo': exc_type}
+                        if new_motivo:
+                            upd['motivo'] = new_motivo
+                        to_persist.append(upd)
+                        # Refleja el cambio en memoria de inmediato (la persistencia va por add_exceptions)
                         item['tipo'] = exc_type
-                        changed = True
-                    if exc_type == 'OTR':
-                        if item.get('motivo') != motivo:
-                            item['motivo'] = motivo
-                            changed = True
-                    elif 'motivo' in item:
-                        del item['motivo']
-                        changed = True
-
-                    if changed:
+                        if new_motivo:
+                            item['motivo'] = new_motivo
+                        else:
+                            item.pop('motivo', None)
                         updated_exc.append(date_obj)
                     else:
                         skipped_existing.append(date_obj)
@@ -930,17 +931,8 @@ class TabPlan:
                 )
                 return
 
-            if new_exc:
-                self.app.add_exceptions(new_exc)
-            if updated_exc:
-                if hasattr(self.app, 'exceptions_by_period') and hasattr(self.app, 'active_period_key'):
-                    self.app.exceptions_by_period[self.app.active_period_key] = self.app.exceptions
-                if hasattr(self.app, 'refresh_plan_views'):
-                    self.app.refresh_plan_views()
-                if hasattr(self.app, 'mark_dirty'):
-                    self.app.mark_dirty()
-                if hasattr(self, 'refresh_exceptions') and getattr(self, 'exception_list', None) is not None:
-                    self.refresh_exceptions(self.app.exceptions)
+            if new_exc or to_persist:
+                self.app.add_exceptions(new_exc + to_persist)
 
             if hasattr(self, 'from_entry') and self.from_entry:
                 self.from_entry.delete(0, 'end')
