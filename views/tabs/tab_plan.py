@@ -1118,7 +1118,9 @@ class TabPlan:
                 ).grid(row=2 + n, column=0, columnspan=3, sticky="w", padx=10, pady=(0, 6))
 
         # Actualizar tarjeta de próximo turno (compatible con pruebas)
-        first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)
+        first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][0] == today), None)
+        if not first_shift:
+            first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)
         if not first_shift:
             first_shift = next((sh for sh in shifts if sh.get('persona')), None)
 

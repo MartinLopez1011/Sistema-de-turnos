@@ -336,7 +336,7 @@ class ExcelHandler:
             for sh in shifts:
                 if sh.get('persona') == person:
                     s_d, e_d = sh['semana']
-                    if (s_d.year == year and s_d.month == month) or (e_d.year == year and e_d.month == month):
+                    if s_d.year == year and s_d.month == month:
                         turnos_cnt += 1
 
             da_cnt = 0

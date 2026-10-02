@@ -305,15 +305,17 @@ class TabCalendar:
 
         cur_week_days = set()
         if is_cur_mo:
-            for sh in shifts:
-                s, e = sh['semana']
-                if s <= today <= e:
-                    cur = s
-                    while cur <= e:
-                        if cur.month == month:
-                            cur_week_days.add(cur.day)
-                        cur += timedelta(days=1)
-                    break
+            # Si hoy es lunes de relevo, priorizar la semana que inicia hoy
+            active_shift = next((sh for sh in shifts if sh['semana'][0] == today), None)
+            if not active_shift:
+                active_shift = next((sh for sh in shifts if sh['semana'][0] <= today <= sh['semana'][1]), None)
+            if active_shift:
+                s, e = active_shift['semana']
+                cur = s
+                while cur <= e:
+                    if cur.month == month:
+                        cur_week_days.add(cur.day)
+                    cur += timedelta(days=1)
 
         personal = self.controller.get_personal_list()
         assigned_names = {sh['persona'] for sh in shifts if sh.get('persona')}

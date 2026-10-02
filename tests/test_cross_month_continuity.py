@@ -58,22 +58,22 @@ class TestCrossMonthContinuity(unittest.TestCase):
 
         # Última semana de Noviembre
         last_nov = nov_shifts[-1]
-        self.assertEqual(last_nov["semana"], (date(2026, 11, 30), date(2026, 12, 6)))
+        self.assertEqual(last_nov["semana"], (date(2026, 11, 30), date(2026, 12, 7)))
         self.assertEqual(last_nov["persona"], "PRO ROSAS FERNANDEZ RODRIGO")
 
         # Primera semana de Diciembre debe ser exactamente la misma semana limítrofe
         first_dec = dec_shifts[0]
-        self.assertEqual(first_dec["semana"], (date(2026, 11, 30), date(2026, 12, 6)))
+        self.assertEqual(first_dec["semana"], (date(2026, 11, 30), date(2026, 12, 7)))
         self.assertEqual(first_dec["persona"], "PRO ROSAS FERNANDEZ RODRIGO")
 
         # Segunda semana de Diciembre es donde Pino recupera su guardia
         second_dec = dec_shifts[1]
-        self.assertEqual(second_dec["semana"], (date(2026, 12, 7), date(2026, 12, 13)))
+        self.assertEqual(second_dec["semana"], (date(2026, 12, 7), date(2026, 12, 14)))
         self.assertEqual(second_dec["persona"], "PRO PINO ALARCON JOSE MIGUEL")
 
     def test_bridging_week_preserved_after_advance_month(self):
         """
-        Verifica que al cerrar formalmente Noviembre, la semana 2026-11-30_2026-12-06
+        Verifica que al cerrar formalmente Noviembre, la semana 2026-11-30_2026-12-07
         se guarde con Rosas en el historial y la previsualización de Diciembre
         siga mostrando a Rosas en la primera semana y Pino en la segunda.
         """
@@ -83,7 +83,7 @@ class TestCrossMonthContinuity(unittest.TestCase):
 
         # Comprobar historial guardado
         self.assertEqual(
-            self.manager.historial.get("2026-11-30_2026-12-06"),
+            self.manager.historial.get("2026-11-30_2026-12-07"),
             "PRO ROSAS FERNANDEZ RODRIGO"
         )
 

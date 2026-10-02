@@ -847,7 +847,7 @@ class ShiftManager:
                 continue
             if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
                 continue
-            if week_end < before_date and week_end > latest:
+            if week_start < before_date and week_end <= before_date and week_end > latest:
                 latest = week_end
 
         # Revisar inicio inmutable
@@ -859,14 +859,14 @@ class ShiftManager:
                 continue
             if ignored_period and week_start <= ignored_period[1] and week_end >= ignored_period[0]:
                 continue
-            if week_end < before_date and week_end > latest:
+            if week_start < before_date and week_end <= before_date and week_end > latest:
                 latest = week_end
 
         # Revisar turnos ya calculados en esta sesión
         for sh in shifts_so_far:
             if sh.get('persona') == nombre:
                 sh_start, sh_end = sh['semana']
-                if sh_end < before_date and sh_end > latest:
+                if sh_start < before_date and sh_end <= before_date and sh_end > latest:
                     latest = sh_end
 
         return latest
@@ -911,6 +911,14 @@ class ShiftManager:
         return None
 
     def _historical_assignment_for_date(self, target_date):
+        for week_key, person in self.historial.items():
+            w_start, w_end = _parse_week_range(week_key)
+            if w_start and w_end and w_start <= target_date <= w_end:
+                return person
+        for week_key, person in self.inicio.items():
+            w_start, w_end = _parse_week_range(week_key)
+            if w_start and w_end and w_start <= target_date <= w_end:
+                return person
         week = self._week_for_date(target_date.year, target_date.month, target_date)
         if not week:
             return None
@@ -1007,9 +1015,21 @@ class ShiftManager:
         return normalized
 
     def _build_weeks(self, year, month):
-        """Devuelve lista de (start_date, end_date) para cada semana del mes."""
+        """Devuelve lista de (start_date, end_date) para cada semana del mes.
+        A partir del 5 de Octubre de 2026, los turnos se calculan de lunes a lunes (+7 días)
+        solapados (el mismo lunes termina un turno e inicia el siguiente).
+        """
         cal = calendar.Calendar().monthdatescalendar(year, month)
-        return [(week[0], week[-1]) for week in cal]
+        weeks = []
+        cutoff = date(2026, 10, 5)
+        for week in cal:
+            w_start = week[0]
+            if w_start >= cutoff:
+                w_end = w_start + timedelta(days=7)
+            else:
+                w_end = week[-1]
+            weeks.append((w_start, w_end))
+        return weeks
 
     def _init_rotation_state(self, year, month, state):
         """Carga el estado de rotación desde snapshot, estado externo o valores globales."""
@@ -1052,7 +1072,10 @@ class ShiftManager:
             if w0_start and w0_start < date(year, month, 1):
                 w0_key = f"{w0_start.isoformat()}_{weeks[0][1].isoformat()}"
                 if w0_key not in self.historial:
-                    needs_projection_for_bridge = True
+                    alt_end = w0_start + timedelta(days=6) if (weeks[0][1] - w0_start).days == 7 else w0_start + timedelta(days=7)
+                    alt_key = f"{w0_start.isoformat()}_{alt_end.isoformat()}"
+                    if alt_key not in self.historial:
+                        needs_projection_for_bridge = True
 
             if not needs_projection_for_bridge:
                 return {
@@ -1133,12 +1156,21 @@ class ShiftManager:
 
     def _try_immutable(self, week_key, start_date, end_date):
         """Intenta asignar desde el registro de inicio inmutable."""
-        if hasattr(self, 'inicio') and week_key in self.inicio:
-            return {
-                'semana': (start_date, end_date),
-                'persona': self.inicio[week_key],
-                'saltados': []
-            }
+        if hasattr(self, 'inicio') and self.inicio:
+            if week_key in self.inicio:
+                return {
+                    'semana': (start_date, end_date),
+                    'persona': self.inicio[week_key],
+                    'saltados': []
+                }
+            alt_end = start_date + timedelta(days=6) if (end_date - start_date).days == 7 else start_date + timedelta(days=7)
+            alt_key = f"{start_date.isoformat()}_{alt_end.isoformat()}"
+            if alt_key in self.inicio:
+                return {
+                    'semana': (start_date, end_date),
+                    'persona': self.inicio[alt_key],
+                    'saltados': []
+                }
         return None
 
     def _try_manual_assignment(self, week_key, start_date, end_date,
@@ -1146,10 +1178,17 @@ class ShiftManager:
                                current_person_index, current_siguiente_id,
                                current_pendientes):
         """Intenta asignación manual directa."""
-        if not manual_assignments or week_key not in manual_assignments:
+        if not manual_assignments:
             return None, current_person_index, current_siguiente_id, current_pendientes
 
-        nombre_manual = manual_assignments[week_key]
+        nombre_manual = manual_assignments.get(week_key)
+        if not nombre_manual:
+            alt_end = start_date + timedelta(days=6) if (end_date - start_date).days == 7 else start_date + timedelta(days=7)
+            alt_key = f"{start_date.isoformat()}_{alt_end.isoformat()}"
+            nombre_manual = manual_assignments.get(alt_key)
+
+        if not nombre_manual:
+            return None, current_person_index, current_siguiente_id, current_pendientes
         manual_id = next((p['id'] for p in self.personal if p['nombre'] == nombre_manual), None)
         if manual_id:
             current_pendientes = [p for p in current_pendientes if p != manual_id]
@@ -1266,8 +1305,15 @@ class ShiftManager:
                 continue
                 
             # 3. Un mes cerrado debe conservar exactamente su asignación.
-            if week_key in effective_historial:
-                historical_person = effective_historial[week_key]
+            hist_key = week_key
+            if hist_key not in effective_historial:
+                alt_end = start_date + timedelta(days=6) if (end_date - start_date).days == 7 else start_date + timedelta(days=7)
+                alt_key = f"{start_date.isoformat()}_{alt_end.isoformat()}"
+                if alt_key in effective_historial:
+                    hist_key = alt_key
+
+            if hist_key in effective_historial:
+                historical_person = effective_historial[hist_key]
                 historical_exception = any(
                     exc['persona'] == historical_person and
                     start_date <= exc['fecha'] <= end_date and
@@ -1276,8 +1322,8 @@ class ShiftManager:
                 )
                 has_manual_override = bool(
                     manual_assignments and
-                    week_key in manual_assignments and
-                    manual_assignments[week_key] != historical_person
+                    (week_key in manual_assignments or hist_key in manual_assignments) and
+                    (manual_assignments.get(week_key) or manual_assignments.get(hist_key)) != historical_person
                 )
                 is_prev_month_bridge = (start_date < date(year, month, 1))
                 recalc_this_week = history_recalculated and not is_prev_month_bridge
@@ -1306,8 +1352,10 @@ class ShiftManager:
                     prev_period_key = f"{start_date.year}-{start_date.month:02d}"
                     is_hist_manual = bool(
                         (self.asignaciones_manuales.get(snapshot_key, {}).get(week_key) == historical_person) or
+                        (self.asignaciones_manuales.get(snapshot_key, {}).get(hist_key) == historical_person) or
                         (self.asignaciones_manuales.get(prev_period_key, {}).get(week_key) == historical_person) or
-                        (manual_assignments and manual_assignments.get(week_key) == historical_person)
+                        (self.asignaciones_manuales.get(prev_period_key, {}).get(hist_key) == historical_person) or
+                        (manual_assignments and (manual_assignments.get(week_key) == historical_person or manual_assignments.get(hist_key) == historical_person))
                     )
                     shifts.append({
                         'semana': (start_date, end_date),
@@ -1648,11 +1696,12 @@ class ShiftManager:
                 # No sobrescribir el inicio
                 if hasattr(self, 'inicio') and week_key in self.inicio:
                     continue
-                # Si es una semana limítrofe del mes anterior y dicho mes ya fue cerrado formalmente,
-                # proteger su asignación a menos que el usuario haya establecido una asignación manual explícita en este mes.
+                alt_end = start_date + timedelta(days=6) if (end_date - start_date).days == 7 else start_date + timedelta(days=7)
+                alt_key = f"{start_date.isoformat()}_{alt_end.isoformat()}"
+                has_manual = bool(manual_assignments and (week_key in manual_assignments or alt_key in manual_assignments))
                 if (start_date < date(year, month, 1) and
                         self.is_month_closed(start_date.year, start_date.month) and
-                        not (manual_assignments and week_key in manual_assignments)):
+                        not has_manual):
                     continue
                 self.historial[week_key] = person
                 
