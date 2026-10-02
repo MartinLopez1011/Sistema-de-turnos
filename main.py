@@ -49,6 +49,11 @@ def main():
     app = TurnosApp(controller)
 
     def tk_exception_handler(exc_type, exc_value, exc_tb):
+        # Ignorar eventos tardíos de foco en ventanas ya destruidas (lifecycle benigno de Tkinter/CustomTkinter)
+        if "bad window path name" in str(exc_value):
+            logger.debug("Evento tardío ignorado para ventana destruida: %s", exc_value)
+            return
+
         err_msg = "".join(traceback.format_exception(exc_type, exc_value, exc_tb))
         logger.error("Error en callback de interfaz gráfica:\n%s", err_msg)
         try:

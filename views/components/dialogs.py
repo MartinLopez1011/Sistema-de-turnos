@@ -1,4 +1,5 @@
 import calendar
+import threading
 from datetime import date, datetime
 import customtkinter as ctk
 from views.theme import P, EXC_COLORS, MESES, FONT_FAMILY
@@ -790,12 +791,22 @@ class LoadingModal:
                 pass
             try:
                 if self.dialog.winfo_exists():
-                    self.dialog.grab_release()
+                    try:
+                        self.dialog.grab_release()
+                    except Exception:
+                        pass
+                    if self.parent and hasattr(self.parent, "winfo_exists") and self.parent.winfo_exists():
+                        try:
+                            self.parent.focus_set()
+                        except Exception:
+                            pass
                     self.dialog.destroy()
             except Exception:
                 pass
 
-        if self.parent:
+        if threading.current_thread() is threading.main_thread():
+            _destroy()
+        elif self.parent:
             self.parent.after(0, _destroy)
 
 

@@ -15,6 +15,41 @@ logger = get_logger("email_notifier")
 
 EMAIL_REGEX = re.compile(r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+(\.[a-zA-Z0-9-]+)+$")
 
+def get_vpn_info_note() -> str:
+    """
+    Construye la nota informativa de VPN con datos parametrizados desde variables de entorno (.env).
+    Garantiza que ninguna URL institucional ni correo de soporte quede hardcodeado en el código fuente.
+    """
+    proveedor = get_env_var("VPN_PROVEEDOR", "Proveedor Telecom").strip() or "Proveedor Telecom"
+    form_url = get_env_var(
+        "VPN_FORMULARIO_URL",
+        "https://ejemplo.institucion.gob.cl/download/FormSolicitudVPN.pdf"
+    ).strip()
+    correo_soporte = get_env_var(
+        "VPN_CORREO_SOPORTE",
+        "solicitudes.vpn@institucion.gob.cl"
+    ).strip()
+
+    return (
+        "IMPORTANTE — GESTIÓN Y SOLICITUD DE VPN:\n\n"
+        "• RECORDATORIO PARA GUARDIAS:\n"
+        "  Se recuerda a todos los funcionarios que deban cumplir turnos de guardia y NO cuenten\n"
+        "  con VPN activa, solicitarla y gestionarla con la debida anticipación antes de su turno.\n\n"
+        "• SOLICITUD DE CREACIÓN DE CUENTA:\n"
+        "  Respecto de las solicitudes de creación de cuenta, estas deberán efectuarse a través\n"
+        "  del siguiente enlace para descargar el formulario oficial:\n"
+        f"  {form_url}\n"
+        "  Una vez completado, este deberá ser firmado tanto por el funcionario solicitante como\n"
+        "  por el Jefe de la Unidad, para su posterior remisión a la Jefatura Nacional.\n\n"
+        f"• VIGENCIA Y ACTIVACIÓN ({proveedor.upper()}):\n"
+        f"  - Vigencia: 5 meses contados desde la recepción del correo de {proveedor} con el código QR\n"
+        "    (y no desde la instalación del programa).\n"
+        "  - Activación QR: Debe escanearse dentro de las 24 horas siguientes a su recepción.\n"
+        f"    En caso de vencerse, remitir correo a {correo_soporte} indicando\n"
+        "    y justificando el motivo de la no activación para solicitar un nuevo código."
+    )
+
+
 
 def is_valid_email(email: str) -> bool:
     """Verifica si una cadena tiene una sintaxis de correo electrónico válida."""
@@ -149,6 +184,8 @@ def format_plain_text_message(mes_nombre: str, anio: int, cambios: list) -> str:
 
     lineas.extend([
         "-" * 56,
+        get_vpn_info_note(),
+        "-" * 56,
         "Este es un aviso automático generado por el Sistema de Gestión de Turnos.",
         "Favor tomar conocimiento para la debida coordinación de los servicios."
     ])
@@ -173,6 +210,8 @@ def format_save_month_message(mes_nombre: str, anio: int) -> str:
         "",
         "Favor revisar y tomar conocimiento para la debida coordinación de los servicios.",
         "",
+        "-" * 56,
+        get_vpn_info_note(),
         "-" * 56,
         "Este es un aviso automático generado por el Sistema de Gestión de Turnos.",
     ]
