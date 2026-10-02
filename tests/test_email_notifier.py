@@ -1,3 +1,4 @@
+import os
 import unittest
 from unittest.mock import patch, MagicMock
 import urllib.error
@@ -5,6 +6,8 @@ from utils.email_notifier import (
     is_valid_email,
     check_internet_connection,
     format_plain_text_message,
+    format_save_month_message,
+    get_vpn_info_note,
     send_notification_webhook
 )
 
@@ -45,6 +48,32 @@ class TestEmailNotifier(unittest.TestCase):
         self.assertIn("MARIA GONZALEZ", msg)
         self.assertIn("Permuta acordada", msg)
         self.assertIn("• CAMBIO #1", msg)
+        # Verificación nota VPN dinámica
+        self.assertIn("IMPORTANTE — GESTIÓN Y SOLICITUD DE VPN", msg)
+        self.assertIn("RECORDATORIO PARA GUARDIAS", msg)
+        self.assertIn("SOLICITUD DE CREACIÓN DE CUENTA", msg)
+        self.assertIn(get_vpn_info_note(), msg)
+
+    def test_format_save_month_message(self):
+        msg = format_save_month_message("Octubre", 2026)
+        self.assertIn("SISTEMA DE GESTIÓN DE TURNOS — PLANIFICACIÓN MENSUAL", msg)
+        self.assertIn("Octubre 2026", msg)
+        self.assertIn("Se adjunta el archivo Excel", msg)
+        self.assertIn("IMPORTANTE — GESTIÓN Y SOLICITUD DE VPN", msg)
+        self.assertIn("RECORDATORIO PARA GUARDIAS", msg)
+        self.assertIn("SOLICITUD DE CREACIÓN DE CUENTA", msg)
+        self.assertIn(get_vpn_info_note(), msg)
+
+    def test_get_vpn_info_note_custom_env(self):
+        with patch.dict(os.environ, {
+            "VPN_PROVEEDOR": "TelecomTest",
+            "VPN_FORMULARIO_URL": "https://ejemplo.test/formulario.pdf",
+            "VPN_CORREO_SOPORTE": "soporte@ejemplo.test"
+        }):
+            note = get_vpn_info_note()
+            self.assertIn("TELECOMTEST", note)
+            self.assertIn("https://ejemplo.test/formulario.pdf", note)
+            self.assertIn("soporte@ejemplo.test", note)
 
     @patch("socket.create_connection")
     def test_check_internet_connection(self, mock_socket):
