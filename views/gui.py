@@ -528,7 +528,7 @@ class TurnosApp(ctk.CTk):
             self.manual_motives_by_period[self.active_period_key] = self.manual_motives
         self.refresh_plan_views()
         self.mark_dirty()
-        self.set_status(f"Guardia asignada manualmente: {person_name}", "ok")
+        self.set_status(f"Turno asignado manualmente: {person_name}", "ok")
 
     def get_manual_motive(self, week_key):
         return self.manual_motives.get(week_key, "")
@@ -813,7 +813,7 @@ class TurnosApp(ctk.CTk):
                         "motivo": motives_snapshot.get(wk, "No especificado"),
                         "fecha_registro": datetime.now().strftime("%d/%m/%Y %H:%M")
                     })
-            subject = f"[Sistema de Turnos] Modificación de Guardia - {MESES[month - 1]} {year}"
+            subject = f"[Sistema de Turnos] Modificación de Turno - {MESES[month - 1]} {year}"
             body_text = format_plain_text_message(MESES[month - 1], year, cambios_detalle)
         else:
             subject = f"[Sistema de Turnos] Planificación {MESES[month - 1]} {year}"
