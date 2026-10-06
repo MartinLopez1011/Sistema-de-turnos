@@ -18,10 +18,10 @@ Planificación confiable y automatizada de turnos semanales con asignación rota
 - ✓ Notificaciones por correo electrónico vía SMTP directo y webhook Google Apps Script — existing
 - ✓ Persistencia atómica de configuración e historial en `config.json` con respaldos automáticos — existing
 - ✓ Interfaz gráfica moderna en modo oscuro (CustomTkinter) con calendario mensual y pestañas de ajuste — existing
+- ✓ Reemplazar la terminología "guardia/guardias" por "turno/turnos" en toda la interfaz gráfica de usuario (GUI: botones, badges, modales, hovers) — Phase 1
 
 ### Active
 
-- [ ] Reemplazar la terminología "guardia/guardias" por "turno/turnos" en toda la interfaz gráfica de usuario (GUI: pestañas de planificación, calendario, ajustes, botones, badges y diálogos modales)
 - [ ] Actualizar los textos y encabezados en las plantillas de reportes Excel generados (`utils/excel_handler.py`), incluyendo títulos de tablas de cambios y leyendas
 - [ ] Actualizar las plantillas de correos, notificaciones automáticas y notas informativas en `utils/email_notifier.py`
 - [ ] Aplicar concordancia gramatical contextual adecuada (ej: "la guardia" → "el turno", "las guardias" → "los turnos", "de guardia" → "de turno")
@@ -69,4 +69,4 @@ This document evolves at phase transitions and milestone boundaries.
 4. Update Context with current state
 
 ---
-*Last updated: 2026-10-06 after initialization*
+*Last updated: 2026-10-06 after Phase 1*
