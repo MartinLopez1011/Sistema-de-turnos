@@ -27,6 +27,7 @@ Plan para unificar la terminología de "guardia" a "turnos" en toda la aplicaci�
   3. La pestaña de calendario `views/tabs/tab_calendar.py` muestra mensajes de hover y celda con "Turno manual" y "Turno regular".
   4. La ventana principal `views/gui.py` muestra mensajes de estado como "Turno asignado manualmente".
 **Plans**: 1 plan
+- [ ] 01-01-PLAN.md — Reemplazar terminología de guardia en diálogos, badges y vistas GUI
 
 ### Phase 2: Reportes Excel y Plantillas de Notificaciones
 **Goal**: Estandarizar la generación de reportes mensuales en Excel y el envío de notificaciones automáticas con la terminología de turnos.
