@@ -9,10 +9,10 @@ Requirements for initial release. Each maps to roadmap phases.
 
 ### Interfaz Gráfica (GUI)
 
-- [ ] **GUI-01**: Modales y diálogos de asignación en `views/components/dialogs.py` muestran "Asignar Turno", "Cambiar Turno" y textos contextuales asociados.
-- [ ] **GUI-02**: Pestaña de planificación `views/tabs/tab_plan.py` muestra badges actualizados ("TURNO EN CURSO", "PRÓXIMO TURNO") y opciones contextuales sin referencia a "guardia".
-- [ ] **GUI-03**: Pestaña de calendario `views/tabs/tab_calendar.py` muestra mensajes de hover y ayuda actualizados ("Turno manual", "Turno regular").
-- [ ] **GUI-04**: Ventana principal `views/gui.py` muestra mensajes de barra de estado consistentes ("Turno asignado manualmente").
+- [x] **GUI-01**: Modales y diálogos de asignación en `views/components/dialogs.py` muestran "Asignar Turno", "Cambiar Turno" y textos contextuales asociados.
+- [x] **GUI-02**: Pestaña de planificación `views/tabs/tab_plan.py` muestra badges actualizados ("TURNO EN CURSO", "PRÓXIMO TURNO") y opciones contextuales sin referencia a "guardia".
+- [x] **GUI-03**: Pestaña de calendario `views/tabs/tab_calendar.py` muestra mensajes de hover y ayuda actualizados ("Turno manual", "Turno regular").
+- [x] **GUI-04**: Ventana principal `views/gui.py` muestra mensajes de barra de estado consistentes ("Turno asignado manualmente").
 
 ### Reportes Excel
 
@@ -55,10 +55,10 @@ Which phases cover which requirements. Updated during roadmap creation.
 
 | Requirement | Phase | Status |
 |-------------|-------|--------|
-| GUI-01 | Phase 1 | Pending |
-| GUI-02 | Phase 1 | Pending |
-| GUI-03 | Phase 1 | Pending |
-| GUI-04 | Phase 1 | Pending |
+| GUI-01 | Phase 1 | Complete |
+| GUI-02 | Phase 1 | Complete |
+| GUI-03 | Phase 1 | Complete |
+| GUI-04 | Phase 1 | Complete |
 | EXCEL-01 | Phase 2 | Pending |
 | EXCEL-02 | Phase 2 | Pending |
 | EXCEL-03 | Phase 2 | Pending |
