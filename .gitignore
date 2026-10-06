@@ -9,7 +9,7 @@ __pycache__/
 .pytest_cache/
 
 # Archivos de configuración locales y respaldos con datos operativos
-config.json
+/config.json
 temp_config.json
 config.privado.json
 config.real.json
