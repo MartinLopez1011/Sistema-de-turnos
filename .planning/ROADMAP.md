@@ -10,7 +10,7 @@ Plan para unificar la terminología de "guardia" a "turnos" en toda la aplicaci�
 - Integer phases (1, 2, 3): Planned milestone work
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
-- [ ] **Phase 1: Interfaz de Usuario y Diálogos Modales** - Reemplazar "guardia" por "turno/turnos" en botones, badges, modales y mensajes de la GUI con concordancia gramatical
+- [x] **Phase 1: Interfaz de Usuario y Diálogos Modales** - Reemplazar "guardia" por "turno/turnos" en botones, badges, modales y mensajes de la GUI con concordancia gramatical (completed 2026-10-06)
 - [ ] **Phase 2: Reportes Excel y Plantillas de Notificaciones** - Actualizar títulos, auditorías, leyendas y plantillas de correo/webhook a la terminología de turnos
 - [ ] **Phase 3: Documentación y Validación de Pruebas** - Sincronizar documentación y asegurar que toda la suite de pruebas automatizadas pase exitosamente
 
@@ -28,7 +28,7 @@ Plan para unificar la terminología de "guardia" a "turnos" en toda la aplicaci�
   3. La pestaña de calendario `views/tabs/tab_calendar.py` muestra mensajes de hover y celda con "Turno manual" y "Turno regular".
   4. La ventana principal `views/gui.py` muestra mensajes de estado como "Turno asignado manualmente".
 
-**Plans**: 1/1 plans executed
+**Plans**: 1/1 plans complete
 - [x] 01-01-PLAN.md — Reemplazar terminología de guardia en diálogos, badges y vistas GUI
 
 ### Phase 2: Reportes Excel y Plantillas de Notificaciones
