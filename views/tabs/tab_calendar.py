@@ -496,9 +496,9 @@ class TabCalendar:
                 if has_t:
                     if is_man:
                         mot = manual_shift_motives.get((persona, d), "Cambio manual registrado")
-                        m_text = f"📌 Guardia manual de turno: {p_short} (Día {d}) — Motivo: {mot}"
+                        m_text = f"📌 Turno manual: {p_short} (Día {d}) — Motivo: {mot}"
                     else:
-                        m_text = f"🗓 Guardia de turno regular: {p_short} (Día {d})"
+                        m_text = f"🗓 Turno regular: {p_short} (Día {d})"
                 elif exc_tipo == "DA":
                     m_text = f"⏭ Día Administrativo (DA): {p_short} (Día {d})"
                 elif exc_tipo == "FL":

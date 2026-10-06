@@ -1071,7 +1071,7 @@ class TabPlan:
                 dates_str = f"{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}"
                 res = ChangeShiftDialog.show(
                     self.app,
-                    title="Cambiar Guardia de Turno",
+                    title="Cambiar Turno",
                     dates_prompt=dates_str,
                     persons=available,
                     current_person=cur_p
@@ -1153,7 +1153,7 @@ class TabPlan:
 
         badge_bg = P["today_bg"] if is_current else P["next_bg"]
         badge_fg = P["accent"] if is_current else P["text_a"]
-        badge_text = "● GUARDIA EN CURSO" if is_current else "⏳ PRÓXIMO TURNO"
+        badge_text = "● TURNO EN CURSO" if is_current else "⏳ PRÓXIMO TURNO"
 
         badge_f = ctk.CTkFrame(self.next_turno_frame, fg_color=badge_bg, corner_radius=5)
         badge_f.pack(anchor="w", padx=10, pady=(8, 4))
