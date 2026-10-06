@@ -448,7 +448,7 @@ class SelectPersonDialog:
             font=ctk.CTkFont(family=FONT_FAMILY, size=12)
         ).pack(side="left")
         ctk.CTkButton(
-            btn_frame, text="Asignar Guardia",
+            btn_frame, text="Asignar Turno",
             fg_color=P["green_d"], hover_color=P["green"],
             text_color=P["text"], command=submit, width=140, height=36,
             corner_radius=8, cursor="hand2",
@@ -602,14 +602,14 @@ class ChangeShiftDialog:
 
         # Semana afectada
         ctk.CTkLabel(
-            dialog, text=f"Semana de guardia: {dates_prompt}",
+            dialog, text=f"Semana de turno: {dates_prompt}",
             font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             text_color=P["text"], anchor="w"
         ).pack(fill="x", padx=24, pady=(4, 6))
 
         # Selector de persona
         ctk.CTkLabel(
-            dialog, text="Nuevo funcionario asignado a la guardia:",
+            dialog, text="Nuevo funcionario asignado al turno:",
             font=ctk.CTkFont(family=FONT_FAMILY, size=12),
             text_color=P["text_s"], anchor="w"
         ).pack(fill="x", padx=24, pady=(0, 2))
