@@ -41,7 +41,7 @@ Se define como **Información Sensible y Protegida** todo dato que permita indiv
 | :--- | :--- | :--- | :--- |
 | **Datos Personales (PII)** | Nombres y apellidos completos, cargos o funciones operativas, identificadores de personal y asignaciones de servicio. | **Alto** | Prohibido almacenar en repositorios remotos. En pruebas y plantillas debe usarse únicamente información sintética / ficticia. |
 | **Datos de Contacto** | Correos electrónicos laborales o corporativos (`@ejemplo.com`), correos particulares, teléfonos de contacto. | **Crítico** | Prohibido exponer en GitHub o archivos versionados. En configuración de prueba usar dominios genéricos de ejemplo (`usuario@ejemplo.com`). |
-| **Datos Médicos y Personales** | Motivos de excepciones de guardia (licencias médicas `LIC`, duelos, accidentes, situaciones familiares `OTR`). | **Crítico** | Confidencialidad médica/laboral. Nunca incluir descripciones reales en archivos de prueba ni en el control de versiones. |
+| **Datos Médicos y Personales** | Motivos de excepciones de turno (licencias médicas `LIC`, duelos, accidentes, situaciones familiares `OTR`). | **Crítico** | Confidencialidad médica/laboral. Nunca incluir descripciones reales en archivos de prueba ni en el control de versiones. |
 | **Credenciales y Secretos** | Contraseñas de Aplicación de Google (16 caracteres), URLs de Webhooks de Google Apps Script (`/exec`), credenciales SMTP. | **Crítico** | Almacenar exclusivamente en variables de entorno locales (`.env`). Prohibido subirlas al repositorio. |
 | **Historial y Auditoría** | Registros de rotación de turnos, bitácora de auditoría de cierres mensuales (`auditoria[]`), archivos `turnos.log`. | **Medio / Alto** | Excluir del control de versiones. Conservar localmente bajo permisos restrictivos. |
 
@@ -131,7 +131,7 @@ Para evitar corrupción de datos por fallas de energía o bloqueos del sistema o
 - **Verificación Previa**: Antes de cualquier intento de conexión SMTP o HTTP, el sistema ejecuta una verificación de conectividad de bajo nivel para prevenir bloqueos de interfaz gráfica en entornos sin red.
 
 ### 6.3 Privacidad en Envíos de Correo Masivo
-- Al despachar avisos automáticos a la dotación, si existen múltiples destinatarios, el sistema debe utilizar **Copia Oculta (CCO / BCC)** para que ningún funcionario visualice las direcciones personales o privadas de los demás miembros de la guardia.
+- Al despachar avisos automáticos a la dotación, si existen múltiples destinatarios, el sistema debe utilizar **Copia Oculta (CCO / BCC)** para que ningún funcionario visualice las direcciones personales o privadas de los demás miembros del equipo de turnos.
 
 ---
 

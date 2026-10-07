@@ -66,7 +66,7 @@ class TestCrossMonthContinuity(unittest.TestCase):
         self.assertEqual(first_dec["semana"], (date(2026, 11, 30), date(2026, 12, 7)))
         self.assertEqual(first_dec["persona"], "PRO ROSAS FERNANDEZ RODRIGO")
 
-        # Segunda semana de Diciembre es donde Pino recupera su guardia
+        # Segunda semana de Diciembre es donde Pino recupera su turno
         second_dec = dec_shifts[1]
         self.assertEqual(second_dec["semana"], (date(2026, 12, 7), date(2026, 12, 14)))
         self.assertEqual(second_dec["persona"], "PRO PINO ALARCON JOSE MIGUEL")

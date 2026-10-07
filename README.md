@@ -1,4 +1,4 @@
-# 🗓️ Sistema de Gestión de Turnos de Guardia
+# 🗓️ Sistema de Gestión de Turnos
 
 <div align="center">
 
@@ -11,7 +11,7 @@
 ![Architecture](https://img.shields.io/badge/architecture-MVC%20%2B%20Domain%20Engine-8B5CF6)
 ![Distribution](https://img.shields.io/badge/dist-PyInstaller%20Standalone%20.exe-orange)
 
-**Aplicación de escritorio moderna, robusta y automatizada para la planificación, asignación rotativa semanal, gestión de excepciones, exportación de reportes oficiales en Excel y notificación por correo de turnos de guardia.**
+**Aplicación de escritorio moderna, robusta y automatizada para la planificación, asignación rotativa semanal, gestión de excepciones, exportación de reportes oficiales en Excel y notificación por correo de turnos.**
 
 [Características](#-características-principales) •
 [Manual de Usuario](#-manual-de-usuario) •
@@ -29,9 +29,9 @@
 
 ## 📌 Descripción General
 
-El **Sistema de Gestión de Turnos** es una solución informática de escritorio diseñada específicamente para resolver la complejidad operativa en la distribución de turnos de guardia semanales en equipos de funcionarios y personal técnico u operativo.
+El **Sistema de Gestión de Turnos** es una solución informática de escritorio diseñada específicamente para resolver la complejidad operativa en la distribución de turnos semanales en equipos de funcionarios y personal técnico u operativo.
 
-La confección manual o artesanal de calendarios en planillas dispersas suele acarrear errores frecuentes: funcionarios que repiten guardias consecutivas tras recuperar permisos, asignación injusta en festivos patrios o fechas de fin de año, pérdida del orden de rotación al cerrar meses fuera de secuencia y falta de comunicación oportuna al equipo cuando se autorizan cambios de última hora.
+La confección manual o artesanal de calendarios en planillas dispersas suele acarrear errores frecuentes: funcionarios que repiten turnos consecutivos tras recuperar permisos, asignación injusta en festivos patrios o fechas de fin de año, pérdida del orden de rotación al cerrar meses fuera de secuencia y falta de comunicación oportuna al equipo cuando se autorizan cambios de última hora.
 
 Este sistema resuelve de raíz dichos problemas integrando un **motor algorítmico determinista con reglas de equidad matemática**, una **interfaz gráfica ergonómica en modo oscuro**, un **generador de reportes oficiales en Excel (.xlsx)** y un **sistema dual de notificación por correo** (SMTP directo con informe adjunto y Webhook de Google Apps Script como respaldo serverless sin costo).
 
@@ -40,12 +40,12 @@ Este sistema resuelve de raíz dichos problemas integrando un **motor algorítmi
 ## ✨ Características Principales
 
 ### 🔄 1. Motor de Rotación Algorítmica Inteligente
-- **Cola Circular Continua:** Asigna las semanas de guardia siguiendo estrictamente el orden secuencial del personal (`personal`, `siguiente_id`), garantizando equidad en la distribución del servicio.
-- **Cola de Recuperación Prioritaria (`pendientes`):** Si un funcionario no puede cumplir su turno por encontrarse con permiso o licencia médica, se omite automáticamente y se añade a la lista de pendientes para recuperar su guardia en la primera semana en que vuelva a estar disponible.
+- **Cola Circular Continua:** Asigna las semanas de turno siguiendo estrictamente el orden secuencial del personal (`personal`, `siguiente_id`), garantizando equidad en la distribución del servicio.
+- **Cola de Recuperación Prioritaria (`pendientes`):** Si un funcionario no puede cumplir su turno por encontrarse con permiso o licencia médica, se omite automáticamente y se añade a la lista de pendientes para recuperar su turno en la primera semana en que vuelva a estar disponible.
 - **Ventana de Enfriamiento y Descanso Mínimo (`min_gap_weeks = 4`):** El algoritmo impide que un funcionario reciba dos turnos en un intervalo menor a 4 semanas (incluso al recuperar turnos pendientes o tras asignaciones forzadas), evitando sobrecargas laborales y fatiga.
-- **Protección Anual de Feriados Chilenos (`holidays.countries.chile`):** Evalúa el historial del año anterior para evitar que una persona repita la guardia en el mismo feriado nacional (Fiestas Patrias, Navidad, Año Nuevo, etc.) en años consecutivos. Compara los feriados por su nombre normalizado, adaptándose a días festivos móviles. Si no existe alternativa viable, asigna y emite una advertencia explícita visible en la interfaz y en los registros.
+- **Protección Anual de Feriados Chilenos (`holidays.countries.chile`):** Evalúa el historial del año anterior para evitar que una persona repita el turno en el mismo feriado nacional (Fiestas Patrias, Navidad, Año Nuevo, etc.) en años consecutivos. Compara los feriados por su nombre normalizado, adaptándose a días festivos móviles. Si no existe alternativa viable, asigna y emite una advertencia explícita visible en la interfaz y en los registros.
 - **Previsualización Encadenada a Futuro:** Permite planificar y revisar meses futuros proyectando la rotación desde el último snapshot o estado conocido, sin alterar el frente de rotación ni el historial actual.
-- **Asignaciones Manuales con Motivo Obligatorio (Permutas):** Permite forzar o reasignar la guardia de cualquier semana directamente desde la tarjeta semanal de la interfaz. Exige obligatoriamente el ingreso de un motivo justificativo para efectos de auditoría y notificación al equipo. Cuenta con reversión inmediata con un clic (`↺ Auto`).
+- **Asignaciones Manuales con Motivo Obligatorio (Permutas):** Permite forzar o reasignar el turno de cualquier semana directamente desde la tarjeta semanal de la interfaz. Exige obligatoriamente el ingreso de un motivo justificativo para efectos de auditoría y notificación al equipo. Cuenta con reversión inmediata con un clic (`↺ Auto`).
 
 ### 🖥️ 2. Interfaz Gráfica Ergonómica (CustomTkinter Dark Mode)
 - **Diseño de Alto Contraste:** Paleta de colores optimizada inspirada en entornos profesionales (`#111418`, `#1C2228`, `#57C7B5`), desarrollada sobre CustomTkinter.
@@ -75,7 +75,7 @@ Este sistema resuelve de raíz dichos problemas integrando un **motor algorítmi
 - Construido en memoria con `openpyxl`, garantizando total independencia de plantillas externas.
 - **Matriz Mensual Completa:** Cuadrícula de 31 días con nombres de funcionarios, números de día y letras de día de semana (`L, M, X, J, V, S, D`).
 - **Diferenciación Visual Profesional:** Turno regular en rojo institucional (`#FF3B30`), cambios manuales / permutas en verde esmeralda (`#059669`), fines de semana en gris tenue (`#D9D9D9`) y días inválidos bloqueados (ej: 29-31 en febrero o 31 en meses de 30 días en gris oscuro con guion).
-- **Trazabilidad de Permutas:** Cada celda con guardia manual incluye una nota interactiva (`Comment`) indicando el funcionario asignado, el original y el motivo justificado. Al pie se genera automáticamente la tabla formal `"REGISTRO DE CAMBIOS MANUALES DE GUARDIA (PERMUTAS / ACCIDENTES)"`.
+- **Trazabilidad de Permutas:** Cada celda con turno manual incluye una nota interactiva (`Comment`) indicando el funcionario asignado, el original y el motivo justificado. Al pie se genera automáticamente la tabla formal `"REGISTRO DE CAMBIOS MANUALES DE TURNO (PERMUTAS / REEMPLAZOS)"`.
 - **Detalle de Excepciones OTR:** Genera la tabla oficial `"DETALLE DE PERMISOS Y EXCEPCIONES ESPECIALES (OTR)"` agrupando rangos de fechas consecutivos por funcionario y motivo justificado.
 - **Columnas de Totales Acumulados (`AG:AK`):** Métricas automatizadas a la derecha de la cuadrícula con el conteo de `TURNOS`, `DA`, `FL`, `LIC` y `OTR`.
 - **Bloque de Convenciones y Leyenda:** Muestras de color y descripciones formales de cada código al pie de la tabla.
@@ -317,7 +317,7 @@ Cuando un funcionario no esté disponible en determinadas fechas:
 5. Las tarjetas semanales se recalcularán de inmediato. Si el funcionario tenía asignada una semana en esas fechas, el sistema lo saltará, lo añadirá a la cola de pendientes y asignará al siguiente funcionario disponible.
 6. El título de la ventana y el botón de guardado mostrarán el indicador sucio (`●`).
 
-### 3. Gestionar Asignaciones Manuales (Permutas de Guardia)
+### 3. Gestionar Asignaciones Manuales (Permutas de Turno)
 Para cambiar el funcionario asignado a una semana específica:
 1. En la tarjeta de la semana deseada, presiona el botón **✏️ Cambiar**.
 2. En el cuadro de diálogo modal `ChangeShiftDialog`, selecciona el nuevo funcionario asignado.
@@ -328,7 +328,7 @@ Para cambiar el funcionario asignado a una semana específica:
 
 ### 4. Revisar la Cuadrícula en el Calendario
 1. Abre la pestaña **📅 Ver Turnos del Mes** o haz clic en el botón superior **📅 Abrir calendario**.
-2. Verifica visualmente la distribución de guardias (rojo), cambios manuales (verde esmeralda), excepciones y fines de semana.
+2. Verifica visualmente la distribución de turnos (rojo), cambios manuales (verde esmeralda), excepciones y fines de semana.
 3. Puedes navegar rápidamente con los botones `‹ Anterior`, `Siguiente ›` o volver instantáneamente al mes actual con `Hoy`.
 
 ### 5. Exportar el Reporte Oficial a Excel
@@ -599,5 +599,5 @@ Encuentra los manuales y documentos técnicos generados en la raíz del proyecto
 
 ## 📄 Licencia y Créditos
 
-Desarrollado para optimizar la gestión operativa y garantizar la máxima equidad y transparencia en la asignación de turnos de guardia institucional.  
+Desarrollado para optimizar la gestión operativa y garantizar la máxima equidad y transparencia en la asignación de turnos institucionales.  
 Código abierto bajo los términos establecidos en la organización institucional.

@@ -11,8 +11,8 @@ Plan para unificar la terminología de "guardia" a "turnos" en toda la aplicaci�
 - Decimal phases (2.1, 2.2): Urgent insertions (marked with INSERTED)
 
 - [x] **Phase 1: Interfaz de Usuario y Diálogos Modales** - Reemplazar "guardia" por "turno/turnos" en botones, badges, modales y mensajes de la GUI con concordancia gramatical (completed 2026-10-06)
-- [ ] **Phase 2: Reportes Excel y Plantillas de Notificaciones** - Actualizar títulos, auditorías, leyendas y plantillas de correo/webhook a la terminología de turnos
-- [ ] **Phase 3: Documentación y Validación de Pruebas** - Sincronizar documentación y asegurar que toda la suite de pruebas automatizadas pase exitosamente
+- [x] **Phase 2: Reportes Excel y Plantillas de Notificaciones** - Actualizar títulos, auditorías, leyendas y plantillas de correo/webhook a la terminología de turnos (completed 2026-10-07)
+- [x] **Phase 3: Documentación y Validación de Pruebas** - Sincronizar documentación y asegurar que toda la suite de pruebas automatizadas pase exitosamente (completed 2026-10-07)
 
 ## Phase Details
 
@@ -43,7 +43,8 @@ Plan para unificar la terminología de "guardia" a "turnos" en toda la aplicaci�
   3. Los correos automáticos en `utils/email_notifier.py` envían asuntos con "[Sistema de Turnos] Modificación de Turno" y avisos con "AVISO DE CAMBIO DE TURNO".
   4. La nota de VPN se actualiza a "RECORDATORIO DE TURNOS" con concordancia adecuada.
 
-**Plans**: 1 plan
+**Plans**: 1/1 plans complete
+- [x] 02-01-PLAN.md — Reemplazar terminología en reportes Excel, plantillas de correo y notificaciones
 
 ### Phase 3: Documentación y Validación de Pruebas
 
@@ -55,7 +56,8 @@ Plan para unificar la terminología de "guardia" a "turnos" en toda la aplicaci�
   1. `README.md`, `CLAUDE.md` y `POLITICAS_Y_SEGURIDAD.md` utilizan consistentemente la terminología de turnos.
   2. La suite de pruebas en `pytest` valida que los textos modificados en Excel, diálogos y notificaciones se generan correctamente sin regresiones.
 
-**Plans**: 1 plan
+**Plans**: 1/1 plans complete
+- [x] 03-01-PLAN.md — Sincronizar documentación y suites de pruebas con terminología de turnos
 
 ---
 *Roadmap created: 2026-10-06*

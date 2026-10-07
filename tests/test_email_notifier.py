@@ -50,7 +50,7 @@ class TestEmailNotifier(unittest.TestCase):
         self.assertIn("• CAMBIO #1", msg)
         # Verificación nota VPN dinámica
         self.assertIn("IMPORTANTE — GESTIÓN Y SOLICITUD DE VPN", msg)
-        self.assertIn("RECORDATORIO PARA GUARDIAS", msg)
+        self.assertIn("RECORDATORIO DE TURNOS", msg)
         self.assertIn("SOLICITUD DE CREACIÓN DE CUENTA", msg)
         self.assertIn(get_vpn_info_note(), msg)
 
@@ -60,7 +60,7 @@ class TestEmailNotifier(unittest.TestCase):
         self.assertIn("Octubre 2026", msg)
         self.assertIn("Se adjunta el archivo Excel", msg)
         self.assertIn("IMPORTANTE — GESTIÓN Y SOLICITUD DE VPN", msg)
-        self.assertIn("RECORDATORIO PARA GUARDIAS", msg)
+        self.assertIn("RECORDATORIO DE TURNOS", msg)
         self.assertIn("SOLICITUD DE CREACIÓN DE CUENTA", msg)
         self.assertIn(get_vpn_info_note(), msg)
 

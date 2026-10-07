@@ -83,9 +83,9 @@ class TestManualAssignmentsExcel(unittest.TestCase):
         self.assertIn("059669", str(cell_manual.fill.start_color.rgb).upper())
         self.assertIsNotNone(cell_manual.comment)
         comment_text = cell_manual.comment.text
-        self.assertIn("CAMBIO MANUAL DE GUARDIA", comment_text)
+        self.assertIn("CAMBIO MANUAL DE TURNO", comment_text)
         self.assertIn("Asignado: Cabo Gomez", comment_text)
-        self.assertIn("Guardia original: Sargento Perez", comment_text)
+        self.assertIn("Turno original: Sargento Perez", comment_text)
         self.assertIn("Motivo: Accidente laboral de camino al cuartel", comment_text)
 
         # Dia 15 de sept: Columna correspondiente al dia 15
@@ -132,18 +132,18 @@ class TestManualAssignmentsExcel(unittest.TestCase):
         table_row = None
         for r in range(1, sheet.max_row + 1):
             val = str(sheet.cell(row=r, column=1).value or "")
-            if "REGISTRO DE CAMBIOS MANUALES DE GUARDIA" in val:
+            if "REGISTRO DE CAMBIOS MANUALES DE TURNO" in val:
                 title_found = True
                 table_row = r
                 break
 
-        self.assertTrue(title_found, "Debe existir el título 'REGISTRO DE CAMBIOS MANUALES DE GUARDIA (PERMUTAS / ACCIDENTES)'")
+        self.assertTrue(title_found, "Debe existir el título 'REGISTRO DE CAMBIOS MANUALES DE TURNO (PERMUTAS / REEMPLAZOS)'")
 
         # Fila encabezados (table_row + 1)
         hdr_row = table_row + 1
         self.assertEqual(sheet.cell(row=hdr_row, column=1).value, "FUNCIONARIO ASIGNADO")
         self.assertEqual(sheet.cell(row=hdr_row, column=2).value, "SEMANA")
-        self.assertEqual(sheet.cell(row=hdr_row, column=6).value, "GUARDIA ORIGINAL")
+        self.assertEqual(sheet.cell(row=hdr_row, column=6).value, "TURNO ORIGINAL")
         self.assertEqual(sheet.cell(row=hdr_row, column=12).value, "MOTIVO DEL CAMBIO / JUSTIFICACIÓN")
 
         # Fila datos (table_row + 2)
@@ -192,7 +192,7 @@ class TestManualAssignmentsExcel(unittest.TestCase):
 
         for r in range(1, sheet.max_row + 1):
             val = str(sheet.cell(row=r, column=1).value or "")
-            if "REGISTRO DE CAMBIOS MANUALES DE GUARDIA" in val:
+            if "REGISTRO DE CAMBIOS MANUALES DE TURNO" in val:
                 mc_title_row = r
             elif "DETALLE DE PERMISOS Y EXCEPCIONES ESPECIALES (OTR)" in val:
                 otr_title_row = r

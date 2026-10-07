@@ -32,8 +32,8 @@ def get_vpn_info_note() -> str:
 
     return (
         "IMPORTANTE — GESTIÓN Y SOLICITUD DE VPN:\n\n"
-        "• RECORDATORIO PARA GUARDIAS:\n"
-        "  Se recuerda a todos los funcionarios que deban cumplir turnos de guardia y NO cuenten\n"
+        "• RECORDATORIO DE TURNOS:\n"
+        "  Se recuerda a todos los funcionarios que deban cumplir turnos y NO cuenten\n"
         "  con VPN activa, solicitarla y gestionarla con la debida anticipación antes de su turno.\n\n"
         "• SOLICITUD DE CREACIÓN DE CUENTA:\n"
         "  Respecto de las solicitudes de creación de cuenta, estas deberán efectuarse a través\n"
@@ -159,12 +159,12 @@ def format_plain_text_message(mes_nombre: str, anio: int, cambios: list) -> str:
     plur_cambio = "modificación" if cant_cambios == 1 else "modificaciones"
 
     lineas = [
-        "SISTEMA DE GESTIÓN DE TURNOS — AVISO DE CAMBIO DE GUARDIA",
+        "SISTEMA DE GESTIÓN DE TURNOS — AVISO DE CAMBIO DE TURNO",
         "=" * 56,
         f"Periodo: {mes_nombre} {anio}",
         f"Fecha de notificación: {ahora_str}",
         "",
-        f"Se informa al personal que se ha registrado {cant_cambios} {plur_cambio} manual en la planificación de turnos de guardia:",
+        f"Se informa al personal que se ha registrado {cant_cambios} {plur_cambio} manual en la planificación de turnos:",
         ""
     ]
 
@@ -176,8 +176,8 @@ def format_plain_text_message(mes_nombre: str, anio: int, cambios: list) -> str:
         fecha_reg = c.get("fecha_registro", ahora_str)
 
         lineas.append(f"• CAMBIO #{i} — Semana {semana}:")
-        lineas.append(f"  - Guardia programada original: {anterior}")
-        lineas.append(f"  - Nueva guardia asignada:      {nuevo}")
+        lineas.append(f"  - Turno programado original: {anterior}")
+        lineas.append(f"  - Nuevo turno asignado:      {nuevo}")
         lineas.append(f"  - Motivo del cambio:           {motivo}")
         lineas.append(f"  - Registrado en sistema:       {fecha_reg}")
         lineas.append("")
@@ -205,7 +205,7 @@ def format_save_month_message(mes_nombre: str, anio: int) -> str:
         f"Periodo: {mes_nombre} {anio}",
         f"Fecha de generación: {ahora_str}",
         "",
-        "Se adjunta el archivo Excel con la planificación de turnos de guardia",
+        "Se adjunta el archivo Excel con la planificación de turnos",
         f"correspondiente al mes de {mes_nombre} {anio}.",
         "",
         "Favor revisar y tomar conocimiento para la debida coordinación de los servicios.",

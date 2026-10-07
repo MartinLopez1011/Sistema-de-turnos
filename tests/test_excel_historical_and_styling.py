@@ -127,13 +127,13 @@ class ExcelHistoricalAndStylingTests(unittest.TestCase):
         self.assertIsNotNone(legend_row, "La sección 'CONVENCIONES Y LEYENDA' debe existir.")
 
         # Verificar chips y descripciones en las filas de leyenda
-        # Fila 1 de leyenda (Turno de guardia en columna 2, texto en columna 3)
+        # Fila 1 de leyenda (Turno en columna 2, texto en columna 3)
         r1 = legend_row + 1
         chip_turno = sheet.cell(row=r1, column=2)
         desc_turno = sheet.cell(row=r1, column=3)
         self.assertEqual(chip_turno.value, "■")
         self.assertIn("FF3B30", chip_turno.fill.start_color.rgb)
-        self.assertEqual(desc_turno.value, "Turno de Guardia")
+        self.assertEqual(desc_turno.value, "Turno")
 
         # Fila 2 de leyenda (DA en columna 2, texto en columna 3)
         r2 = legend_row + 2
