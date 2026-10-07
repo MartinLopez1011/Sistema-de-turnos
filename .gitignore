@@ -33,3 +33,7 @@ archives/
 pending_notifications.json
 ui_state.json
 ~$*
+
+# Agentes y planificación
+.agents/
+.planning/
