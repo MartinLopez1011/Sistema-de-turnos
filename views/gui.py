@@ -62,7 +62,8 @@ class TurnosApp(ctk.CTk):
 
         self._setup_ui()
         self.load_personal()
-        self.after(500, self._retry_pending_notifications)
+        # NOTA: Los reintentos de notificaciones pendientes son 100% manuales
+        # desde la pestaña Ajustes para evitar envíos automáticos no deseados.
         self.protocol("WM_DELETE_WINDOW", self._on_close)
         logger.info("Aplicación Sistema de Turnos iniciada correctamente.")
 

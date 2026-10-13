@@ -99,3 +99,10 @@ class TestEmailNotificationFeature(unittest.TestCase):
             data = json.load(f)
         self.assertEqual(data["notificaciones"]["webhook_url"], "https://new.webhook.url")
         self.assertEqual(list(data.keys())[0], "notificaciones")
+
+    def test_turnos_app_does_not_auto_retry_notifications_on_startup(self):
+        import inspect
+        from views.gui import TurnosApp
+
+        init_source = inspect.getsource(TurnosApp.__init__)
+        self.assertNotIn("_retry_pending_notifications", init_source)
