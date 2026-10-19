@@ -325,7 +325,7 @@ class AddExceptionDialog:
     def show(cls, parent, persona, day, callback):
         dialog = ctk.CTkToplevel(parent)
         dialog.title("Añadir Excepción")
-        dialog.geometry("320x190")
+        dialog.geometry("340x235")
         dialog.configure(fg_color=P["bg_card"])
         dialog.transient(parent)
         dialog.grab_set()
@@ -371,30 +371,37 @@ class AddExceptionDialog:
         ).grid(row=0, column=0, padx=4, pady=4, sticky="ew")
 
         ctk.CTkButton(
+            btn_frame, text="1/2DA (Medio Día)", fg_color=P["mda"], hover_color=P["da"],
+            font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
+            corner_radius=8, cursor="hand2",
+            command=lambda: on_select("1/2DA")
+        ).grid(row=0, column=1, padx=4, pady=4, sticky="ew")
+
+        ctk.CTkButton(
             btn_frame, text="FL (Feriado Legal)", fg_color=P["purple"], hover_color=P["fl"],
             font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             corner_radius=8, cursor="hand2",
             command=lambda: on_select("FL")
-        ).grid(row=0, column=1, padx=4, pady=4, sticky="ew")
+        ).grid(row=1, column=0, padx=4, pady=4, sticky="ew")
 
         ctk.CTkButton(
             btn_frame, text="LIC (Licencia)", fg_color=P["lic"], hover_color=P["lic"],
             font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             corner_radius=8, cursor="hand2",
             command=lambda: on_select("LIC")
-        ).grid(row=1, column=0, padx=4, pady=4, sticky="ew")
+        ).grid(row=1, column=1, padx=4, pady=4, sticky="ew")
 
         ctk.CTkButton(
             btn_frame, text="OTR (Otro)", fg_color=P["otr"], hover_color=P["border"],
             font=ctk.CTkFont(family=FONT_FAMILY, size=12, weight="bold"),
             corner_radius=8, cursor="hand2",
             command=lambda: on_select("OTR")
-        ).grid(row=1, column=1, padx=4, pady=4, sticky="ew")
+        ).grid(row=2, column=0, columnspan=2, padx=4, pady=4, sticky="ew")
 
         dialog.bind("<Escape>", lambda e: dialog.destroy())
-        for key, tipo in [("1", "DA"), ("2", "FL"), ("3", "LIC"), ("4", "OTR"),
-                          ("d", "DA"), ("D", "DA"), ("f", "FL"), ("F", "FL"),
-                          ("l", "LIC"), ("L", "LIC"), ("o", "OTR"), ("O", "OTR")]:
+        for key, tipo in [("1", "DA"), ("2", "1/2DA"), ("3", "FL"), ("4", "LIC"), ("5", "OTR"),
+                          ("d", "DA"), ("D", "DA"), ("m", "1/2DA"), ("M", "1/2DA"),
+                          ("f", "FL"), ("F", "FL"), ("l", "LIC"), ("L", "LIC"), ("o", "OTR"), ("O", "OTR")]:
             dialog.bind(f"<{key}>", lambda e, t=tipo: on_select(t))
 
 

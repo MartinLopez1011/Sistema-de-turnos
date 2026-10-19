@@ -28,6 +28,7 @@ P = {
     "turno":     "#991B1B",
     "turno_h":   "#DC2626",
     "da":        "#B45309",
+    "mda":       "#D97706",
     "fl":        "#5B21B6",
     "lic":       "#0E7490",
     "otr":       "#374151",
@@ -66,6 +67,7 @@ DIAS = ["L", "M", "X", "J", "V", "S", "D"]
 
 EXC_COLORS = {
     "DA": P["da"],
+    "1/2DA": P["mda"],
     "FL": P["fl"],
     "LIC": P["lic"],
     "OTR": P["otr"],
@@ -74,6 +76,7 @@ EXC_COLORS = {
 
 EXC_ICONS = {
     "DA": "⏭",
+    "1/2DA": "🌗",
     "FL": "🚫",
     "LIC": "📋",
     "OTR": "📌",

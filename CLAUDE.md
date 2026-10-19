@@ -129,6 +129,7 @@ main.py
 
 **Tipos de excepción soportados:**
 - `DA` = Día Administrativo (color naranja `#B45309`)
+- `1/2DA` = Medio Día Administrativo (color ámbar `#D97706`)
 - `FL` = Feriado Legal (color violeta `#5B21B6`)
 - `LIC` = Licencia (color turquesa `#0E7490`)
 - `OTR` = Otro (color gris `#374151`)

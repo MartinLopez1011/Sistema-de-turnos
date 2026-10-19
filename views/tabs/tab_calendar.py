@@ -117,6 +117,7 @@ class TabCalendar:
             ("■ Turno", P["turno"]),
             ("■ Cambio", P["for"]),
             ("DA", P["da"]),
+            ("1/2DA", P["mda"]),
             ("FL", P["fl"]),
             ("LIC", P["lic"]),
             ("OTR", P["otr"]),
@@ -469,8 +470,8 @@ class TabCalendar:
                 in_cw = d in cur_week_days
                 is_man = d in p_manual
 
-                if exc_tipo in ("DA", "FL", "LIC", "OTR", "FOR"):
-                    bg = P[exc_tipo.lower()]
+                if exc_tipo in ("DA", "1/2DA", "FL", "LIC", "OTR", "FOR"):
+                    bg = EXC_COLORS.get(exc_tipo, P.get(exc_tipo.lower(), P["otr"]))
                     txt, tc, bold = exc_tipo, "#FFF", True
                 elif has_t:
                     if d in p_warn:
@@ -501,6 +502,8 @@ class TabCalendar:
                         m_text = f"🗓 Turno regular: {p_short} (Día {d})"
                 elif exc_tipo == "DA":
                     m_text = f"⏭ Día Administrativo (DA): {p_short} (Día {d})"
+                elif exc_tipo == "1/2DA":
+                    m_text = f"🌗 Medio Día Administrativo (1/2DA): {p_short} (Día {d})"
                 elif exc_tipo == "FL":
                     m_text = f"🚫 Feriado Legal (FL): {p_short} (Día {d})"
                 elif exc_tipo == "LIC":
@@ -523,6 +526,8 @@ class TabCalendar:
                         hov = P["turno_h"]
                 elif exc_tipo == "DA":
                     hov = "#D97706"
+                elif exc_tipo == "1/2DA":
+                    hov = "#F59E0B"
                 elif exc_tipo == "FL":
                     hov = "#7C3AED"
                 elif exc_tipo == "LIC":

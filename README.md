@@ -219,8 +219,8 @@ flowchart TD
 ### Tipos de Excepción Admitidos
 
 | Sigla | Nombre | Color Visual | Descripción y Regla Operativa |
-|:---:|---|:---:|---|
 | **`DA`** | Día Administrativo | Naranja (`#B45309`) | Permiso administrativo legalmente concedido. Salta el turno y agrega al funcionario a pendientes. |
+| **`1/2DA`** | Medio Día Administrativo | Ámbar (`#D97706`) | Fracción de permiso administrativo legalmente concedido. Salta el turno y suma 0.5 a los DA en el reporte mensual. |
 | **`FL`** | Feriado Legal | Violeta (`#5B21B6`) | Período reglamentario de vacaciones. Salta el turno y agrega a pendientes. |
 | **`LIC`** | Licencia Médica | Turquesa (`#0E7490`) | Reposo por prescripción de salud. Salta el turno y agrega a pendientes. |
 | **`OTR`** | Otro Permiso Especial | Gris Azulado (`#374151`) | Comisión de servicio, duelo, capacitación, etc. **Exige obligatoriamente motivo justificativo (mín. 3 caracteres)**, exportado a Excel en celda y tabla especial. |
@@ -310,6 +310,7 @@ Cuando un funcionario no esté disponible en determinadas fechas:
 2. Ingresa los días correspondientes en el campo de texto. Puedes especificar días individuales o rangos (ej: `1-5, 12, 20-25`).
 3. Elige el tipo de excepción:
    - **DA:** Día Administrativo.
+   - **1/2DA:** Medio Día Administrativo.
    - **FL:** Feriado Legal.
    - **LIC:** Licencia Médica.
    - **OTR:** Otro Permiso Especial. Al marcar esta opción se desplegará obligatoriamente el campo **Motivo / Justificación** (mínimo 3 caracteres).

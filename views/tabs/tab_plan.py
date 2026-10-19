@@ -206,7 +206,7 @@ class TabPlan:
 
         self.type_var = ctk.StringVar(value="DA")
         self.type_segmented = ctk.CTkSegmentedButton(
-            exc_form, variable=self.type_var, values=["DA", "FL", "LIC", "OTR"],
+            exc_form, variable=self.type_var, values=["DA", "1/2DA", "FL", "LIC", "OTR"],
             fg_color=P["bg_input"],
             selected_color=P["accent_d"],
             selected_hover_color=P["accent"],
@@ -679,6 +679,7 @@ class TabPlan:
         val = value if value is not None else self.type_var.get()
         desc_map = {
             "DA": "⏭ DA: Día Administrativo",
+            "1/2DA": "🌗 1/2DA: Medio Día Administrativo",
             "FL": "🚫 FL: Feriado Legal / Vacaciones",
             "LIC": "📋 LIC: Licencia Médica",
             "OTR": "⭐ OTR: Permiso Especial (requiere motivo)"

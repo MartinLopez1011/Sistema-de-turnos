@@ -133,6 +133,7 @@ class ExcelHandler:
         # Estilos mejorados
         red_fill = PatternFill(start_color="FF3B30", end_color="FF3B30", fill_type="solid")
         da_fill = PatternFill(start_color="B45309", end_color="B45309", fill_type="solid")
+        mda_fill = PatternFill(start_color="D97706", end_color="D97706", fill_type="solid")
         fl_fill = PatternFill(start_color="5B21B6", end_color="5B21B6", fill_type="solid")
         lic_fill = PatternFill(start_color="0E7490", end_color="0E7490", fill_type="solid")
         otr_fill = PatternFill(start_color="374151", end_color="374151", fill_type="solid")
@@ -319,7 +320,14 @@ class ExcelHandler:
                     col_idx = day_columns[day_val]
                     cell = self.sheet.cell(row=row_idx, column=col_idx)
                     cell.value = exc['tipo']
-                    _exc_fills = {'DA': da_fill, 'FL': fl_fill, 'LIC': lic_fill, 'OTR': otr_fill, 'FOR': for_fill}
+                    _exc_fills = {
+                        'DA': da_fill,
+                        '1/2DA': mda_fill,
+                        'FL': fl_fill,
+                        'LIC': lic_fill,
+                        'OTR': otr_fill,
+                        'FOR': for_fill
+                    }
                     cell.fill = _exc_fills.get(exc['tipo'], otr_fill)
                     cell.alignment = center_align
                     cell.font = bold_font
@@ -339,7 +347,7 @@ class ExcelHandler:
                     if s_d.year == year and s_d.month == month:
                         turnos_cnt += 1
 
-            da_cnt = 0
+            da_cnt = 0.0
             fl_cnt = 0
             lic_cnt = 0
             otr_cnt = 0
@@ -349,7 +357,9 @@ class ExcelHandler:
                     if f and f.year == year and f.month == month:
                         tipo = exc.get('tipo')
                         if tipo == 'DA':
-                            da_cnt += 1
+                            da_cnt += 1.0
+                        elif tipo == '1/2DA':
+                            da_cnt += 0.5
                         elif tipo == 'FL':
                             fl_cnt += 1
                         elif tipo == 'LIC':
@@ -357,9 +367,10 @@ class ExcelHandler:
                         elif tipo in ('OTR', 'FOR'):
                             otr_cnt += 1
 
+            da_val = int(da_cnt) if da_cnt.is_integer() else da_cnt
             totals = [
                 (33, turnos_cnt),
-                (34, da_cnt),
+                (34, da_val),
                 (35, fl_cnt),
                 (36, lic_cnt),
                 (37, otr_cnt),
@@ -382,6 +393,7 @@ class ExcelHandler:
         left_items = [
             ("Turno", red_fill, "■", "FFFFFF"),
             ("DA: Día Administrativo", da_fill, "DA", "FFFFFF"),
+            ("1/2DA: Medio Día Administrativo", mda_fill, "1/2DA", "FFFFFF"),
             ("FL: Feriado Legal", fl_fill, "FL", "FFFFFF"),
             ("LIC: Licencia Médica", lic_fill, "LIC", "FFFFFF"),
         ]
@@ -398,7 +410,7 @@ class ExcelHandler:
             chip = self.sheet.cell(row=r, column=2, value=mark)
             chip.fill = fill_style
             chip.alignment = center_align
-            chip.font = Font(bold=True, size=9, color=text_color)
+            chip.font = Font(bold=True, size=8 if len(mark) > 3 else 9, color=text_color)
             chip.border = thin_border
             # Texto explicativo
             self.sheet.merge_cells(start_row=r, start_column=3, end_row=r, end_column=8)
