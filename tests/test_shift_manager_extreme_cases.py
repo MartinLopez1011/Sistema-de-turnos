@@ -31,10 +31,10 @@ class ShiftManagerExtremeCasesTests(unittest.TestCase):
         self.config_path = self.root_path / "config.json"
 
         self.sample_personal = [
-            {"id": 1, "nombre": "SGT PEREZ JUAN", "email": "perez@guardia.cl"},
-            {"id": 2, "nombre": "CBO GOMEZ ANA", "email": "gomez@guardia.cl"},
-            {"id": 3, "nombre": "CBO DIAZ LUIS", "email": "diaz@guardia.cl"},
-            {"id": 4, "nombre": "SBC SILVA MARIA", "email": "silva@guardia.cl"},
+            {"id": 1, "nombre": "SGT PEREZ JUAN", "email": "perez@turnos.cl"},
+            {"id": 2, "nombre": "CBO GOMEZ ANA", "email": "gomez@turnos.cl"},
+            {"id": 3, "nombre": "CBO DIAZ LUIS", "email": "diaz@turnos.cl"},
+            {"id": 4, "nombre": "SBC SILVA MARIA", "email": "silva@turnos.cl"},
         ]
         self.clean_payload = {
             "personal": self.sample_personal,
@@ -170,7 +170,7 @@ class ShiftManagerExtremeCasesTests(unittest.TestCase):
         """
         solo_config = self.root_path / "solo_config.json"
         solo_config.write_text(json.dumps({
-            "personal": [{"id": 1, "nombre": "SOLO FUNCIONARIO", "email": "solo@guardia.cl"}],
+            "personal": [{"id": 1, "nombre": "SOLO FUNCIONARIO", "email": "solo@turnos.cl"}],
             "siguiente_id": 1,
             "pendientes": [],
             "snapshots": {},

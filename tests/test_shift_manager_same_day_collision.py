@@ -37,7 +37,7 @@ class ShiftManagerSameDayCollisionTests(unittest.TestCase):
 
         # Dotación oficial estándar de 16 funcionarios
         self.personal_16 = [
-            {"id": i, "nombre": f"FUNCIONARIO {i:02d}", "email": f"func{i:02d}@guardia.cl"}
+            {"id": i, "nombre": f"FUNCIONARIO {i:02d}", "email": f"func{i:02d}@turnos.cl"}
             for i in range(1, 17)
         ]
         self.clean_payload = {
@@ -124,7 +124,7 @@ class ShiftManagerSameDayCollisionTests(unittest.TestCase):
             {"persona": p["nombre"], "fecha": target_day, "tipo": "DA"}
             for p in self.personal_16
         ]
-        # El coordinador designa manualmente a FUNCIONARIO 03 para cubrir la guardia
+        # El coordinador designa manualmente a FUNCIONARIO 03 para cubrir el turno
         collision_week_key = "2026-09-14_2026-09-20"
         manual_override = {collision_week_key: "FUNCIONARIO 03"}
 
@@ -169,7 +169,7 @@ class ShiftManagerSameDayCollisionTests(unittest.TestCase):
         self.assertEqual(
             collision_week["persona"],
             "FUNCIONARIO 16",
-            "El único funcionario disponible debe asumir la guardia",
+            "El único funcionario disponible debe asumir el turno",
         )
         # Quienes fueron saltados en esa semana antes del 16 deben ingresar a pendientes
         self.assertGreater(len(collision_week["saltados"]), 0)
@@ -184,11 +184,11 @@ class ShiftManagerSameDayCollisionTests(unittest.TestCase):
         - Semana 2: P2
         - Semana 3: P1, P3 y P4 piden el mismo día. P2 es el único sin licencia,
           pero P2 HIZO TURNO EN LA SEMANA 2 (distancia = 1 semana, menor al enfriamiento 4).
-        El motor DEBE priorizar NO dejar la guardia vacía por sobre la regla de enfriamiento,
+        El motor DEBE priorizar NO dejar el turno vacío por sobre la regla de enfriamiento,
         asignando a P2 mediante el fallback de mayor descanso acumulado disponible.
         """
         small_team = [
-            {"id": i, "nombre": f"GUARDIA {i:02d}", "email": f"g{i:02d}@test.cl"}
+            {"id": i, "nombre": f"OPERADOR {i:02d}", "email": f"g{i:02d}@test.cl"}
             for i in range(1, 5)
         ]
         small_config = self.root_path / "small_config.json"
@@ -200,20 +200,20 @@ class ShiftManagerSameDayCollisionTests(unittest.TestCase):
 
         target_day = date(2026, 9, 18)  # Cae en semana 3 (14 al 20 Sep)
         excs = [
-            {"persona": "GUARDIA 01", "fecha": target_day, "tipo": "DA"},
-            {"persona": "GUARDIA 03", "fecha": target_day, "tipo": "DA"},
-            {"persona": "GUARDIA 04", "fecha": target_day, "tipo": "DA"},
+            {"persona": "OPERADOR 01", "fecha": target_day, "tipo": "DA"},
+            {"persona": "OPERADOR 03", "fecha": target_day, "tipo": "DA"},
+            {"persona": "OPERADOR 04", "fecha": target_day, "tipo": "DA"},
         ]
 
         shifts, _, _ = small_mgr.generate_shifts(2026, 9, excs)
-        # Semana 1 (31 ago - 6 sep): GUARDIA 01
-        # Semana 2 (7 sep - 13 sep): GUARDIA 02
-        # Semana 3 (14 sep - 20 sep): P1, P3, P4 con licencia -> GUARDIA 02 asignado por fallback
-        self.assertEqual(shifts[0]["persona"], "GUARDIA 01")
-        self.assertEqual(shifts[1]["persona"], "GUARDIA 02")
+        # Semana 1 (31 ago - 6 sep): OPERADOR 01
+        # Semana 2 (7 sep - 13 sep): OPERADOR 02
+        # Semana 3 (14 sep - 20 sep): P1, P3, P4 con licencia -> OPERADOR 02 asignado por fallback
+        self.assertEqual(shifts[0]["persona"], "OPERADOR 01")
+        self.assertEqual(shifts[1]["persona"], "OPERADOR 02")
         self.assertEqual(
             shifts[2]["persona"],
-            "GUARDIA 02",
+            "OPERADOR 02",
             "El motor debe violar el enfriamiento antes de dejar la semana vacía",
         )
 

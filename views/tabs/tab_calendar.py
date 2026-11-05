@@ -117,6 +117,7 @@ class TabCalendar:
             ("■ Turno", P["turno"]),
             ("■ Cambio", P["for"]),
             ("DA", P["da"]),
+            ("1/2DA", P["mda"]),
             ("FL", P["fl"]),
             ("LIC", P["lic"]),
             ("OTR", P["otr"]),
@@ -305,15 +306,17 @@ class TabCalendar:
 
         cur_week_days = set()
         if is_cur_mo:
-            for sh in shifts:
-                s, e = sh['semana']
-                if s <= today <= e:
-                    cur = s
-                    while cur <= e:
-                        if cur.month == month:
-                            cur_week_days.add(cur.day)
-                        cur += timedelta(days=1)
-                    break
+            # Si hoy es lunes de relevo, priorizar la semana que inicia hoy
+            active_shift = next((sh for sh in shifts if sh['semana'][0] == today), None)
+            if not active_shift:
+                active_shift = next((sh for sh in shifts if sh['semana'][0] <= today <= sh['semana'][1]), None)
+            if active_shift:
+                s, e = active_shift['semana']
+                cur = s
+                while cur <= e:
+                    if cur.month == month:
+                        cur_week_days.add(cur.day)
+                    cur += timedelta(days=1)
 
         personal = self.controller.get_personal_list()
         assigned_names = {sh['persona'] for sh in shifts if sh.get('persona')}
@@ -467,8 +470,8 @@ class TabCalendar:
                 in_cw = d in cur_week_days
                 is_man = d in p_manual
 
-                if exc_tipo in ("DA", "FL", "LIC", "OTR", "FOR"):
-                    bg = P[exc_tipo.lower()]
+                if exc_tipo in ("DA", "1/2DA", "FL", "LIC", "OTR", "FOR"):
+                    bg = EXC_COLORS.get(exc_tipo, P.get(exc_tipo.lower(), P["otr"]))
                     txt, tc, bold = exc_tipo, "#FFF", True
                 elif has_t:
                     if d in p_warn:
@@ -494,11 +497,13 @@ class TabCalendar:
                 if has_t:
                     if is_man:
                         mot = manual_shift_motives.get((persona, d), "Cambio manual registrado")
-                        m_text = f"📌 Guardia manual de turno: {p_short} (Día {d}) — Motivo: {mot}"
+                        m_text = f"📌 Turno manual: {p_short} (Día {d}) — Motivo: {mot}"
                     else:
-                        m_text = f"🗓 Guardia de turno regular: {p_short} (Día {d})"
+                        m_text = f"🗓 Turno regular: {p_short} (Día {d})"
                 elif exc_tipo == "DA":
                     m_text = f"⏭ Día Administrativo (DA): {p_short} (Día {d})"
+                elif exc_tipo == "1/2DA":
+                    m_text = f"🌗 Medio Día Administrativo (1/2DA): {p_short} (Día {d})"
                 elif exc_tipo == "FL":
                     m_text = f"🚫 Feriado Legal (FL): {p_short} (Día {d})"
                 elif exc_tipo == "LIC":
@@ -521,6 +526,8 @@ class TabCalendar:
                         hov = P["turno_h"]
                 elif exc_tipo == "DA":
                     hov = "#D97706"
+                elif exc_tipo == "1/2DA":
+                    hov = "#F59E0B"
                 elif exc_tipo == "FL":
                     hov = "#7C3AED"
                 elif exc_tipo == "LIC":

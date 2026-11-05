@@ -43,7 +43,7 @@ function doPost(e) {
 
     var payload = JSON.parse(e.postData.contents);
     var recipients = payload.recipients;
-    var subject = payload.subject || "[Sistema de Turnos] Notificación de Cambio de Guardia";
+    var subject = payload.subject || "[Sistema de Turnos] Notificación de Cambio de Turno";
     var body = payload.body || "";
 
     if (!recipients || !Array.isArray(recipients) || recipients.length === 0) {

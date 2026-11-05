@@ -133,6 +133,7 @@ class ExcelHandler:
         # Estilos mejorados
         red_fill = PatternFill(start_color="FF3B30", end_color="FF3B30", fill_type="solid")
         da_fill = PatternFill(start_color="B45309", end_color="B45309", fill_type="solid")
+        mda_fill = PatternFill(start_color="D97706", end_color="D97706", fill_type="solid")
         fl_fill = PatternFill(start_color="5B21B6", end_color="5B21B6", fill_type="solid")
         lic_fill = PatternFill(start_color="0E7490", end_color="0E7490", fill_type="solid")
         otr_fill = PatternFill(start_color="374151", end_color="374151", fill_type="solid")
@@ -288,9 +289,9 @@ class ExcelHandler:
                 orig_p = (mc_info.get('anterior') if mc_info else None) or shift.get('anterior') or "Rotación automática"
                 mot = (mc_info.get('motivo') if mc_info else None) or shift.get('motivo') or "Cambio manual registrado"
                 comment_text = (
-                    f"CAMBIO MANUAL DE GUARDIA\n"
+                    f"CAMBIO MANUAL DE TURNO\n"
                     f"Asignado: {person}\n"
-                    f"Guardia original: {orig_p}\n"
+                    f"Turno original: {orig_p}\n"
                     f"Motivo: {mot}"
                 )
 
@@ -319,7 +320,14 @@ class ExcelHandler:
                     col_idx = day_columns[day_val]
                     cell = self.sheet.cell(row=row_idx, column=col_idx)
                     cell.value = exc['tipo']
-                    _exc_fills = {'DA': da_fill, 'FL': fl_fill, 'LIC': lic_fill, 'OTR': otr_fill, 'FOR': for_fill}
+                    _exc_fills = {
+                        'DA': da_fill,
+                        '1/2DA': mda_fill,
+                        'FL': fl_fill,
+                        'LIC': lic_fill,
+                        'OTR': otr_fill,
+                        'FOR': for_fill
+                    }
                     cell.fill = _exc_fills.get(exc['tipo'], otr_fill)
                     cell.alignment = center_align
                     cell.font = bold_font
@@ -336,10 +344,10 @@ class ExcelHandler:
             for sh in shifts:
                 if sh.get('persona') == person:
                     s_d, e_d = sh['semana']
-                    if (s_d.year == year and s_d.month == month) or (e_d.year == year and e_d.month == month):
+                    if s_d.year == year and s_d.month == month:
                         turnos_cnt += 1
 
-            da_cnt = 0
+            da_cnt = 0.0
             fl_cnt = 0
             lic_cnt = 0
             otr_cnt = 0
@@ -349,7 +357,9 @@ class ExcelHandler:
                     if f and f.year == year and f.month == month:
                         tipo = exc.get('tipo')
                         if tipo == 'DA':
-                            da_cnt += 1
+                            da_cnt += 1.0
+                        elif tipo == '1/2DA':
+                            da_cnt += 0.5
                         elif tipo == 'FL':
                             fl_cnt += 1
                         elif tipo == 'LIC':
@@ -357,9 +367,10 @@ class ExcelHandler:
                         elif tipo in ('OTR', 'FOR'):
                             otr_cnt += 1
 
+            da_val = int(da_cnt) if da_cnt.is_integer() else da_cnt
             totals = [
                 (33, turnos_cnt),
-                (34, da_cnt),
+                (34, da_val),
                 (35, fl_cnt),
                 (36, lic_cnt),
                 (37, otr_cnt),
@@ -380,15 +391,16 @@ class ExcelHandler:
         self.sheet.row_dimensions[legend_title_row].height = 22
 
         left_items = [
-            ("Turno de Guardia", red_fill, "■", "FFFFFF"),
+            ("Turno", red_fill, "■", "FFFFFF"),
             ("DA: Día Administrativo", da_fill, "DA", "FFFFFF"),
+            ("1/2DA: Medio Día Administrativo", mda_fill, "1/2DA", "FFFFFF"),
             ("FL: Feriado Legal", fl_fill, "FL", "FFFFFF"),
             ("LIC: Licencia Médica", lic_fill, "LIC", "FFFFFF"),
         ]
         right_items = [
             ("OTR: Otro Permiso", otr_fill, "OTR", "FFFFFF"),
             ("Fin de Semana", gray_fill, " ", "000000"),
-            ("Cambio Guardia (Manual)", for_fill, "■", "FFFFFF"),
+            ("Cambio de Turno (Manual)", for_fill, "■", "FFFFFF"),
         ]
 
         for idx, (label, fill_style, mark, text_color) in enumerate(left_items):
@@ -398,7 +410,7 @@ class ExcelHandler:
             chip = self.sheet.cell(row=r, column=2, value=mark)
             chip.fill = fill_style
             chip.alignment = center_align
-            chip.font = Font(bold=True, size=9, color=text_color)
+            chip.font = Font(bold=True, size=8 if len(mark) > 3 else 9, color=text_color)
             chip.border = thin_border
             # Texto explicativo
             self.sheet.merge_cells(start_row=r, start_column=3, end_row=r, end_column=8)
@@ -426,7 +438,7 @@ class ExcelHandler:
         if manual_changes:
             mc_title = self.sheet.cell(
                 row=next_table_row, column=1,
-                value="REGISTRO DE CAMBIOS MANUALES DE GUARDIA (PERMUTAS / ACCIDENTES)"
+                value="REGISTRO DE CAMBIOS MANUALES DE TURNO (PERMUTAS / REEMPLAZOS)"
             )
             mc_title.font = Font(bold=True, size=10, color="065F46")
             self.sheet.row_dimensions[next_table_row].height = 22
@@ -454,14 +466,14 @@ class ExcelHandler:
             c2 = self.sheet.cell(row=hdr_row, column=2, value="SEMANA")
             c2.alignment = center_align
 
-            # Cols 6-11: GUARDIA ORIGINAL
+            # Cols 6-11: TURNO ORIGINAL
             self.sheet.merge_cells(start_row=hdr_row, start_column=6, end_row=hdr_row, end_column=11)
             for c in range(6, 12):
                 ch = self.sheet.cell(row=hdr_row, column=c)
                 ch.fill = hdr_fill_mc
                 ch.font = hdr_font_mc
                 ch.border = thin_border
-            c3 = self.sheet.cell(row=hdr_row, column=6, value="GUARDIA ORIGINAL")
+            c3 = self.sheet.cell(row=hdr_row, column=6, value="TURNO ORIGINAL")
             c3.alignment = Alignment(horizontal="left", vertical="center")
 
             # Cols 12-26: MOTIVO DEL CAMBIO / JUSTIFICACIÓN
@@ -499,7 +511,7 @@ class ExcelHandler:
                 d_cell.font = data_font
                 d_cell.alignment = center_align
 
-                # Guardia Original
+                # Turno Original
                 self.sheet.merge_cells(start_row=curr_r, start_column=6, end_row=curr_r, end_column=11)
                 for c in range(6, 12):
                     self.sheet.cell(row=curr_r, column=c).border = thin_border

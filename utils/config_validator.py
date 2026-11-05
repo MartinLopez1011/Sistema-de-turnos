@@ -1,7 +1,7 @@
 from datetime import datetime
 
 
-VALID_EXCEPTION_TYPES = {"DA", "FL", "LIC", "OTR", "FOR"}
+VALID_EXCEPTION_TYPES = {"DA", "1/2DA", "FL", "LIC", "OTR", "FOR"}
 
 
 def validate_config(data):

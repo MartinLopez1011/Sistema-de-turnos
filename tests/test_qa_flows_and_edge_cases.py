@@ -25,12 +25,12 @@ class BaseQATestCase(unittest.TestCase):
         self.temp_dir = tempfile.TemporaryDirectory()
         self.config_path = os.path.join(self.temp_dir.name, "config.json")
         self.test_personal = [
-            {"id": 1, "nombre": "COM PEREZ JUAN", "email": "perez@guardia.cl"},
-            {"id": 2, "nombre": "CBO GOMEZ ANA", "email": "gomez@guardia.cl"},
-            {"id": 3, "nombre": "SGT DIAZ LUIS", "email": "diaz@guardia.cl"},
-            {"id": 4, "nombre": "CBO SILVA MARIA", "email": "silva@guardia.cl"},
-            {"id": 5, "nombre": "SGT ROJAS CARLOS", "email": "rojas@guardia.cl"},
-            {"id": 6, "nombre": "CBO SOTO ANDRES", "email": "soto@guardia.cl"},
+            {"id": 1, "nombre": "COM PEREZ JUAN", "email": "perez@turnos.cl"},
+            {"id": 2, "nombre": "CBO GOMEZ ANA", "email": "gomez@turnos.cl"},
+            {"id": 3, "nombre": "SGT DIAZ LUIS", "email": "diaz@turnos.cl"},
+            {"id": 4, "nombre": "CBO SILVA MARIA", "email": "silva@turnos.cl"},
+            {"id": 5, "nombre": "SGT ROJAS CARLOS", "email": "rojas@turnos.cl"},
+            {"id": 6, "nombre": "CBO SOTO ANDRES", "email": "soto@turnos.cl"},
         ]
         self.initial_data = {
             "personal": self.test_personal,

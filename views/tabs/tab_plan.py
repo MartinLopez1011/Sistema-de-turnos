@@ -206,7 +206,7 @@ class TabPlan:
 
         self.type_var = ctk.StringVar(value="DA")
         self.type_segmented = ctk.CTkSegmentedButton(
-            exc_form, variable=self.type_var, values=["DA", "FL", "LIC", "OTR"],
+            exc_form, variable=self.type_var, values=["DA", "1/2DA", "FL", "LIC", "OTR"],
             fg_color=P["bg_input"],
             selected_color=P["accent_d"],
             selected_hover_color=P["accent"],
@@ -679,6 +679,7 @@ class TabPlan:
         val = value if value is not None else self.type_var.get()
         desc_map = {
             "DA": "⏭ DA: Día Administrativo",
+            "1/2DA": "🌗 1/2DA: Medio Día Administrativo",
             "FL": "🚫 FL: Feriado Legal / Vacaciones",
             "LIC": "📋 LIC: Licencia Médica",
             "OTR": "⭐ OTR: Permiso Especial (requiere motivo)"
@@ -1071,7 +1072,7 @@ class TabPlan:
                 dates_str = f"{s_d.strftime('%d/%m/%Y')} al {e_d.strftime('%d/%m/%Y')}"
                 res = ChangeShiftDialog.show(
                     self.app,
-                    title="Cambiar Guardia de Turno",
+                    title="Cambiar Turno",
                     dates_prompt=dates_str,
                     persons=available,
                     current_person=cur_p
@@ -1118,7 +1119,9 @@ class TabPlan:
                 ).grid(row=2 + n, column=0, columnspan=3, sticky="w", padx=10, pady=(0, 6))
 
         # Actualizar tarjeta de próximo turno (compatible con pruebas)
-        first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)
+        first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][0] == today), None)
+        if not first_shift:
+            first_shift = next((sh for sh in shifts if sh.get('persona') and sh['semana'][1] >= today), None)
         if not first_shift:
             first_shift = next((sh for sh in shifts if sh.get('persona')), None)
 
@@ -1151,7 +1154,7 @@ class TabPlan:
 
         badge_bg = P["today_bg"] if is_current else P["next_bg"]
         badge_fg = P["accent"] if is_current else P["text_a"]
-        badge_text = "● GUARDIA EN CURSO" if is_current else "⏳ PRÓXIMO TURNO"
+        badge_text = "● TURNO EN CURSO" if is_current else "⏳ PRÓXIMO TURNO"
 
         badge_f = ctk.CTkFrame(self.next_turno_frame, fg_color=badge_bg, corner_radius=5)
         badge_f.pack(anchor="w", padx=10, pady=(8, 4))

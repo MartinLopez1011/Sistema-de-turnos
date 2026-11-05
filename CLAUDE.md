@@ -24,7 +24,7 @@ python reset_historial.py                    # limpiar historial
 
 ## 1. ¿Qué es este proyecto?
 
-Aplicación de escritorio en **Python** que gestiona la asignación rotativa semanal de turnos de guardia para un equipo de 16 personas. Genera reportes Excel y tiene una GUI moderna.
+Aplicación de escritorio en **Python** que gestiona la asignación rotativa semanal de turnos para un equipo de 16 personas. Genera reportes Excel y tiene una GUI moderna.
 
 - **Tecnología principal:** Python + CustomTkinter (GUI dark mode)
 - **Distribución:** Compilado con PyInstaller → `Sistema de Turnos.exe` (standalone, sin instalar Python)
@@ -129,6 +129,7 @@ main.py
 
 **Tipos de excepción soportados:**
 - `DA` = Día Administrativo (color naranja `#B45309`)
+- `1/2DA` = Medio Día Administrativo (color ámbar `#D97706`)
 - `FL` = Feriado Legal (color violeta `#5B21B6`)
 - `LIC` = Licencia (color turquesa `#0E7490`)
 - `OTR` = Otro (color gris `#374151`)
